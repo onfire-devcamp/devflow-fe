@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Định nghĩa mã màu hồng chuẩn xác từ bản thiết kế Figma */
+  --color-primary: #ec4899; /* Hồng chủ đạo (tương đương pink-500) */
+  --color-primary-hover: #db2777; /* Hồng đậm hơn khi di chuột vào (pink-600) */
+  --color-primary-light: #fdf2f8; /* Hồng pastel nhạt cho nền cột trái (pink-50/50) */
+  --color-primary-ring: #fbcfe8; /* Hồng nhạt khi click vào ô input (pink-200) */
+}
