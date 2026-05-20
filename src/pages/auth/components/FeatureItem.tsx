@@ -28,7 +28,7 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => {
         );
       case 'SHIELD':
         return (
-          /* Icon Khiên bảo vệ */
+          /* Icon Shield */
           <svg
             className="w-5 h-5 text-pink-500"
             fill="none"
@@ -45,7 +45,7 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => {
         );
       case 'HEART':
         return (
-          /* Icon Trái tim ấm áp */
+          /* Icon heart */
           <svg
             className="w-5 h-5 text-pink-500"
             fill="none"
@@ -61,7 +61,6 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => {
           </svg>
         );
       default:
-        // Dự phòng nếu truyền text thường thì hiển thị text dạng badge tròn
         return (
           <span className="text-[11px] font-bold text-pink-500 uppercase">
             {icon}
@@ -72,12 +71,12 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => {
 
   return (
     <div className="flex items-start space-x-4">
-      {/* Ô tròn chứa Icon màu hồng nhạt nhẹ nhàng */}
+      {/* Place for icon */}
       <div className="bg-pink-50 w-10 h-10 rounded-full border border-pink-100 flex items-center justify-center shrink-0 shadow-xs">
         {renderIcon()}
       </div>
 
-      {/* Nội dung text kế bên */}
+      {/* text */}
       <div className="pt-0.5">
         <h3 className="font-semibold text-slate-900 text-[15px] tracking-tight">
           {title}

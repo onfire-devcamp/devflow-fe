@@ -4,7 +4,7 @@ import logoImg from '../../assets/logo.png';
 const Header: React.FC = () => {
   return (
     <header className="w-full h-16 border-b border-slate-100 flex justify-between items-center bg-white px-4 md:px-6">
-      {/* NẰM SÁT MÉP TRÁI: Logo + Chữ DevFlow */}
+      {/* LOCATED NEAR THE LEFT EDGE: Logo + DevFlow Text*/}
       <div className="flex items-center space-x-2 select-none cursor-pointer">
         <img
           src={logoImg}
@@ -16,7 +16,7 @@ const Header: React.FC = () => {
         </span>
       </div>
 
-      {/* NẰM SÁT MÉP PHẢI: Khối Guest */}
+      {/* LOCATED NEAR THE RIGHT EDGE: Guest Block */}
       <div className="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-full border border-slate-200 cursor-pointer hover:bg-slate-100 transition">
         <div className="w-5 h-5 bg-primary/20 rounded-full flex items-center justify-center">
           <svg
