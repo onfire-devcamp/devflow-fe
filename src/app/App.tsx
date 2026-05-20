@@ -1,14 +1,10 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from '../pages/auth/LoginPage';
+import { BrowserRouter } from 'react-router-dom';
+import { AppRoutes } from '../routes/appRoutes';
 
 function App() {
   return (
     <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
+      <AppRoutes />
     </BrowserRouter>
   );
 }
