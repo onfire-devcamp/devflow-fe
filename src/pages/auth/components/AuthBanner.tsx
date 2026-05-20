@@ -1,8 +1,36 @@
-// src/pages/auth/components/AuthBanner.tsx
-import React from 'react';
+import React, { useMemo } from 'react';
 import FeatureItem from './FeatureItem';
 
+const FEATURE_CONTENT = [
+  {
+    icon: 'AI',
+    title: 'AI mentor Devi',
+    description: 'Guided hints — never the full answer.',
+  },
+  {
+    icon: 'SHIELD',
+    title: 'Explain-to-pass',
+    description: 'Prove understanding before unlocking.',
+  },
+  {
+    icon: 'HEART',
+    title: 'Warm by design',
+    description: 'Soft feedback that keeps you building.',
+  },
+];
+
 const AuthBanner: React.FC = () => {
+  const renderFeatures = useMemo(() => {
+    return FEATURE_CONTENT.map((item, index) => (
+      <FeatureItem
+        key={index}
+        icon={item.icon}
+        title={item.title}
+        description={item.description}
+      />
+    ));
+  }, []);
+
   return (
     <div className="hidden md:flex flex-col justify-center items-center w-1/2 bg-[#fcf5f8] p-12">
       <div className="max-w-[420px] w-full">
@@ -12,23 +40,7 @@ const AuthBanner: React.FC = () => {
         <h1 className="text-[44px] font-bold text-pink-400 leading-[1.1] tracking-tight mb-12">
           Guided by AI.
         </h1>
-        <div className="space-y-8">
-          <FeatureItem
-            icon="AI"
-            title="AI mentor Devi"
-            desc="Guided hints — never the full answer."
-          />
-          <FeatureItem
-            icon="SHIELD"
-            title="Explain-to-pass"
-            desc="Prove understanding before unlocking."
-          />
-          <FeatureItem
-            icon="HEART"
-            title="Warm by design"
-            desc="Soft feedback that keeps you building."
-          />
-        </div>
+        <div className="space-y-8">{renderFeatures}</div>
       </div>
     </div>
   );

@@ -1,12 +1,17 @@
 import React from 'react';
 import { Shield, Sparkles, Heart } from 'lucide-react';
+export type FeatureIconType = 'AI' | 'SHIELD' | 'HEART' | (string & {});
 interface FeatureItemProps {
-  icon: 'AI' | 'SHIELD' | 'HEART' | string;
+  icon: FeatureIconType;
   title: string;
-  desc: string;
+  description: string;
 }
 
-const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => {
+const FeatureItem: React.FC<FeatureItemProps> = ({
+  icon,
+  title,
+  description,
+}) => {
   const renderIcon = () => {
     switch (icon.toUpperCase()) {
       case 'AI':
@@ -63,7 +68,9 @@ const FeatureItem: React.FC<FeatureItemProps> = ({ icon, title, desc }) => {
         <h3 className="font-semibold text-slate-900 text-[15px] tracking-tight">
           {title}
         </h3>
-        <p className="text-slate-500 text-sm mt-0.5 leading-relaxed">{desc}</p>
+        <p className="text-slate-500 text-sm mt-0.5 leading-relaxed">
+          {description}
+        </p>
       </div>
     </div>
   );
