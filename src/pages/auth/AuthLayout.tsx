@@ -1,6 +1,6 @@
 // src/pages/auth/AuthLayout.tsx
 import React from 'react';
-import Header from '../../components/navigation/Header';
+import Header from '../../components/ui/Header';
 import AuthBanner from './components/AuthBanner';
 
 interface AuthLayoutProps {
