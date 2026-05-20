@@ -3,6 +3,8 @@ import { Link } from 'react-router-dom';
 import { withPreventDefault } from '../../../utils/form';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
+import { Eye, EyeOff } from 'lucide-react';
+import { useMemo } from 'react';
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -16,6 +18,13 @@ const LoginForm: React.FC = () => {
     console.log('Logic Google sign in is here');
   };
 
+  const passwordIcon = useMemo(() => {
+    return showPassword ? (
+      <Eye className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
+    ) : (
+      <EyeOff className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
+    );
+  }, [showPassword]);
   return (
     <div className="w-full border border-pink-200 p-8 sm:px-8 sm:py-9 rounded-[20px] bg-white shadow-sm flex flex-col justify-center">
       <h2 className="text-[28px] font-semibold mb-6 text-slate-900 tracking-tight">
@@ -101,37 +110,7 @@ const LoginForm: React.FC = () => {
               onClick={() => setShowPassword(!showPassword)}
               className="absolute right-4 top-3 text-slate-400 hover:text-pink-400 cursor-pointer transition-colors focus:outline-none"
             >
-              {showPassword ? (
-                /* Icon ope eye */
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M2 12s3-7 10-7 10 7 10 7-3 7-10 7-10-7-10-7Z" />
-                  <circle cx="12" cy="12" r="3" />
-                </svg>
-              ) : (
-                /* Icon closed eye  */
-                <svg
-                  className="w-5 h-5"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="1.5"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M9.88 9.88a3 3 0 1 0 4.24 4.24" />
-                  <path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68" />
-                  <path d="M6.61 6.61A13.526 13.526 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61" />
-                  <line x1="2" x2="22" y1="2" y2="22" />
-                </svg>
-              )}
+              {passwordIcon}
             </button>
           </div>
         </div>
