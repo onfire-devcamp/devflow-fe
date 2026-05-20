@@ -1,0 +1,9 @@
+@import 'tailwindcss';
+
+@theme {
+  /* Define the exact pink color palette from the Figma design */
+  --color-primary: #ec4899; /* Primary pink color (equivalent to pink-500) */
+  --color-primary-hover: #db2777; /* Darker pink on hover (pink-600) */
+  --color-primary-light: #fdf2f8; /* Soft pastel pink for left-side background (pink-50/50) */
+  --color-primary-ring: #fbcfe8; /* Light pink focus ring for input fields (pink-200) */
+}
