@@ -1,9 +1,10 @@
 @import 'tailwindcss';
 
 @theme {
-  /* Định nghĩa mã màu hồng chuẩn xác từ bản thiết kế Figma */
-  --color-primary: #ec4899; /* Hồng chủ đạo (tương đương pink-500) */
-  --color-primary-hover: #db2777; /* Hồng đậm hơn khi di chuột vào (pink-600) */
-  --color-primary-light: #fdf2f8; /* Hồng pastel nhạt cho nền cột trái (pink-50/50) */
-  --color-primary-ring: #fbcfe8; /* Hồng nhạt khi click vào ô input (pink-200) */
+  /* Define the exact pink color palette from the Figma design */
+  --color-primary: #ec4899; /* Primary pink color (equivalent to pink-500) */
+  --color-secondary: #a78bfa; /* Secondary purple color (equivalent to purple-400) */
+  --color-primary-hover: #db2777; /* Darker pink on hover (equivalent to pink-600) */
+  --color-primary-light: #fdf2f8; /* Light pink for background elements (equivalent to pink-50/50) */
+  --color-primary-ring: #fbcfe8; /* Light pink ring on focus (equivalent to pink-200) */
 }

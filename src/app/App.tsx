@@ -1,15 +1,10 @@
-import React from 'react';
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
-import LoginPage from '../pages/auth/LoginPage';
-
+import React, { StrictMode } from 'react';
+import UserProfile from '../components/userskillmap/userSkillmap';
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/login" element={<LoginPage />} />
-        <Route path="/" element={<Navigate to="/login" replace />} />
-      </Routes>
-    </BrowserRouter>
+    <StrictMode>
+      <UserProfile />
+    </StrictMode>
   );
 }
 
