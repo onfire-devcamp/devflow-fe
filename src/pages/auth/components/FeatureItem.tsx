@@ -1,66 +1,29 @@
 import React from 'react';
 import { Shield, Sparkles, Heart } from 'lucide-react';
-export type FeatureIconType = 'AI' | 'SHIELD' | 'HEART' | (string & {});
+
+export type FeatureIconType = 'AI' | 'SHIELD' | 'HEART';
+
 interface FeatureItemProps {
   icon: FeatureIconType;
   title: string;
   description: string;
 }
 
+const ICON_MAP: Record<FeatureIconType, React.ReactNode> = {
+  AI: <Sparkles className="w-5 h-5 text-pink-500" strokeWidth={1.5} />,
+  SHIELD: <Shield className="w-5 h-5 text-pink-500" strokeWidth={1.5} />,
+  HEART: <Heart className="w-5 h-5 text-pink-500" strokeWidth={1.5} />,
+};
+
 const FeatureItem: React.FC<FeatureItemProps> = ({
   icon,
   title,
   description,
 }) => {
-  const renderIcon = () => {
-    switch (icon.toUpperCase()) {
-      case 'AI':
-        return (
-          /* Icon AI */
-          <Sparkles
-            className="w-5 h-5 text-pink-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            viewBox="0 0 24 24"
-          />
-        );
-      case 'SHIELD':
-        return (
-          /* Icon Shield */
-          <Shield
-            className="w-5 h-5 text-pink-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            viewBox="0 0 24 24"
-          />
-        );
-      case 'HEART':
-        return (
-          /* Icon heart */
-          <Heart
-            className="w-5 h-5 text-pink-500"
-            fill="none"
-            stroke="currentColor"
-            strokeWidth="1.5"
-            viewBox="0 0 24 24"
-          />
-        );
-      default:
-        return (
-          <span className="text-[11px] font-bold text-pink-500 uppercase">
-            {icon}
-          </span>
-        );
-    }
-  };
-
   return (
     <div className="flex items-start space-x-4">
-      {/* Place for icon */}
       <div className="bg-pink-50 w-10 h-10 rounded-full border border-pink-100 flex items-center justify-center shrink-0 shadow-xs">
-        {renderIcon()}
+        {ICON_MAP[icon]}
       </div>
 
       {/* text */}

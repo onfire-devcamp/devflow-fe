@@ -17,7 +17,7 @@ const FEATURE_CONTENT = [
     title: 'Warm by design',
     description: 'Soft feedback that keeps you building.',
   },
-];
+] as const;
 
 const AuthBanner: React.FC = () => {
   const renderFeatures = useMemo(() => {
