@@ -1,14 +1,14 @@
 // src/pages/auth/AuthLayout.tsx
 import React from 'react';
-import Header from '../../components/ui/Header';
-import AuthBanner from './components/AuthBanner';
+import { Header } from '../../components/ui/Header';
+import { AuthBanner } from './components/AuthBanner';
 import { ArrowLeft } from 'lucide-react';
 import { PageContainer } from '../../components/ui/PageContainer';
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <PageContainer>
       <Header />
@@ -39,6 +39,4 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       </div>
     </PageContainer>
   );
-};
-
-export default AuthLayout;
+}

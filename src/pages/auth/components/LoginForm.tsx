@@ -6,7 +6,7 @@ import { Input } from '../../../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useMemo } from 'react';
 import { Button } from '../../../components/ui/Button';
-const LoginForm: React.FC = () => {
+export function LoginForm() {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -129,6 +129,4 @@ const LoginForm: React.FC = () => {
       </p>
     </div>
   );
-};
-
-export default LoginForm;
+}
