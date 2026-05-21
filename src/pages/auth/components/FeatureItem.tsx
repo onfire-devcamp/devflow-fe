@@ -22,7 +22,7 @@ const FeatureItem: React.FC<FeatureItemProps> = ({
 }) => {
   return (
     <div className="flex items-start space-x-4">
-      <div className="bg-pink-50 w-10 h-10 rounded-full border border-pink-100 flex items-center justify-center shrink-0 shadow-xs">
+      <div className="bg-primary-soft w-10 h-10 rounded-full border border-pink-100 flex items-center justify-center shrink-0 shadow-xs">
         {ICON_MAP[icon]}
       </div>
 
