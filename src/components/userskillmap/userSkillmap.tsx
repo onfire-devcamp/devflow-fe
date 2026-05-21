@@ -35,19 +35,20 @@ export default function UserProfile() {
     mainCard: 'w-full min-h-screen flex flex-col',
     header:
       'w-full px-6 md:px-12 lg:px-20 py-4 md:py-5 border-b border-gray-100 flex justify-between items-center bg-[#faf7fb]/50',
-    brandLogo: "font-['Open Sans'] font-semibold text-[15px] text-[#1F1F2E]",
-    text: 'text-xs md:text-sm font-[Open Sans] text-gray-400 flex items-center gap-1 md:gap-2 whitespace-nowrap',
+    brandLogo:
+      "font-['Open Sans'] font-semibold text-[15px] text-[var(--color-fg)]",
+    text: 'text-xs md:text-sm font-[var(--font-sans)] text-gray-400 flex items-center gap-1 md:gap-2 whitespace-nowrap',
     Logo: 'flex items-center gap-2 w-103 h-32',
     badge:
-      'flex items-center text-[11px] bg-white px-4 py-1.5 rounded-full border border-purple-100 text-[#d86ba6] font-bold uppercase tracking-wider shadow-sm',
+      'flex items-center text-[11px] bg-white px-4 py-1.5 rounded-full border border-purple-100 text-[var(--color-primary)] font-bold uppercase tracking-wider shadow-sm',
     content:
       'w-full px-6 md:px-12 lg:px-20 py-6 md:py-10 space-y-6 md:space-y-8 flex-1 class-content',
     profileCard:
-      'flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-5 md:p-6 rounded-[24px] bg-gradient-to-b from-[#FDF2F8] to-white border border-[#FBCFE8]/60 shadow-sm w-full text-center sm:text-left',
+      'flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-5 md:p-6 rounded-[24px] bg-gradient-to-b from-[var(--color-primary-soft)] to-white border border-[var(--color-primary-mid)] shadow-sm w-full text-center sm:text-left',
     avatar:
       'w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-md shrink-0',
     skillSection:
-      'border border-[#FBCFE8]/60 rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full',
+      'border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full',
     activitySection:
       'border border-gray-100 rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full',
     activityHeader: 'flex justify-between items-center mb-6 md:mb-8',

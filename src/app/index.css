@@ -1,10 +1,18 @@
 @import 'tailwindcss';
-
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
 @theme {
-  /* Define the exact pink color palette from the Figma design */
-  --color-primary: #ec4899; /* Primary pink color (equivalent to pink-500) */
-  --color-secondary: #a78bfa; /* Secondary purple color (equivalent to purple-400) */
-  --color-primary-hover: #db2777; /* Darker pink on hover (equivalent to pink-600) */
-  --color-primary-light: #fdf2f8; /* Light pink for background elements (equivalent to pink-50/50) */
-  --color-primary-ring: #fbcfe8; /* Light pink ring on focus (equivalent to pink-200) */
+  --color-primary: #f472b6;
+  --color-primary-soft: #fdf2f8;
+  --color-primary-mid: #fbcfe8;
+
+  --color-purple: #a78bfa;
+  --color-success: #2dd4bf;
+  --color-warning: #fbbf24;
+
+  --color-fg: #1f1f2e;
+  --color-fg-muted: #6b7280;
+
+  --color-card: #ffffff;
+  --color-bg: #ffffff;
+  --font-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
 }
