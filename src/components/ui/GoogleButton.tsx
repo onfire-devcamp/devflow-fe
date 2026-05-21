@@ -1,5 +1,7 @@
 import React from 'react';
 import { GoogleIcon } from '../icons/GoogleIcon';
+import { Button } from './Button';
+
 type GoogleButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement>;
 
 export const GoogleButton: React.FC<GoogleButtonProps> = ({
@@ -7,15 +9,9 @@ export const GoogleButton: React.FC<GoogleButtonProps> = ({
   ...props
 }) => {
   return (
-    <button
-      type="button"
-      className={`w-full border border-pink-200 rounded-xl py-3 flex items-center justify-center space-x-2 hover:bg-pink-50 transition cursor-pointer ${className}`}
-      {...props}
-    >
+    <Button type="button" variant="outline" className={className} {...props}>
       <GoogleIcon />
-      <span className="text-sm font-medium text-slate-700 tracking-wide">
-        Google
-      </span>
-    </button>
+      <span className="ml-2 tracking-wide">Google</span>
+    </Button>
   );
 };
