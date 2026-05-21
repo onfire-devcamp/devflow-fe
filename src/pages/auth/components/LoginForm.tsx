@@ -11,11 +11,11 @@ const LoginForm: React.FC = () => {
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
   const handleSignIn = withPreventDefault(() => {
-    console.log('Logic sign in is here!');
+    // TODO: add logic here
   });
 
   const handleGoogleSignIn = () => {
-    console.log('Logic Google sign in is here');
+    // TODO: add logic here
   };
 
   const passwordIcon = useMemo(() => {
