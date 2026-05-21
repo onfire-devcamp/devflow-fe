@@ -23,7 +23,7 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
           <Button
             type="button"
             variant="ghost"
-            className="absolute top-8 left-8 md:top-12 md:left-12 text-[15px] text-pink-400 hover:text-pink-500"
+            className="absolute top-8 left-8 md:top-12 md:left-12 text-[15px] text-primary hover:text-primary"
           >
             <ArrowLeft
               className="w-4 h-4 mr-2"

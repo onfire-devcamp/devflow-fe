@@ -21,9 +21,9 @@ const LoginForm: React.FC = () => {
 
   const passwordIcon = useMemo(() => {
     return showPassword ? (
-      <Eye className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
+      <Eye className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
     ) : (
-      <EyeOff className="w-5 h-5 text-slate-400" strokeWidth={1.5} />
+      <EyeOff className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
     );
   }, [showPassword]);
   return (
@@ -36,7 +36,7 @@ const LoginForm: React.FC = () => {
 
       <div className="flex items-center my-5">
         <div className="flex-1 border-t border-pink-100"></div>
-        <span className="px-4 text-[11px] text-slate-400 font-medium uppercase tracking-widest">
+        <span className="px-4 text-[11px] text-fg-muted font-medium uppercase tracking-widest">
           Or continue with email
         </span>
         <div className="flex-1 border-t border-pink-100"></div>
@@ -45,11 +45,11 @@ const LoginForm: React.FC = () => {
       <form onSubmit={handleSignIn} className="space-y-4">
         {/* Email */}
         <div>
-          <label className="block text-[13px] text-slate-700 mb-1.5 uppercase tracking-wide">
+          <label className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide">
             Email
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-3 text-slate-400">
+            <span className="absolute left-3.5 top-3 text-fg-muted">
               <Mail
                 className="w-5 h-5"
                 fill="none"
@@ -71,11 +71,11 @@ const LoginForm: React.FC = () => {
 
         {/* Password */}
         <div>
-          <label className="block text-[13px] text-slate-700 mb-1.5 uppercase tracking-wide">
+          <label className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide">
             Password
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-3 text-slate-400">
+            <span className="absolute left-3.5 top-3 text-fg-muted">
               <Lock
                 className="w-5 h-5"
                 fill="none"
@@ -112,7 +112,7 @@ const LoginForm: React.FC = () => {
 
       <p className="text-center text-[12px] text-slate-500 mt-5 leading-relaxed">
         By continuing you agree to our{' '}
-        <a href="#" className="underline hover:text-slate-700">
+        <a href="#" className="underline hover:text-fg">
           Terms and Privacy Policy
         </a>
         .
@@ -122,7 +122,7 @@ const LoginForm: React.FC = () => {
         New to DevFlow?{' '}
         <Link
           to="/register"
-          className="text-pink-400 font-medium hover:underline"
+          className="text-primary font-medium hover:underline"
         >
           Create an account
         </Link>

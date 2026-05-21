@@ -37,7 +37,7 @@ const AuthBanner: React.FC = () => {
         <h1 className="text-[44px] font-bold text-slate-900 leading-[1.1] tracking-tight mb-1">
           Learn by building.
         </h1>
-        <h1 className="text-[44px] font-bold text-pink-400 leading-[1.1] tracking-tight mb-12">
+        <h1 className="text-[44px] font-bold text-primary leading-[1.1] tracking-tight mb-12">
           Guided by AI.
         </h1>
         <div className="space-y-8">{renderFeatures}</div>
