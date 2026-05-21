@@ -1,6 +1,6 @@
 import React from 'react';
 
-export const GoogleIcon: React.FC = () => {
+export function GoogleIcon() {
   return (
     <svg className="w-5 h-5" viewBox="0 0 24 24">
       <path
@@ -21,4 +21,4 @@ export const GoogleIcon: React.FC = () => {
       />
     </svg>
   );
-};
+}

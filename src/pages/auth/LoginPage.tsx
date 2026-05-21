@@ -1,14 +1,12 @@
 // src/pages/auth/LoginPage.tsx
 import React from 'react';
 import AuthLayout from './AuthLayout';
-import LoginForm from './components/LoginForm';
+import { LoginForm } from './components/LoginForm';
 
-const LoginPage: React.FC = () => {
+export function LoginPage() {
   return (
     <AuthLayout>
       <LoginForm />
     </AuthLayout>
   );
-};
-
-export default LoginPage;
+}

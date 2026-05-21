@@ -5,15 +5,13 @@ interface PageContainerProps {
   className?: string;
 }
 
-export const PageContainer: React.FC<PageContainerProps> = ({
+export function PageContainer({
   children,
   className = '',
-}) => {
+}: PageContainerProps) {
   return (
-    <div
-      className={`min-h-screen flex flex-col font-sans bg-white ${className}`}
-    >
+    <div className={`min-h-screen flex flex-col font-sans bg-bg ${className}`}>
       {children}
     </div>
   );
-};
+}

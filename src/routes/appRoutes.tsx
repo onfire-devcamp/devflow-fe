@@ -1,8 +1,8 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { PATHS } from '../constants/paths';
-import LoginPage from '../pages/auth/LoginPage';
+import { LoginPage } from '../pages/auth/LoginPage';
 
-export const AppRoutes = () => {
+export function AppRoutes() {
   return (
     <Routes>
       <Route
@@ -12,4 +12,4 @@ export const AppRoutes = () => {
       <Route path={PATHS.LOGIN} element={<LoginPage />} />
     </Routes>
   );
-};
+}

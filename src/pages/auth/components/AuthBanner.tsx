@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react';
-import FeatureItem from './FeatureItem';
+import { FeatureItem } from './FeatureItem';
 
 const FEATURE_CONTENT = [
   {
@@ -19,7 +19,7 @@ const FEATURE_CONTENT = [
   },
 ] as const;
 
-const AuthBanner: React.FC = () => {
+export function AuthBanner() {
   const renderFeatures = useMemo(() => {
     return FEATURE_CONTENT.map((item, index) => (
       <FeatureItem
@@ -44,6 +44,4 @@ const AuthBanner: React.FC = () => {
       </div>
     </div>
   );
-};
-
-export default AuthBanner;
+}

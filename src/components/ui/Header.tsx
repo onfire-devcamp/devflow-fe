@@ -1,7 +1,7 @@
 import React from 'react';
 import logoImg from '../../assets/logo.png';
 import { User } from 'lucide-react';
-const Header: React.FC = () => {
+export function Header() {
   return (
     <header className="w-full h-16 border-b border-slate-100 flex justify-between items-center bg-white px-4 md:px-6">
       {/* LOCATED NEAR THE LEFT EDGE: Logo + DevFlow Text*/}
@@ -29,6 +29,4 @@ const Header: React.FC = () => {
       </div>
     </header>
   );
-};
-
-export default Header;
+}

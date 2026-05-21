@@ -1,15 +1,16 @@
 // src/pages/auth/AuthLayout.tsx
 import React from 'react';
-import Header from '../../components/ui/Header';
-import AuthBanner from './components/AuthBanner';
+import { Header } from '../../components/ui/Header';
+import { AuthBanner } from './components/AuthBanner';
 import { ArrowLeft } from 'lucide-react';
 import { PageContainer } from '../../components/ui/PageContainer';
 import { Button } from '../../components/ui/Button';
+
 interface AuthLayoutProps {
   children: React.ReactNode;
 }
 
-const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
+export default function AuthLayout({ children }: AuthLayoutProps) {
   return (
     <PageContainer>
       <Header />
@@ -19,11 +20,11 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
         <AuthBanner />
 
         {/* Right Column: Form */}
-        <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-white relative">
+        <div className="w-full md:w-1/2 flex items-center justify-center p-8 bg-card relative">
           <Button
             type="button"
             variant="ghost"
-            className="absolute top-8 left-8 md:top-12 md:left-12 text-[15px] text-primary hover:text-primary"
+            className="absolute top-8 left-8 md:top-12 md:left-12 text-[15px]"
           >
             <ArrowLeft
               className="w-4 h-4 mr-2"
@@ -41,6 +42,4 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({ children }) => {
       </div>
     </PageContainer>
   );
-};
-
-export default AuthLayout;
+}

@@ -1,16 +1,19 @@
 import React from 'react';
 import type { ButtonVariant } from './Button.types';
+
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
 }
-export const Button: React.FC<ButtonProps> = ({
+
+export function Button({
   children,
   variant = 'primary',
   className = '',
   ...props
-}) => {
+}: ButtonProps) {
   const baseStyles =
     'inline-flex items-center justify-center font-medium transition-colors focus:outline-none cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed';
+
   const variants = {
     primary:
       'w-full bg-primary hover:bg-primary/90 text-card rounded-xl py-3 shadow-xs',
@@ -29,4 +32,4 @@ export const Button: React.FC<ButtonProps> = ({
       {children}
     </button>
   );
-};
+}
