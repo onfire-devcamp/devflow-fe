@@ -1,0 +1,18 @@
+@import 'tailwindcss';
+@import url('https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap');
+@theme {
+  --color-primary: #f472b6;
+  --color-primary-soft: #fdf2f8;
+  --color-primary-mid: #fbcfe8;
+
+  --color-purple: #a78bfa;
+  --color-success: #2dd4bf;
+  --color-warning: #fbbf24;
+
+  --color-fg: #1f1f2e;
+  --color-fg-muted: #6b7280;
+
+  --color-card: #ffffff;
+  --color-bg: #ffffff;
+  --font-sans: 'Open Sans', ui-sans-serif, system-ui, sans-serif;
+}
