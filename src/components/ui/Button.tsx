@@ -1,6 +1,7 @@
 import React from 'react';
+import type { ButtonVariant } from './Button.types';
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  variant?: 'primary' | 'ghost' | 'outline';
+  variant?: ButtonVariant;
 }
 export const Button: React.FC<ButtonProps> = ({
   children,
