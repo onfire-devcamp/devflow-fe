@@ -5,6 +5,7 @@ import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useMemo } from 'react';
+import { Button } from '../../../components/ui/Button';
 const LoginForm: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
@@ -93,22 +94,20 @@ const LoginForm: React.FC = () => {
             />
 
             {/* BUTTON ICON EYE */}
-            <button
+            <Button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
-              className="absolute right-4 top-3 text-slate-400 hover:text-pink-400 cursor-pointer transition-colors focus:outline-none"
+              variant="ghost"
+              className="absolute right-4 top-3"
             >
               {passwordIcon}
-            </button>
+            </Button>
           </div>
         </div>
 
-        <button
-          type="submit"
-          className="w-full bg-pink-400 hover:bg-pink-500 text-white font-medium rounded-xl py-3 mt-2 transition shadow-xs cursor-pointer text-sm"
-        >
+        <Button type="submit" variant="primary" className="mt-2">
           Sign in
-        </button>
+        </Button>
       </form>
 
       <p className="text-center text-[12px] text-slate-500 mt-5 leading-relaxed">
