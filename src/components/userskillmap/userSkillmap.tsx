@@ -14,7 +14,7 @@ export default function UserProfile() {
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
   // Hardcode for user info and activities (simulate)
-  const userName = 'Thân Đức Minh Duy';
+  const userName = 'Minh';
   const streakDays = 5;
   const completedTasks = 2;
 
@@ -112,7 +112,7 @@ export default function UserProfile() {
           {/* User Info Section (Hardcoded) */}
           <section className={theme.profileCard}>
             <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5 w-full">
-              <div className={theme.avatar}>DUY</div>
+              <div className={theme.avatar}>MH</div>
               <div className="flex-1 flex flex-col items-center sm:items-start">
                 <h2 className="text-2xl font-black text-gray-800 tracking-tight">
                   {userName}
