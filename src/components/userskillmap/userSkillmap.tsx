@@ -1,16 +1,22 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import ProgressBar from '../progressbar/ProgressBar';
 import ActivityItem from '../activities/activitiesItem';
 import logo from '../../assets/logo.png';
 import StreakCounter from '../streakcounter/streak';
 
+interface SkillData {
+  name: string;
+  value: number;
+}
+
 export default function UserProfile() {
-  const [skills] = useState([
-    { name: 'Frontend', value: 62 },
-    { name: 'Backend', value: 28 },
-    { name: 'Database', value: 18 },
-    { name: 'DevOps', value: 8 },
-  ]);
+  const [skills, setSkills] = useState<SkillData[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
+
+  // Hardcode for user info and activities (simulate)
+  const userName = 'Thân Đức Minh Duy';
+  const streakDays = 5;
+  const completedTasks = 2;
 
   const [activities] = useState([
     {
@@ -27,9 +33,36 @@ export default function UserProfile() {
     },
   ]);
 
-  const [userName] = useState('Minh');
-  const [streakDays] = useState(5);
-  const [completedTasks] = useState(2);
+  // 2. Fetch data for progress skills
+  useEffect(() => {
+    fetch('http://localhost:3000/api/user/')
+      .then((res) => res.json())
+      .then((data) => {
+        // Check if data exists and has at least one user object
+        if (data && data.length > 0) {
+          const userObj = data[0]; // Stimulate the first one
+
+          if (userObj.skills) {
+            // Main logic: Convert Object { frontend: 40, backend: 25 } to array [{ name: 'frontend', value: 40 }]
+            const formattedSkills: SkillData[] = Object.entries(
+              userObj.skills,
+            ).map(([key, val]) => ({
+              name: key,
+              value: Number(val),
+            }));
+
+            // update state with formatted skills
+            setSkills(formattedSkills);
+          }
+        }
+        setIsLoading(false);
+      })
+      .catch((err) => {
+        console.error('Error in fetch data skills:', err);
+        setIsLoading(false);
+      });
+  }, []);
+
   const theme = {
     root: 'min-h-screen bg-white flex flex-col w-full',
     mainCard: 'w-full min-h-screen flex flex-col',
@@ -46,7 +79,7 @@ export default function UserProfile() {
     profileCard:
       'flex flex-col sm:flex-row items-center gap-4 sm:gap-5 p-5 md:p-6 rounded-[24px] bg-gradient-to-b from-[var(--color-primary-soft)] to-white border border-[var(--color-primary-mid)] shadow-sm w-full text-center sm:text-left',
     avatar:
-      'w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-md shrink-0',
+      'w-16 h-16 bg-gradient-to-br from-purple-500 to-pink-500 rounded-2xl flex items-center justify-center text-white font-bold text-2xl shadow-md shrink-0 uppercase',
     skillSection:
       'border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full',
     activitySection:
@@ -56,6 +89,14 @@ export default function UserProfile() {
       'text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors whitespace-nowrap',
   };
 
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center text-gray-500">
+        Loading Skill Map...
+      </div>
+    );
+  }
+
   return (
     <div className={theme.root}>
       <div className={theme.mainCard}>
@@ -64,27 +105,14 @@ export default function UserProfile() {
             <img src={logo} alt="DevFlow Logo" className="w-8 h-8" />
             <h1 className={theme.brandLogo}>DevFlow</h1>
           </div>
-          <span className={theme.badge}>
-            {userName}
-            <svg
-              className="w-3 h-3 ml-2 stroke-[3px]"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M4.5 15.75l7.5-7.5 7.5 7.5"
-              />
-            </svg>
-          </span>
+          <span className={theme.badge}>{userName}</span>
         </header>
+
         <div className={theme.content}>
-          {/* User Info Section */}
+          {/* User Info Section (Hardcoded) */}
           <section className={theme.profileCard}>
             <div className="flex flex-col sm:flex-row items-center gap-4 md:gap-5 w-full">
-              <div className={theme.avatar}>MH</div>
+              <div className={theme.avatar}>DUY</div>
               <div className="flex-1 flex flex-col items-center sm:items-start">
                 <h2 className="text-2xl font-black text-gray-800 tracking-tight">
                   {userName}
@@ -100,18 +128,17 @@ export default function UserProfile() {
             </div>
           </section>
 
-          {/* Skill Visualization Section */}
+          {/* Skill Visualization Section (Dynamic render) */}
           <section className={theme.skillSection}>
             <div className="mb-6">
-              <h3 className="text-xl font-Open Sans font-semibold text[-18px]">
-                Skill Map
-              </h3>
+              <h3 className="text-xl font-semibold text-gray-800">Skill Map</h3>
               <p className="text-sm text-gray-400">
                 Where your time has gone—and what's still ahead.
               </p>
             </div>
 
             <div className="flex flex-col space-y-2">
+              {/* Render ProgressBar */}
               {skills.map((skill) => (
                 <ProgressBar
                   key={skill.name}
