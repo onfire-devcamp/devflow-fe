@@ -1,17 +1,18 @@
 import React from 'react';
 import logoImg from '../../assets/logo.png';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { GuestBadge } from './GuestBadge';
 import { UserMenu } from './UserMenu';
+import { useAuthStore } from '../../features/auth/stores/authStore';
 
 export function Header() {
-  const userString = localStorage.getItem('user');
-  const currentUser = userString ? JSON.parse(userString) : null;
+  const navigate = useNavigate();
+  const currentUser = useAuthStore((state) => state.user);
+  const logout = useAuthStore((state) => state.logout);
 
   const handleLogout = () => {
-    localStorage.removeItem('token');
-    localStorage.removeItem('user');
-    window.location.href = '/login';
+    logout();
+    navigate('/login');
   };
 
   return (

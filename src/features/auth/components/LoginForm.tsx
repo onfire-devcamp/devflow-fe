@@ -8,8 +8,10 @@ import { useMemo } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { login } from '../api/authApi';
 import axios from 'axios';
+import { useAuthStore } from '../stores/authStore';
 export function LoginForm() {
   const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.login);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
@@ -24,11 +26,7 @@ export function LoginForm() {
       });
       const { token, user } = data;
 
-      // 3. store token in local storage
-      localStorage.setItem('token', token);
-
-      // store user data
-      localStorage.setItem('user', JSON.stringify(user));
+      setAuth(token, user);
       navigate('/dashboard');
     } catch (error: unknown) {
       let errorMessage = 'Login error';
