@@ -13,7 +13,10 @@ export const axiosClient = axios.create({
 axiosClient.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error?.response?.status === 401) {
+    const requestUrl = error?.config?.url ?? '';
+    const isLoginRequest = requestUrl.includes('/user/login');
+
+    if (error?.response?.status === 401 && !isLoginRequest) {
       useAuthStore.getState().logout();
       if (typeof window !== 'undefined') {
         window.location.href = '/login';

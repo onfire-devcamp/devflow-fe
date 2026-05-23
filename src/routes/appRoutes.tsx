@@ -8,12 +8,12 @@ export function AppRoutes() {
     <Routes>
       {/* PUBLIC ROUTES*/}
       <Route path={PATHS.LOGIN} element={<LoginPage />} />
-      <Route path={PATHS.REGISTER} element={<div>Trang đăng ký</div>} />
+      <Route path={PATHS.REGISTER} element={<div>Register page</div>} />
       <Route path="/" element={<Navigate to="/login" replace />} />
       {/*  PRIVATE ROUTES */}
       <Route element={<PrivateRoute />}>
         <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/dashboard" element={<div>Trang quản lý</div>} />
+        <Route path="/dashboard" element={<div>Dashboard page</div>} />
       </Route>
     </Routes>
   );
