@@ -1,10 +1,11 @@
-import React, { StrictMode } from 'react';
-import UserProfile from '../components/user-profile/userSkillmap.tsx';
+import { BrowserRouter } from 'react-router-dom';
+import { AppRoutes } from '../routes/AppRoutes';
+
 function App() {
   return (
-    <StrictMode>
-      <UserProfile />
-    </StrictMode>
+    <BrowserRouter>
+      <AppRoutes />
+    </BrowserRouter>
   );
 }
 
