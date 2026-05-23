@@ -1,18 +1,46 @@
 import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { withPreventDefault } from '../../../utils/form';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useMemo } from 'react';
 import { Button } from '../../../components/ui/Button';
+import { axiosClient } from '../../../api/axiosClient';
+import axios from 'axios';
 export function LoginForm() {
+  const navigate = useNavigate();
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
 
-  const handleSignIn = withPreventDefault(() => {
+  const handleSignIn = withPreventDefault(async () => {
     // TODO: add logic here
+    try {
+      // call api /user/login
+      const response = await axiosClient.post('/user/login', {
+        email,
+        password,
+      });
+      const { token, user } = response.data;
+
+      // 3. store token in local storage
+      localStorage.setItem('token', token);
+
+      // store user data
+      localStorage.setItem('user', JSON.stringify(user));
+      alert('Log in successfully!');
+      navigate('/dashboard');
+    } catch (error: unknown) {
+      let errorMessage = 'Login error';
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      alert(errorMessage);
+    }
   });
 
   const handleGoogleSignIn = () => {
