@@ -1,5 +1,5 @@
 import React, { StrictMode } from 'react';
-import UserProfile from '../components/userskillmap/userSkillMap';
+import UserProfile from '../components/user-profile/userSkillmap.tsx';
 function App() {
   return (
     <StrictMode>

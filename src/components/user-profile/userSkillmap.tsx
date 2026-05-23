@@ -1,8 +1,5 @@
 import { useState, useEffect } from 'react';
-import ProfileHeader from './profileHeader.tsx';
-import ProfileCard from './profileCard.tsx';
-import SkillSection from './skillSection.tsx';
-import ActivitySection from './activitySection.tsx';
+import SkillSection from './progressBar.tsx';
 
 interface SkillData {
   name: string;
@@ -12,26 +9,6 @@ interface SkillData {
 export default function UserProfile() {
   const [skills, setSkills] = useState<SkillData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-
-  
-  const userName = 'Minh';
-  const streakDays = 5;
-  const completedTasks = 2;
-
-  const [activities] = useState([
-    {
-      id: 1,
-      category: 'SETUP & FOUNDATIONS',
-      task: 'Initialize the Vite project',
-      status: 'completed',
-    },
-    {
-      id: 2,
-      category: 'SETUP & FOUNDATIONS',
-      task: 'Add Tailwind CSS',
-      status: 'completed',
-    },
-  ]);
 
   // Logic Fetch API
   useEffect(() => {
@@ -94,21 +71,8 @@ export default function UserProfile() {
 
   return (
     <div className={theme.root}>
-      <div className={theme.mainCard}>
-        <ProfileHeader userName={userName} theme={theme} />
-
-        <div className={theme.content}>
-          <ProfileCard
-            userName={userName}
-            streakDays={streakDays}
-            completedTasks={completedTasks}
-            theme={theme}
-          />
-
-          <SkillSection skills={skills} theme={theme} />
-
-          <ActivitySection activities={activities} theme={theme} />
-        </div>
+      <div className={theme.content}>
+        <SkillSection skills={skills} theme={theme} />
       </div>
     </div>
   );
