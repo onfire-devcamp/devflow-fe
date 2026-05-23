@@ -1,23 +1,61 @@
-import React, { useState } from 'react';
-import { Link } from 'react-router-dom';
+import React, { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { withPreventDefault } from '../../../utils/form';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { useMemo } from 'react';
 import { Button } from '../../../components/ui/Button';
+import { login } from '../api/authApi';
+import axios from 'axios';
+import { useAuthStore } from '../stores/authStore';
 export function LoginForm() {
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.login);
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSignIn = withPreventDefault(() => {
-    // TODO: add logic here
+  useEffect(() => {
+    if (!error) {
+      return;
+    }
+
+    const timeoutId = window.setTimeout(() => {
+      setError(null);
+    }, 3000);
+
+    return () => {
+      window.clearTimeout(timeoutId);
+    };
+  }, [error]);
+
+  const handleSignIn = withPreventDefault(async () => {
+    try {
+      setError(null);
+      // call api /user/login
+      const data = await login({
+        email,
+        password,
+      });
+      const { token, user } = data;
+
+      setAuth(token, user);
+      navigate('/profile');
+    } catch (error: unknown) {
+      let errorMessage = 'Login error';
+      if (axios.isAxiosError(error)) {
+        errorMessage = error.response?.data?.message || errorMessage;
+      } else if (error instanceof Error) {
+        errorMessage = error.message;
+      }
+
+      setError(errorMessage);
+    }
   });
 
-  const handleGoogleSignIn = () => {
-    // TODO: add logic here
-  };
+  const handleGoogleSignIn = () => {};
 
   const passwordIcon = useMemo(() => {
     return showPassword ? (
@@ -104,6 +142,12 @@ export function LoginForm() {
             </Button>
           </div>
         </div>
+
+        {error ? (
+          <p className="text-sm text-red-600" role="alert">
+            {error}
+          </p>
+        ) : null}
 
         <Button type="submit" variant="primary" className="mt-2">
           Sign in
