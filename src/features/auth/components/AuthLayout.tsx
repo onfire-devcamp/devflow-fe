@@ -1,10 +1,10 @@
-// src/pages/auth/AuthLayout.tsx
+// src/features/auth/components/AuthLayout.tsx
 import React from 'react';
-import { Header } from '../../components/ui/Header';
-import { AuthBanner } from './components/AuthBanner';
+import { Header } from '../../../components/ui/Header';
+import { AuthBanner } from './AuthBanner';
 import { ArrowLeft } from 'lucide-react';
-import { PageContainer } from '../../components/ui/PageContainer';
-import { Button } from '../../components/ui/Button';
+import { PageContainer } from '../../../components/ui/PageContainer';
+import { Button } from '../../../components/ui/Button';
 
 interface AuthLayoutProps {
   children: React.ReactNode;
