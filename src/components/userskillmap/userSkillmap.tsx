@@ -13,7 +13,7 @@ export default function UserProfile() {
   const [skills, setSkills] = useState<SkillData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
 
-  // Dữ liệu Hardcode tạm thời
+  
   const userName = 'Minh';
   const streakDays = 5;
   const completedTasks = 2;
