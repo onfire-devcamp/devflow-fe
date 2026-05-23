@@ -1,11 +1,12 @@
 import { Navigate, Outlet } from 'react-router-dom';
+import { useAuthStore } from '../features/auth/stores/authStore';
 
 export function PrivateRoute() {
-  // 1. check token exist
-  const token = localStorage.getItem('token');
+  const token = useAuthStore((state) => state.token);
+  const user = useAuthStore((state) => state.user);
 
   // 2. if not back to login page
-  if (!token) {
+  if (!token || !user) {
     return <Navigate to="/login" replace />;
   }
   return <Outlet />;
