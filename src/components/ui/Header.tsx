@@ -1,4 +1,3 @@
-import React from 'react';
 import logoImg from '../../assets/logo.png';
 import { Link, useNavigate } from 'react-router-dom';
 import { GuestBadge } from './GuestBadge';
