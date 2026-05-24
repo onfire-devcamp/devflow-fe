@@ -14,28 +14,16 @@ type ActivityLogProps = {
 };
 
 const mapActivitiesToItems = (activities: ActivityResponse[]): ActivityItem[] =>
-  activities.map((activity) => ({
-    id: `${activity.projectId}-${activity.createdAt}`,
+  activities.map((activity, index) => ({
+    id: activity._id ?? `${activity.projectId}-${activity.createdAt}-${index}`,
     category: activity.moduleName,
     title: activity.activityTitle,
   }));
 
-const MOCK_ACTIVITY: ActivityItem[] = [
-  {
-    id: 'setup-vite',
-    category: 'Setup & Foundations',
-    title: 'Initialize the Vite project',
-  },
-  {
-    id: 'add-tailwind',
-    category: 'Setup & Foundations',
-    title: 'Add Tailwind CSS',
-  },
-];
-
 export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
-  const [activities, setActivities] = useState<ActivityItem[]>(MOCK_ACTIVITY);
+  const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let isActive = true;
@@ -43,13 +31,15 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
     const loadActivities = async () => {
       if (!userId) {
         if (isActive) {
-          setActivities(MOCK_ACTIVITY);
+          setActivities([]);
+          setError('Sign in to see your recent activity.');
           setIsLoading(false);
         }
         return;
       }
 
       setIsLoading(true);
+      setError(null);
       try {
         const response = await fetchUserActivities(userId, limit);
         const mapped = mapActivitiesToItems(response);
@@ -59,7 +49,8 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
       } catch (error) {
         console.error('Failed to fetch activities:', error);
         if (isActive) {
-          setActivities(MOCK_ACTIVITY);
+          setActivities([]);
+          setError('Unable to load activity right now.');
         }
       } finally {
         if (isActive) {
@@ -96,6 +87,14 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
 
       {isLoading ? (
         <div className="py-8 text-sm text-gray-400">Loading activity...</div>
+      ) : error ? (
+        <div className="py-8 text-sm text-red-500" role="alert">
+          {error}
+        </div>
+      ) : activities.length === 0 ? (
+        <div className="py-8 text-sm text-gray-400">
+          No recent activity yet.
+        </div>
       ) : (
         <ul className="space-y-6">
           {activities.map((item, index) => (
