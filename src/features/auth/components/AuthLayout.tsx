@@ -1,5 +1,6 @@
 // src/features/auth/components/AuthLayout.tsx
 import React from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Header } from '../../../components/ui/Header';
 import { AuthBanner } from './AuthBanner';
 import { ArrowLeft } from 'lucide-react';
@@ -11,6 +12,8 @@ interface AuthLayoutProps {
 }
 
 export default function AuthLayout({ children }: AuthLayoutProps) {
+  const navigate = useNavigate();
+
   return (
     <PageContainer>
       <Header />
@@ -24,6 +27,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           <Button
             type="button"
             variant="ghost"
+            onClick={() => navigate(-1)}
             className="absolute top-8 left-8 md:top-12 md:left-12 text-[15px]"
           >
             <ArrowLeft
