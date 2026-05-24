@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import SkillSection from './progressBar';
+import { axiosClient } from '../../../lib/axiosClient';
+import { useAuthStore } from '../../auth/stores/authStore';
 
 interface SkillData {
   name: string;
@@ -9,31 +11,54 @@ interface SkillData {
 export default function UserSkillMap() {
   const [skills, setSkills] = useState<SkillData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const token = useAuthStore((state) => state.token);
+  const [error, setError] = useState<string | null>(null);
 
   // Logic Fetch API
   useEffect(() => {
-    fetch('http://localhost:3000/api/user/')
-      .then((res) => res.json())
-      .then((data) => {
-        if (data && data.length > 0) {
-          const userObj = data[0];
-          if (userObj.skills) {
-            const formattedSkills: SkillData[] = Object.entries(
-              userObj.skills,
-            ).map(([key, val]) => ({
-              name: key,
-              value: Number(val),
-            }));
-            setSkills(formattedSkills);
-          }
+    let isActive = true;
+
+    const loadSkills = async () => {
+      if (!token) {
+        if (isActive) {
+          setSkills([]);
+          setError('Sign in to see your skill map.');
+          setIsLoading(false);
         }
-        setIsLoading(false);
-      })
-      .catch((err) => {
+        return;
+      }
+
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await axiosClient.get('/user/skills', {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        });
+
+        if (isActive) {
+          setSkills(response.data as SkillData[]);
+        }
+      } catch (err) {
         console.error('Error in fetch data skills:', err);
-        setIsLoading(false);
-      });
-  }, []);
+        if (isActive) {
+          setSkills([]);
+          setError('Unable to load skill map right now.');
+        }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadSkills();
+
+    return () => {
+      isActive = false;
+    };
+  }, [token]);
 
   const theme = {
     skillSection:
@@ -44,6 +69,14 @@ export default function UserSkillMap() {
     return (
       <div className="py-12 flex items-center justify-center text-gray-500">
         Loading Skill Map...
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="py-12 flex items-center justify-center text-red-500">
+        {error}
       </div>
     );
   }
