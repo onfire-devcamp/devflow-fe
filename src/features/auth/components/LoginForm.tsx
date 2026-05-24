@@ -1,75 +1,47 @@
-import { useEffect, useMemo, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
-import { withPreventDefault } from '../../../utils/form';
+import { useState } from 'react';
+import { Link } from 'react-router-dom';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
 import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import { login } from '../api/authApi';
-import axios from 'axios';
-import { useAuthStore } from '../stores/authStore';
+import { useLoginForm } from '../hooks/useLoginForm';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
+
 export function LoginForm() {
-  const navigate = useNavigate();
-  const setAuth = useAuthStore((state) => state.login);
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+  const [showPassword, setShowPassword] = useState(false);
+  const {
+    email,
+    setEmail,
+    password,
+    setPassword,
+    touched,
+    fieldErrors,
+    formError,
+    isSubmitting,
+    handleBlur,
+    handleSubmit,
+    inputState,
+  } = useLoginForm();
+  const {
+    googleLogin,
+    isGoogleLoading,
+    error: googleError,
+  } = useGoogleAuth('sign-in');
 
-  useEffect(() => {
-    if (!error) {
-      return;
-    }
+  const displayError = formError || googleError;
+  const isLoading = isSubmitting || isGoogleLoading;
 
-    const timeoutId = window.setTimeout(() => {
-      setError(null);
-    }, 3000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [error]);
-
-  const handleSignIn = withPreventDefault(async () => {
-    try {
-      setError(null);
-      // call api /user/login
-      const data = await login({
-        email,
-        password,
-      });
-      const { token, user } = data;
-
-      setAuth(token, user);
-      navigate('/profile');
-    } catch (error: unknown) {
-      let errorMessage = 'Login error';
-      if (axios.isAxiosError(error)) {
-        errorMessage = error.response?.data?.message || errorMessage;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
-      }
-
-      setError(errorMessage);
-    }
-  });
-
-  const handleGoogleSignIn = () => {};
-
-  const passwordIcon = useMemo(() => {
-    return showPassword ? (
-      <Eye className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
-    ) : (
-      <EyeOff className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
-    );
-  }, [showPassword]);
   return (
     <div className="w-full border border-pink-200 p-8 sm:px-8 sm:py-9 rounded-[20px] bg-white shadow-sm flex flex-col justify-center">
       <h2 className="text-[28px] font-semibold mb-6 text-slate-900 tracking-tight">
         Welcome back
       </h2>
 
-      <GoogleButton onClick={handleGoogleSignIn} />
+      <GoogleButton
+        onClick={googleLogin}
+        disabled={isLoading}
+        label={isGoogleLoading ? 'Signing in...' : 'Google'}
+      />
 
       <div className="flex items-center my-5">
         <div className="flex-1 border-t border-pink-100"></div>
@@ -79,77 +51,111 @@ export function LoginForm() {
         <div className="flex-1 border-t border-pink-100"></div>
       </div>
 
-      <form onSubmit={handleSignIn} className="space-y-4">
-        {/* Email */}
+      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
         <div>
-          <label className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide">
+          <label
+            htmlFor="email"
+            className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide"
+          >
             Email
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-3 text-fg-muted">
+            <span
+              className={`absolute left-3.5 top-3 transition-colors ${touched.email && fieldErrors.email ? 'text-red-400' : 'text-fg-muted'}`}
+            >
               <Mail
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
-                viewBox="0 0 24 24"
               />
             </span>
-
             <Input
+              id="email"
               type="email"
+              autoComplete="email"
               placeholder="you@devflow.app"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
+              onBlur={() => handleBlur('email', email)}
+              disabled={isLoading}
+              {...inputState('email', email)}
             />
+          </div>
+          <div className="min-h-[18px] mt-1">
+            {touched.email && fieldErrors.email && (
+              <p className="text-xs text-red-500 animate-fade-in" role="alert">
+                {fieldErrors.email}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Password */}
         <div>
-          <label className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide">
+          <label
+            htmlFor="password"
+            className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide"
+          >
             Password
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-3 text-fg-muted">
+            <span
+              className={`absolute left-3.5 top-3 transition-colors ${touched.password && fieldErrors.password ? 'text-red-400' : 'text-fg-muted'}`}
+            >
               <Lock
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
-                viewBox="0 0 24 24"
               />
             </span>
-
             <Input
+              id="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
               placeholder="Your password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
+              onBlur={() => handleBlur('password', password)}
+              disabled={isLoading}
+              {...inputState('password', password)}
             />
-
-            {/* BUTTON ICON EYE */}
             <Button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               variant="ghost"
-              className="absolute right-4 top-3"
+              className="absolute right-3 top-2.5 p-1.5"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {passwordIcon}
+              {showPassword ? (
+                <Eye className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
+              ) : (
+                <EyeOff className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
+              )}
             </Button>
+          </div>
+          <div className="min-h-[18px] mt-1">
+            {touched.password && fieldErrors.password && (
+              <p className="text-xs text-red-500 animate-fade-in" role="alert">
+                {fieldErrors.password}
+              </p>
+            )}
           </div>
         </div>
 
-        {error ? (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
+        {displayError && (
+          <p className="text-sm text-red-600 animate-fade-in" role="alert">
+            {displayError}
           </p>
-        ) : null}
+        )}
 
-        <Button type="submit" variant="primary" className="mt-2">
-          Sign in
+        <Button
+          type="submit"
+          variant="primary"
+          className="mt-2"
+          disabled={isLoading}
+        >
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>
 
