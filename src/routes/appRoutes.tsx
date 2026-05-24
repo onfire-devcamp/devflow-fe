@@ -1,25 +1,39 @@
+import { lazy, Suspense } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import { PATHS } from '../config/paths';
-import { LoginPage } from '../features/auth/components/LoginPage';
-import { RegisterPage } from '../features/auth/components/RegisterPage';
-import ProfilePage from '../features/profile/components/ProfilePage';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 
+const LoginPage = lazy(() =>
+  import('../features/auth/components/LoginPage').then((m) => ({
+    default: m.LoginPage,
+  })),
+);
+const RegisterPage = lazy(() =>
+  import('../features/auth/components/RegisterPage').then((m) => ({
+    default: m.RegisterPage,
+  })),
+);
+const ProfilePage = lazy(
+  () => import('../features/profile/components/ProfilePage'),
+);
+
 export function AppRoutes() {
   return (
-    <Routes>
-      {/* PUBLIC ROUTES*/}
-      <Route element={<PublicRoute />}>
-        <Route path={PATHS.LOGIN} element={<LoginPage />} />
-        <Route path={PATHS.REGISTER} element={<RegisterPage />} />
-      </Route>
-      <Route path="/" element={<Navigate to="/login" replace />} />
-      {/*  PRIVATE ROUTES */}
-      <Route element={<PrivateRoute />}>
-        <Route path="/profile" element={<ProfilePage />} />
-        <Route path="/dashboard" element={<div>Dashboard page</div>} />
-      </Route>
-    </Routes>
+    <Suspense fallback={null}>
+      <Routes>
+        {/* PUBLIC ROUTES*/}
+        <Route element={<PublicRoute />}>
+          <Route path={PATHS.LOGIN} element={<LoginPage />} />
+          <Route path={PATHS.REGISTER} element={<RegisterPage />} />
+        </Route>
+        <Route path="/" element={<Navigate to="/login" replace />} />
+        {/*  PRIVATE ROUTES */}
+        <Route element={<PrivateRoute />}>
+          <Route path="/profile" element={<ProfilePage />} />
+          <Route path="/dashboard" element={<div>Dashboard page</div>} />
+        </Route>
+      </Routes>
+    </Suspense>
   );
 }
