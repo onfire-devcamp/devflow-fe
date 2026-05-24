@@ -27,7 +27,7 @@ export default function AuthLayout({ children }: AuthLayoutProps) {
           <Button
             type="button"
             variant="ghost"
-            onClick={() => navigate(-1)}
+            onClick={() => navigate('/login')}
             className="absolute top-8 left-8 md:top-12 md:left-12 text-[15px]"
           >
             <ArrowLeft
