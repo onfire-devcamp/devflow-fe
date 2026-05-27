@@ -7,6 +7,10 @@ interface SkillData {
   name: string;
   value: number;
 }
+const theme = {
+  skillSection:
+    'border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full',
+};
 
 export default function UserSkillMap() {
   const [skills, setSkills] = useState<SkillData[]>([]);
@@ -59,11 +63,6 @@ export default function UserSkillMap() {
       isActive = false;
     };
   }, [token]);
-
-  const theme = {
-    skillSection:
-      'border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full',
-  };
 
   if (isLoading) {
     return (
