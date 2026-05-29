@@ -2,7 +2,7 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { PATHS } from '../config/paths';
 import { LoginPage } from '../features/auth/components/LoginPage';
 import ProfilePage from '../features/profile/components/ProfilePage';
-import RoadMapLayout from '../features/roadmap/roadMap';
+import RoadMapLayout from '../features/roadmap/index';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 
