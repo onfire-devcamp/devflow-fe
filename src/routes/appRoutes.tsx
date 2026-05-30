@@ -17,6 +17,9 @@ const RegisterPage = lazy(() =>
 const ProfilePage = lazy(
   () => import('../features/profile/components/ProfilePage'),
 );
+const DashboardPage = lazy(
+  () => import('../features/dashboard/components/DashboardPage'),
+);
 
 export function AppRoutes() {
   return (
@@ -31,7 +34,7 @@ export function AppRoutes() {
         {/*  PRIVATE ROUTES */}
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
-          <Route path="/dashboard" element={<div>Dashboard page</div>} />
+          <Route path="/dashboard" element={<DashboardPage />} />
         </Route>
       </Routes>
     </Suspense>

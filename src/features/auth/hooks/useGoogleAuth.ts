@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useGoogleLogin } from '@react-oauth/google';
 import axios from 'axios';
@@ -11,22 +11,16 @@ export function useGoogleAuth(context: 'sign-in' | 'sign-up' = 'sign-in') {
   const [isGoogleLoading, setIsGoogleLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!error) return;
-    const id = window.setTimeout(() => setError(null), 5000);
-    return () => window.clearTimeout(id);
-  }, [error]);
-
-  const label = context === 'sign-up' ? 'sign-up' : 'sign-in';
-
+  const label = context === 'sign-in' ? 'Sign In' : 'Sign Up';
   const googleLogin = useGoogleLogin({
     scope: 'openid email profile',
     onSuccess: async (tokenResponse) => {
+      setError(null);
       setIsGoogleLoading(true);
       try {
         const data = await googleAuth(tokenResponse.access_token);
         setAuth(data.token, data.user);
-        navigate('/profile');
+        navigate('/');
       } catch (err: unknown) {
         let message = `Google ${label} failed. Please try again.`;
         if (axios.isAxiosError(err)) {
@@ -37,7 +31,7 @@ export function useGoogleAuth(context: 'sign-in' | 'sign-up' = 'sign-in') {
         setIsGoogleLoading(false);
       }
     },
-    onError: (err) => {
+    onError: (err: { error?: string }) => {
       if (
         err?.error === 'popup_closed_by_user' ||
         err?.error === 'access_denied'
