@@ -1,5 +1,4 @@
-// src/features/auth/components/AuthLayout.tsx
-import React from 'react';
+import { type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Header } from '../../../components/ui/Header';
 import { AuthBanner } from './AuthBanner';
@@ -8,7 +7,7 @@ import { PageContainer } from '../../../components/ui/PageContainer';
 import { Button } from '../../../components/ui/Button';
 
 interface AuthLayoutProps {
-  children: React.ReactNode;
+  children: ReactNode;
 }
 
 export default function AuthLayout({ children }: AuthLayoutProps) {

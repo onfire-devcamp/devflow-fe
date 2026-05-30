@@ -1,32 +1,66 @@
-import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
-import { useLoginForm } from '../hooks/useLoginForm';
 import { useGoogleAuth } from '../hooks/useGoogleAuth';
+import { login } from '../api/authApi';
+import { useAuthStore } from '../stores/authStore';
+import { validateEmail, validatePassword } from '../utils/validation';
+
+const ERROR_DISMISS_MS = 3000;
+
+type LoginFormData = {
+  email: string;
+  password: string;
+};
 
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
+  const navigate = useNavigate();
+  const setAuth = useAuthStore((state) => state.login);
+
   const {
-    email,
-    setEmail,
-    password,
-    setPassword,
-    touched,
-    fieldErrors,
-    formError,
-    isSubmitting,
-    handleBlur,
+    register,
     handleSubmit,
-    inputState,
-  } = useLoginForm();
+    formState: { errors, isSubmitting, touchedFields },
+  } = useForm<LoginFormData>({ mode: 'onBlur' });
+
   const {
     googleLogin,
     isGoogleLoading,
     error: googleError,
   } = useGoogleAuth('sign-in');
+
+  useEffect(() => {
+    if (!formError) return;
+    const id = window.setTimeout(() => setFormError(null), ERROR_DISMISS_MS);
+    return () => window.clearTimeout(id);
+  }, [formError]);
+
+  const onSubmit = async (data: LoginFormData) => {
+    try {
+      setFormError(null);
+      const result = await login({
+        email: data.email.trim(),
+        password: data.password,
+      });
+      setAuth(result.token, result.user);
+      navigate('/profile');
+    } catch (err: unknown) {
+      let message = 'Login failed. Please try again.';
+      if (axios.isAxiosError(err)) {
+        message = err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
+      }
+      setFormError(message);
+    }
+  };
 
   const displayError = formError || googleError;
   const isLoading = isSubmitting || isGoogleLoading;
@@ -40,7 +74,7 @@ export function LoginForm() {
       <GoogleButton
         onClick={googleLogin}
         disabled={isLoading}
-        label={isGoogleLoading ? 'Signing in...' : 'Google'}
+        label={isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
       />
 
       <div className="flex items-center my-5">
@@ -51,7 +85,7 @@ export function LoginForm() {
         <div className="flex-1 border-t border-pink-100"></div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-4" noValidate>
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div>
           <label
             htmlFor="email"
@@ -61,7 +95,7 @@ export function LoginForm() {
           </label>
           <div className="relative">
             <span
-              className={`absolute left-3.5 top-3 transition-colors ${touched.email && fieldErrors.email ? 'text-red-400' : 'text-fg-muted'}`}
+              className={`absolute left-3.5 top-3 transition-colors ${errors.email ? 'text-red-400' : 'text-fg-muted'}`}
             >
               <Mail
                 className="w-5 h-5"
@@ -75,17 +109,18 @@ export function LoginForm() {
               type="email"
               autoComplete="email"
               placeholder="you@devflow.app"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              onBlur={() => handleBlur('email', email)}
               disabled={isLoading}
-              {...inputState('email', email)}
+              error={!!errors.email}
+              success={!errors.email && !!touchedFields.email}
+              {...register('email', {
+                validate: (v) => validateEmail(v) || true,
+              })}
             />
           </div>
           <div className="min-h-[18px] mt-1">
-            {touched.email && fieldErrors.email && (
+            {errors.email && (
               <p className="text-xs text-red-500 animate-fade-in" role="alert">
-                {fieldErrors.email}
+                {errors.email.message}
               </p>
             )}
           </div>
@@ -100,7 +135,7 @@ export function LoginForm() {
           </label>
           <div className="relative">
             <span
-              className={`absolute left-3.5 top-3 transition-colors ${touched.password && fieldErrors.password ? 'text-red-400' : 'text-fg-muted'}`}
+              className={`absolute left-3.5 top-3 transition-colors ${errors.password ? 'text-red-400' : 'text-fg-muted'}`}
             >
               <Lock
                 className="w-5 h-5"
@@ -114,11 +149,12 @@ export function LoginForm() {
               type={showPassword ? 'text' : 'password'}
               autoComplete="current-password"
               placeholder="Your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              onBlur={() => handleBlur('password', password)}
               disabled={isLoading}
-              {...inputState('password', password)}
+              error={!!errors.password}
+              success={!errors.password && !!touchedFields.password}
+              {...register('password', {
+                validate: (v) => validatePassword(v) || true,
+              })}
             />
             <Button
               type="button"
@@ -135,9 +171,9 @@ export function LoginForm() {
             </Button>
           </div>
           <div className="min-h-[18px] mt-1">
-            {touched.password && fieldErrors.password && (
+            {errors.password && (
               <p className="text-xs text-red-500 animate-fade-in" role="alert">
-                {fieldErrors.password}
+                {errors.password.message}
               </p>
             )}
           </div>

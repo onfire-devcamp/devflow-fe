@@ -11,11 +11,14 @@ export function Input({
   success,
   ...props
 }: InputProps) {
-  const borderStyles = error
-    ? 'border-red-400 focus:border-red-400 focus:ring-red-300'
-    : success
-      ? 'border-emerald-400 focus:border-emerald-400 focus:ring-emerald-300'
-      : 'border-primary-mid focus:border-primary focus:ring-primary';
+  let borderStyles =
+    'border-primary-mid focus:border-primary focus:ring-primary';
+  if (error) {
+    borderStyles = 'border-red-400 focus:border-red-400 focus:ring-red-300';
+  } else if (success) {
+    borderStyles =
+      'border-emerald-400 focus:border-emerald-400 focus:ring-emerald-300';
+  }
 
   return (
     <input

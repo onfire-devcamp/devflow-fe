@@ -3,16 +3,11 @@ import { Routes, Route, Navigate } from 'react-router-dom';
 import { PATHS } from '../config/paths';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
+import { LoginPage } from '../features/auth/components/LoginPage';
+import { PageLoader } from '../components/ui/PageLoader';
 
-const LoginPage = lazy(() =>
-  import('../features/auth/components/LoginPage').then((m) => ({
-    default: m.LoginPage,
-  })),
-);
-const RegisterPage = lazy(() =>
-  import('../features/auth/components/RegisterPage').then((m) => ({
-    default: m.RegisterPage,
-  })),
+const RegisterPage = lazy(
+  () => import('../features/auth/components/RegisterPage'),
 );
 const ProfilePage = lazy(
   () => import('../features/profile/components/ProfilePage'),
@@ -26,15 +21,15 @@ const ProjectDetailPage = lazy(
 
 export function AppRoutes() {
   return (
-    <Suspense fallback={null}>
+    <Suspense fallback={<PageLoader />}>
       <Routes>
-        {/* PUBLIC ROUTES*/}
+        {/* PUBLIC ROUTES */}
         <Route element={<PublicRoute />}>
           <Route path={PATHS.LOGIN} element={<LoginPage />} />
           <Route path={PATHS.REGISTER} element={<RegisterPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        {/*  PRIVATE ROUTES */}
+        {/* PRIVATE ROUTES */}
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />

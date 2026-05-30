@@ -3,12 +3,12 @@ import { GoogleIcon } from '../icons/GoogleIcon';
 import { Button } from './Button';
 
 interface GoogleButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
-  label?: string;
+  label: string;
 }
 
 export function GoogleButton({
   className = '',
-  label = 'Google',
+  label,
   ...props
 }: GoogleButtonProps) {
   return (
