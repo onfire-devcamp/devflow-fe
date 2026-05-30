@@ -19,7 +19,7 @@ export function AppRoutes() {
       <Route element={<PrivateRoute />}>
         <Route path="/profile" element={<ProfilePage />} />
         <Route path="/dashboard" element={<div>Dashboard page</div>} />
-        <Route path="/roadmap" element={<RoadMapLayout />} />
+        <Route path="/roadmap/:projectId" element={<RoadMapLayout />} />
       </Route>
     </Routes>
   );

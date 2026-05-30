@@ -42,3 +42,57 @@ export interface RoadmapTabButtonProps {
   children: React.ReactNode;
   active?: boolean;
 }
+// src/features/roadmap/roadmapTypes.ts
+
+// --- Raw API Response Structures from MongoDB ---
+export interface RawTaskFromAPI {
+  _id?: string;
+  id?: string;
+  title?: string;
+  status?: string;
+}
+
+export interface RawModuleFromAPI {
+  title?: string;
+  tasks?: RawTaskFromAPI[];
+}
+
+export interface RawProjectFromAPI {
+  title: string;
+  description?: string;
+  progressPercentage?: number;
+}
+
+export interface APIResponseData {
+  project?: RawProjectFromAPI;
+  modules?: RawModuleFromAPI[];
+}
+
+export interface APIRoadmapResponse {
+  success: boolean;
+  message?: string;
+  data?: APIResponseData;
+}
+
+export interface APITaskDetailsResponse {
+  success: boolean;
+  data?: {
+    _id?: string;
+    id?: string;
+    title?: string;
+    description?: string;
+  };
+}
+
+// --- Local UI Component States ---
+export interface ProjectDetails {
+  title: string;
+  description?: string;
+  progressPercentage?: number;
+}
+
+export interface TaskDetails {
+  _id: string;
+  title: string;
+  description?: string;
+}
