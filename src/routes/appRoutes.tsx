@@ -4,6 +4,7 @@ import { LoginPage } from '../features/auth/components/LoginPage';
 import ProfilePage from '../features/profile/components/ProfilePage';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
+import WorkspacePage from '../features/workspace/components/WorkSpacePage';
 export function AppRoutes() {
   return (
     <Routes>
@@ -11,6 +12,7 @@ export function AppRoutes() {
       <Route element={<PublicRoute />}>
         <Route path={PATHS.LOGIN} element={<LoginPage />} />
         <Route path={PATHS.REGISTER} element={<div>Register page</div>} />
+        <Route path="/workspace" element={<WorkspacePage />} />
       </Route>
       <Route path="/" element={<Navigate to="/login" replace />} />
       {/*  PRIVATE ROUTES */}
