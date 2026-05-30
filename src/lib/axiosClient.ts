@@ -69,8 +69,7 @@ axiosClient.interceptors.response.use(
     isRefreshing = true;
 
     try {
-      const { data } =
-        await axiosClient.post<RefreshResponse>('/api/auth/refresh');
+      const { data } = await axiosClient.post<RefreshResponse>('/auth/refresh');
 
       useAuthStore.getState().login(data.accessToken, data.user);
       drainQueue(data.accessToken);
