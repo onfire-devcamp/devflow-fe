@@ -1,52 +1,34 @@
 import { create } from 'zustand';
-
-type AuthUser = {
-  id: string;
-  username: string;
-  email: string;
-};
+import type { AuthUser, AuthStatus } from '../../../types/auth';
 
 type AuthState = {
-  token: string | null;
+  accessToken: string | null;
   user: AuthUser | null;
-  login: (token: string, user: AuthUser) => void;
+  status: AuthStatus;
+  // Called after a successful login / register / google-auth / refresh
+  login: (accessToken: string, user: AuthUser) => void;
+  // Clears in-memory state only. API call to revoke the cookie is handled separately.
   logout: () => void;
+  // Used by the axios interceptor when a silent refresh succeeds
+  setAccessToken: (token: string) => void;
+  // Used by useAuthInit when the refresh attempt fails (no cookie, expired, etc.)
+  markUnauthenticated: () => void;
 };
 
-const readStoredAuth = () => {
-  if (typeof window === 'undefined') {
-    return { token: null, user: null };
-  }
+export const useAuthStore = create<AuthState>((set) => ({
+  accessToken: null,
+  user: null,
+  status: 'loading', // Stays 'loading' until useAuthInit resolves
 
-  const token = localStorage.getItem('token');
-  const userString = localStorage.getItem('user');
-  if (!token || !userString) {
-    return { token: null, user: null };
-  }
+  login: (accessToken, user) =>
+    set({ accessToken, user, status: 'authenticated' }),
 
-  try {
-    const user = JSON.parse(userString) as AuthUser;
-    return { token, user };
-  } catch {
-    return { token: null, user: null };
-  }
-};
+  logout: () =>
+    set({ accessToken: null, user: null, status: 'unauthenticated' }),
 
-export const useAuthStore = create<AuthState>((set) => {
-  const initial = readStoredAuth();
+  setAccessToken: (token) =>
+    set({ accessToken: token, status: 'authenticated' }),
 
-  return {
-    token: initial.token,
-    user: initial.user,
-    login: (token, user) => {
-      localStorage.setItem('token', token);
-      localStorage.setItem('user', JSON.stringify(user));
-      set({ token, user });
-    },
-    logout: () => {
-      localStorage.removeItem('token');
-      localStorage.removeItem('user');
-      set({ token: null, user: null });
-    },
-  };
-});
+  markUnauthenticated: () =>
+    set({ accessToken: null, user: null, status: 'unauthenticated' }),
+}));
