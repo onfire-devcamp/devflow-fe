@@ -20,6 +20,9 @@ const ProfilePage = lazy(
 const DashboardPage = lazy(
   () => import('../features/dashboard/components/DashboardPage'),
 );
+const ProjectDetailPage = lazy(
+  () => import('../features/projects/components/ProjectDetailPage'),
+);
 
 export function AppRoutes() {
   return (
@@ -35,6 +38,7 @@ export function AppRoutes() {
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
+          <Route path="/projects/:id" element={<ProjectDetailPage />} />
         </Route>
       </Routes>
     </Suspense>
