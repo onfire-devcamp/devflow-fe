@@ -1,5 +1,6 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
 import { Header } from '../../components/ui/Header';
 
 import { SidebarHeader } from './components/SidebarHeader';
@@ -7,155 +8,73 @@ import { TabSwitcher } from './components/TabSwitcher';
 import { ProgressBar } from './components/ProgressBar';
 import { TaskList } from './components/TaskList';
 
-import type {
-  Task,
-  CategoryGroup,
-  ProjectDetails,
-  TaskDetails,
-  APIRoadmapResponse,
-  APITaskDetailsResponse,
-  RawModuleFromAPI,
-  RawTaskFromAPI,
-} from './RoadmapType';
+import { roadmapService } from './RoadmapService';
 
 export default function RoadmapLayout() {
   const { projectId } = useParams<{ projectId: string }>();
+  const [selectedTaskId, setSelectedTaskId] = useState<string>('');
 
-  const [activeTaskId, setActiveTaskId] = useState<string>('');
-  const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(
-    null,
-  );
-  const [roadmapData, setRoadmapData] = useState<CategoryGroup[]>([]);
+  const cleanProjectId = projectId?.trim();
 
-  const [taskDetails, setTaskDetails] = useState<TaskDetails | null>(null);
-  const [loadingTask, setLoadingTask] = useState<boolean>(false);
+  // FLOW 1: Fetch project roadmap data
+  const {
+    data: roadmapDataResult,
+    isLoading: loading,
+    error: apiError,
+  } = useQuery({
+    queryKey: ['roadmap', cleanProjectId],
+    queryFn: () => roadmapService.getProjectRoadmap(cleanProjectId!),
+    enabled: !!cleanProjectId && cleanProjectId !== 'undefined',
+  });
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
+  const projectDetails = roadmapDataResult?.project ?? null;
 
-  // FLOW 1: Fetch Project Details and Roadmap Modules (Runs once on mount)
-  useEffect(() => {
-    if (!projectId || projectId === 'undefined') return;
+  const roadmapData = useMemo(() => {
+    return roadmapDataResult?.modules ?? [];
+  }, [roadmapDataResult]);
 
-    const fetchWorkspaceData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const error = apiError instanceof Error ? apiError.message : null;
 
-        const response = await fetch(
-          `/api/project/${projectId.trim()}/roadmap`,
-        );
-        if (!response.ok) {
-          throw new Error(
-            'Failed to fetch valid data from the backend server.',
-          );
-        }
+  // DYNAMIC COMPUTATION: Determine which task is actually active
+  // If the user hasn't clicked anything yet, fallback to the very first task ID automatically
+  const activeTaskId = useMemo(() => {
+    if (selectedTaskId) return selectedTaskId;
 
-        const resJson: APIRoadmapResponse = await response.json();
+    if (roadmapData.length > 0 && roadmapData[0].tasks.length > 0) {
+      return roadmapData[0].tasks[0].id;
+    }
 
-        if (resJson && resJson.success && resJson.data) {
-          const { project, modules } = resJson.data;
+    return '';
+  }, [selectedTaskId, roadmapData]);
 
-          if (project) {
-            setProjectDetails({
-              title: project.title,
-              description: project.description,
-              progressPercentage: project.progressPercentage,
-            });
-          }
-
-          if (Array.isArray(modules)) {
-            const formattedRoadmap: CategoryGroup[] = modules.map(
-              (module: RawModuleFromAPI): CategoryGroup => ({
-                category: (module?.title || '').toUpperCase(),
-                tasks: Array.isArray(module?.tasks)
-                  ? module.tasks.map((task: RawTaskFromAPI): Task => {
-                      let assignedStatus: 'completed' | 'current' | 'locked' =
-                        'locked';
-
-                      if (
-                        task?.status === 'completed' ||
-                        task?.status === 'passed'
-                      ) {
-                        assignedStatus = 'completed';
-                      } else if (
-                        task?.status === 'current' ||
-                        task?.status === 'unlocked'
-                      ) {
-                        assignedStatus = 'current';
-                      }
-
-                      return {
-                        id: task?._id || task?.id || '',
-                        title: task?.title || '',
-                        status: assignedStatus,
-                      };
-                    })
-                  : [],
-              }),
-            );
-
-            setRoadmapData(formattedRoadmap);
-
-            if (
-              formattedRoadmap.length > 0 &&
-              formattedRoadmap[0].tasks.length > 0 &&
-              !activeTaskId
-            ) {
-              setActiveTaskId(formattedRoadmap[0].tasks[0].id);
-            }
-          }
-        } else {
-          throw new Error(resJson.message || 'Invalid API data structure.');
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An error occurred during data synchronization.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWorkspaceData();
-    // activeTaskId is safely omitted to prevent unnecessary API re-fetches when switching tasks
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
-
-  // FLOW 2: Fetch detailed content for a specific task (Triggers when activeTaskId changes)
-  useEffect(() => {
-    if (!activeTaskId) return;
-
-    const fetchTaskDetails = async () => {
-      try {
-        setLoadingTask(true);
-        const response = await fetch(`/api/task/${activeTaskId}`);
-        const resJson: APITaskDetailsResponse = await response.json();
-
-        if (resJson && resJson.success && resJson.data) {
-          setTaskDetails({
-            _id: resJson.data._id || resJson.data.id || '',
-            title: resJson.data.title || '',
-            description: resJson.data.description,
-          });
-        } else {
-          setTaskDetails(null);
-        }
-      } catch {
-        // Safely caught block without unused variables to satisfy ESLint rules
-        setTaskDetails(null);
-      } finally {
-        setLoadingTask(false);
-      }
-    };
-
-    fetchTaskDetails();
-  }, [activeTaskId]);
+  // FLOW 2: Fetch task details using the derived activeTaskId
+  const { data: taskDetails, isLoading: loadingTask } = useQuery({
+    queryKey: ['taskDetails', activeTaskId],
+    queryFn: () => roadmapService.getTaskDetails(activeTaskId),
+    enabled: !!activeTaskId,
+  });
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
-  const currentProgress = projectDetails?.progressPercentage ?? 0;
+
+  // Dynamic progress fallback computation
+  const currentProgress = useMemo(() => {
+    if (projectDetails?.progressPercentage !== undefined) {
+      return projectDetails.progressPercentage;
+    }
+
+    let totalTasks = 0;
+    let completedTasks = 0;
+
+    roadmapData.forEach((module) => {
+      totalTasks += module.tasks.length;
+      completedTasks += module.tasks.filter(
+        (task) => task.status === 'completed',
+      ).length;
+    });
+
+    if (totalTasks === 0) return 0;
+    return Math.round((completedTasks / totalTasks) * 100);
+  }, [projectDetails, roadmapData]);
 
   if (loading) {
     return (
@@ -191,7 +110,6 @@ export default function RoadmapLayout() {
     <div className="flex flex-col h-screen bg-bg select-none overflow-hidden text-fg">
       <Header />
       <div className="flex flex-1 overflow-hidden w-full">
-        {/* LEFT SIDEBAR */}
         <aside className="hidden lg:flex w-76 flex-shrink-0 border-r border-primary-soft bg-primary-mid/10 bg-card flex-col justify-between overflow-y-auto">
           <div>
             <SidebarHeader projectName={currentProjectName} />
@@ -201,13 +119,12 @@ export default function RoadmapLayout() {
               <TaskList
                 academyData={roadmapData}
                 activeTaskId={activeTaskId}
-                onTaskSelect={setActiveTaskId}
+                onTaskSelect={setSelectedTaskId}
               />
             </div>
           </div>
         </aside>
 
-        {/* MIDDLE MAIN CONTENT */}
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
           <div className="max-w-3xl mx-auto w-full min-h-[500px] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             {loadingTask ? (
@@ -231,7 +148,6 @@ export default function RoadmapLayout() {
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR */}
         <aside className="hidden xl:flex w-80 flex-shrink-0 bg-card border-l border-slate-100 flex-col">
           <div className="p-4 border-b border-slate-100">
             <h3 className="font-semibold text-sm">AI Mentor Assistant</h3>
