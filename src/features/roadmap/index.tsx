@@ -1,14 +1,13 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
-import { useQuery } from '@tanstack/react-query';
 import { Header } from '../../components/ui/Header';
 
 import { SidebarHeader } from './components/SidebarHeader';
 import { TabSwitcher } from './components/TabSwitcher';
 import { ProgressBar } from './components/ProgressBar';
 import { TaskList } from './components/TaskList';
-
-import { roadmapService } from './RoadmapService';
+import { RoadmapService } from './RoadmapService';
+import { useApi } from './UseAPI';
 
 export default function RoadmapLayout() {
   const { projectId } = useParams<{ projectId: string }>();
@@ -16,16 +15,27 @@ export default function RoadmapLayout() {
 
   const cleanProjectId = projectId?.trim();
 
-  // FLOW 1: Fetch project roadmap data
+  // Fetch Roadmap
   const {
     data: roadmapDataResult,
-    isLoading: loading,
-    error: apiError,
-  } = useQuery({
-    queryKey: ['roadmap', cleanProjectId],
-    queryFn: () => roadmapService.getProjectRoadmap(cleanProjectId!),
-    enabled: !!cleanProjectId && cleanProjectId !== 'undefined',
-  });
+    loading: loadingRoadmap,
+    error: roadmapError,
+    execute: fetchRoadmap,
+  } = useApi(RoadmapService.getProjectRoadmap);
+
+  // Fetch Task Details
+  const {
+    data: taskDetails,
+    loading: loadingTask,
+    execute: fetchTaskDetails,
+    setData: setTaskDetails,
+  } = useApi(RoadmapService.getTaskDetails);
+  // EFFECT 1: Fetch roadmap when projectId changes
+  useEffect(() => {
+    if (cleanProjectId && cleanProjectId !== 'undefined') {
+      fetchRoadmap(cleanProjectId);
+    }
+  }, [cleanProjectId, fetchRoadmap]);
 
   const projectDetails = roadmapDataResult?.project ?? null;
 
@@ -33,10 +43,7 @@ export default function RoadmapLayout() {
     return roadmapDataResult?.modules ?? [];
   }, [roadmapDataResult]);
 
-  const error = apiError instanceof Error ? apiError.message : null;
-
-  // DYNAMIC COMPUTATION: Determine which task is actually active
-  // If the user hasn't clicked anything yet, fallback to the very first task ID automatically
+  // DYNAMIC COMPUTATION
   const activeTaskId = useMemo(() => {
     if (selectedTaskId) return selectedTaskId;
 
@@ -47,16 +54,17 @@ export default function RoadmapLayout() {
     return '';
   }, [selectedTaskId, roadmapData]);
 
-  // FLOW 2: Fetch task details using the derived activeTaskId
-  const { data: taskDetails, isLoading: loadingTask } = useQuery({
-    queryKey: ['taskDetails', activeTaskId],
-    queryFn: () => roadmapService.getTaskDetails(activeTaskId),
-    enabled: !!activeTaskId,
-  });
+  // EFFECT 2: Fetch task details when activeTaskId changes
+  useEffect(() => {
+    if (activeTaskId) {
+      fetchTaskDetails(activeTaskId);
+    } else {
+      setTaskDetails(null);
+    }
+  }, [activeTaskId, fetchTaskDetails, setTaskDetails]);
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
 
-  // Dynamic progress fallback computation
   const currentProgress = useMemo(() => {
     if (projectDetails?.progressPercentage !== undefined) {
       return projectDetails.progressPercentage;
@@ -76,7 +84,7 @@ export default function RoadmapLayout() {
     return Math.round((completedTasks / totalTasks) * 100);
   }, [projectDetails, roadmapData]);
 
-  if (loading) {
+  if (loadingRoadmap) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
         <div className="text-center space-y-2">
@@ -89,14 +97,14 @@ export default function RoadmapLayout() {
     );
   }
 
-  if (error) {
+  if (roadmapError) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg px-4">
         <div className="max-w-md w-full p-6 bg-red-50 border border-red-200 rounded-xl text-center">
           <p className="text-red-600 font-medium mb-3">Connection Error</p>
-          <p className="text-sm text-red-500 mb-4">{error}</p>
+          <p className="text-sm text-red-500 mb-4">{roadmapError}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => cleanProjectId && fetchRoadmap(cleanProjectId)}
             className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition"
           >
             Retry Connection

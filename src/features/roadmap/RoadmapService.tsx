@@ -16,7 +16,7 @@ const apiClient = axios.create({
   },
 });
 
-export const roadmapService = {
+export const RoadmapService = {
   /**
    * Fetches and processes project roadmap data directly for UI consumption
    */
@@ -94,7 +94,7 @@ export const roadmapService = {
     const resJson = response.data;
 
     if (!resJson || !resJson.success || !resJson.data) {
-      return null;
+      throw new Error(resJson?.message || 'Failed to fetch task details.');
     }
 
     const data = resJson.data;
