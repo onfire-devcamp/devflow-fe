@@ -97,3 +97,35 @@ export interface TaskDetails {
   title: string;
   description?: string;
 }
+export interface TaskFile {
+  _id: string;
+  projectId: string;
+  path: string;
+  content: string;
+}
+
+export interface APITaskDetailsResponse {
+  success: boolean;
+  data?: {
+    task: {
+      _id: string;
+      moduleId: string;
+      title: string;
+      description: string;
+      instructions?: string;
+      skillPoints?: number;
+      concepts?: string;
+      skillCategory?: string;
+      fileId: TaskFile[];
+    };
+    solutions?: any[];
+  };
+}
+
+export interface TaskDetailsState {
+  _id: string;
+  title: string;
+  description: string;
+  skillPoints: number;
+  files: TaskFile[];
+}
