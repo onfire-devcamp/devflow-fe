@@ -74,6 +74,17 @@ export interface APIRoadmapResponse {
   data?: APIResponseData;
 }
 
+export interface APITaskDetailsResponse {
+  success: boolean;
+  data?: {
+    _id?: string;
+    id?: string;
+    title?: string;
+    description?: string;
+  };
+  message?: string;
+}
+
 // --- Local UI Component States ---
 export interface ProjectDetails {
   title: string;

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { axiosClient } from '../../lib/axiosClient';
@@ -29,12 +29,33 @@ interface ChatMessage {
 
 export default function RoadmapLayout() {
   const { projectId } = useParams<{ projectId: string }>();
+  const [selectedTaskId, setSelectedTaskId] = useState<string>('');
 
-  const [activeTaskId, setActiveTaskId] = useState<string>('');
-  const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(
-    null,
-  );
-  const [roadmapData, setRoadmapData] = useState<CategoryGroup[]>([]);
+  const cleanProjectId = projectId?.trim();
+
+  // Fetch Roadmap
+  const {
+    data: roadmapDataResult,
+    loading: loadingRoadmap,
+    error: roadmapError,
+    execute: fetchRoadmap,
+  } = useApi(RoadmapService.getProjectRoadmap);
+
+  // Fetch Task Details
+  const {
+    data: taskDetails,
+    loading: loadingTask,
+    execute: fetchTaskDetails,
+    setData: setTaskDetails,
+  } = useApi(RoadmapService.getTaskDetails);
+  // EFFECT 1: Fetch roadmap when projectId changes
+  useEffect(() => {
+    if (cleanProjectId && cleanProjectId !== 'undefined') {
+      fetchRoadmap(cleanProjectId);
+    }
+  }, [cleanProjectId, fetchRoadmap]);
+
+  const projectDetails = roadmapDataResult?.project ?? null;
 
   const [taskDetails, setTaskDetails] = useState<TaskDetailsState | null>(null);
 
@@ -375,9 +396,27 @@ export default function RoadmapLayout() {
   };
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
-  const currentProgress = projectDetails?.progressPercentage ?? 0;
 
-  if (loading) {
+  const currentProgress = useMemo(() => {
+    if (projectDetails?.progressPercentage !== undefined) {
+      return projectDetails.progressPercentage;
+    }
+
+    let totalTasks = 0;
+    let completedTasks = 0;
+
+    roadmapData.forEach((module) => {
+      totalTasks += module.tasks.length;
+      completedTasks += module.tasks.filter(
+        (task) => task.status === 'completed',
+      ).length;
+    });
+
+    if (totalTasks === 0) return 0;
+    return Math.round((completedTasks / totalTasks) * 100);
+  }, [projectDetails, roadmapData]);
+
+  if (loadingRoadmap) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
@@ -403,13 +442,12 @@ export default function RoadmapLayout() {
               <TaskList
                 academyData={roadmapData}
                 activeTaskId={activeTaskId}
-                onTaskSelect={setActiveTaskId}
+                onTaskSelect={setSelectedTaskId}
               />
             </div>
           </div>
         </aside>
 
-        {/* MIDDLE MAIN CONTENT */}
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
           <div className="max-w-3xl mx-auto w-full min-h-[500px]">
             {loadingTask ? (
