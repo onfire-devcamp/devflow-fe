@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Header } from '../../components/ui/Header';
 
@@ -6,158 +6,85 @@ import { SidebarHeader } from './components/SidebarHeader';
 import { TabSwitcher } from './components/TabSwitcher';
 import { ProgressBar } from './components/ProgressBar';
 import { TaskList } from './components/TaskList';
-
-import type {
-  Task,
-  CategoryGroup,
-  ProjectDetails,
-  TaskDetails,
-  APIRoadmapResponse,
-  APITaskDetailsResponse,
-  RawModuleFromAPI,
-  RawTaskFromAPI,
-} from './RoadmapType';
+import { RoadmapService } from './RoadmapService';
+import { useApi } from './UseAPI';
 
 export default function RoadmapLayout() {
   const { projectId } = useParams<{ projectId: string }>();
+  const [selectedTaskId, setSelectedTaskId] = useState<string>('');
 
-  const [activeTaskId, setActiveTaskId] = useState<string>('');
-  const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(
-    null,
-  );
-  const [roadmapData, setRoadmapData] = useState<CategoryGroup[]>([]);
+  const cleanProjectId = projectId?.trim();
 
-  const [taskDetails, setTaskDetails] = useState<TaskDetails | null>(null);
-  const [loadingTask, setLoadingTask] = useState<boolean>(false);
+  // Fetch Roadmap
+  const {
+    data: roadmapDataResult,
+    loading: loadingRoadmap,
+    error: roadmapError,
+    execute: fetchRoadmap,
+  } = useApi(RoadmapService.getProjectRoadmap);
 
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-
-  // FLOW 1: Fetch Project Details and Roadmap Modules (Runs once on mount)
+  // Fetch Task Details
+  const {
+    data: taskDetails,
+    loading: loadingTask,
+    execute: fetchTaskDetails,
+    setData: setTaskDetails,
+  } = useApi(RoadmapService.getTaskDetails);
+  // EFFECT 1: Fetch roadmap when projectId changes
   useEffect(() => {
-    if (!projectId || projectId === 'undefined') return;
+    if (cleanProjectId && cleanProjectId !== 'undefined') {
+      fetchRoadmap(cleanProjectId);
+    }
+  }, [cleanProjectId, fetchRoadmap]);
 
-    const fetchWorkspaceData = async () => {
-      try {
-        setLoading(true);
-        setError(null);
+  const projectDetails = roadmapDataResult?.project ?? null;
 
-        const response = await fetch(
-          `/api/project/${projectId.trim()}/roadmap`,
-        );
-        if (!response.ok) {
-          throw new Error(
-            'Failed to fetch valid data from the backend server.',
-          );
-        }
+  const roadmapData = useMemo(() => {
+    return roadmapDataResult?.modules ?? [];
+  }, [roadmapDataResult]);
 
-        const resJson: APIRoadmapResponse = await response.json();
+  // DYNAMIC COMPUTATION
+  const activeTaskId = useMemo(() => {
+    if (selectedTaskId) return selectedTaskId;
 
-        if (resJson && resJson.success && resJson.data) {
-          const { project, modules } = resJson.data;
+    if (roadmapData.length > 0 && roadmapData[0].tasks.length > 0) {
+      return roadmapData[0].tasks[0].id;
+    }
 
-          if (project) {
-            setProjectDetails({
-              title: project.title,
-              description: project.description,
-              progressPercentage: project.progressPercentage,
-            });
-          }
+    return '';
+  }, [selectedTaskId, roadmapData]);
 
-          if (Array.isArray(modules)) {
-            const formattedRoadmap: CategoryGroup[] = modules.map(
-              (module: RawModuleFromAPI): CategoryGroup => ({
-                category: (module?.title || '').toUpperCase(),
-                tasks: Array.isArray(module?.tasks)
-                  ? module.tasks.map((task: RawTaskFromAPI): Task => {
-                      let assignedStatus: 'completed' | 'current' | 'locked' =
-                        'locked';
-
-                      if (
-                        task?.status === 'completed' ||
-                        task?.status === 'passed'
-                      ) {
-                        assignedStatus = 'completed';
-                      } else if (
-                        task?.status === 'current' ||
-                        task?.status === 'unlocked'
-                      ) {
-                        assignedStatus = 'current';
-                      }
-
-                      return {
-                        id: task?._id || task?.id || '',
-                        title: task?.title || '',
-                        status: assignedStatus,
-                      };
-                    })
-                  : [],
-              }),
-            );
-
-            setRoadmapData(formattedRoadmap);
-
-            if (
-              formattedRoadmap.length > 0 &&
-              formattedRoadmap[0].tasks.length > 0 &&
-              !activeTaskId
-            ) {
-              setActiveTaskId(formattedRoadmap[0].tasks[0].id);
-            }
-          }
-        } else {
-          throw new Error(resJson.message || 'Invalid API data structure.');
-        }
-      } catch (err: unknown) {
-        if (err instanceof Error) {
-          setError(err.message);
-        } else {
-          setError('An error occurred during data synchronization.');
-        }
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchWorkspaceData();
-    // activeTaskId is safely omitted to prevent unnecessary API re-fetches when switching tasks
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId]);
-
-  // FLOW 2: Fetch detailed content for a specific task (Triggers when activeTaskId changes)
+  // EFFECT 2: Fetch task details when activeTaskId changes
   useEffect(() => {
-    if (!activeTaskId) return;
-
-    const fetchTaskDetails = async () => {
-      try {
-        setLoadingTask(true);
-        const response = await fetch(`/api/task/${activeTaskId}`);
-        const resJson: APITaskDetailsResponse = await response.json();
-
-        if (resJson && resJson.success && resJson.data) {
-          setTaskDetails({
-            _id: resJson.data._id || resJson.data.id || '',
-            title: resJson.data.title || '',
-            description: resJson.data.description,
-          });
-        } else {
-          setTaskDetails(null);
-        }
-      } catch {
-        // Safely caught block without unused variables to satisfy ESLint rules
-        setTaskDetails(null);
-      } finally {
-        setLoadingTask(false);
-      }
-    };
-
-    fetchTaskDetails();
-  }, [activeTaskId]);
+    if (activeTaskId) {
+      fetchTaskDetails(activeTaskId);
+    } else {
+      setTaskDetails(null);
+    }
+  }, [activeTaskId, fetchTaskDetails, setTaskDetails]);
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
-  const currentProgress = projectDetails?.progressPercentage ?? 0;
 
-  if (loading) {
+  const currentProgress = useMemo(() => {
+    if (projectDetails?.progressPercentage !== undefined) {
+      return projectDetails.progressPercentage;
+    }
+
+    let totalTasks = 0;
+    let completedTasks = 0;
+
+    roadmapData.forEach((module) => {
+      totalTasks += module.tasks.length;
+      completedTasks += module.tasks.filter(
+        (task) => task.status === 'completed',
+      ).length;
+    });
+
+    if (totalTasks === 0) return 0;
+    return Math.round((completedTasks / totalTasks) * 100);
+  }, [projectDetails, roadmapData]);
+
+  if (loadingRoadmap) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
         <div className="text-center space-y-2">
@@ -170,14 +97,14 @@ export default function RoadmapLayout() {
     );
   }
 
-  if (error) {
+  if (roadmapError) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg px-4">
         <div className="max-w-md w-full p-6 bg-red-50 border border-red-200 rounded-xl text-center">
           <p className="text-red-600 font-medium mb-3">Connection Error</p>
-          <p className="text-sm text-red-500 mb-4">{error}</p>
+          <p className="text-sm text-red-500 mb-4">{roadmapError}</p>
           <button
-            onClick={() => window.location.reload()}
+            onClick={() => cleanProjectId && fetchRoadmap(cleanProjectId)}
             className="px-4 py-2 bg-red-600 text-white text-sm font-medium rounded-lg hover:bg-red-700 transition"
           >
             Retry Connection
@@ -191,7 +118,6 @@ export default function RoadmapLayout() {
     <div className="flex flex-col h-screen bg-bg select-none overflow-hidden text-fg">
       <Header />
       <div className="flex flex-1 overflow-hidden w-full">
-        {/* LEFT SIDEBAR */}
         <aside className="hidden lg:flex w-76 flex-shrink-0 border-r border-primary-soft bg-primary-mid/10 bg-card flex-col justify-between overflow-y-auto">
           <div>
             <SidebarHeader projectName={currentProjectName} />
@@ -201,13 +127,12 @@ export default function RoadmapLayout() {
               <TaskList
                 academyData={roadmapData}
                 activeTaskId={activeTaskId}
-                onTaskSelect={setActiveTaskId}
+                onTaskSelect={setSelectedTaskId}
               />
             </div>
           </div>
         </aside>
 
-        {/* MIDDLE MAIN CONTENT */}
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
           <div className="max-w-3xl mx-auto w-full min-h-[500px] rounded-2xl border border-slate-200 bg-white p-6 shadow-sm">
             {loadingTask ? (
@@ -231,7 +156,6 @@ export default function RoadmapLayout() {
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR */}
         <aside className="hidden xl:flex w-80 flex-shrink-0 bg-card border-l border-slate-100 flex-col">
           <div className="p-4 border-b border-slate-100">
             <h3 className="font-semibold text-sm">AI Mentor Assistant</h3>

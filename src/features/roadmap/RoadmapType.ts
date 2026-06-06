@@ -82,6 +82,7 @@ export interface APITaskDetailsResponse {
     title?: string;
     description?: string;
   };
+  message?: string;
 }
 
 // --- Local UI Component States ---
