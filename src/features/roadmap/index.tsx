@@ -3,7 +3,6 @@ import { useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { axiosClient } from '../../lib/axiosClient';
 import { Header } from '../../components/ui/Header';
-import { Pen, Send, Star } from 'lucide-react';
 import { SidebarHeader } from './components/SideBarHeader';
 import { TabSwitcher } from './components/TabSwitcher';
 import { ProgressBar } from './components/ProgressBar';
