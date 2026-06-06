@@ -33,6 +33,7 @@ export function useGoogleAuth(context: 'sign-in' | 'sign-up' = 'sign-in') {
         const data = await googleAuth(tokenResponse.access_token);
         setAuth(data.token, data.user);
         navigate('/');
+        return;
       } catch (err: unknown) {
         let message = `Google ${label} failed. Please try again.`;
         if (axios.isAxiosError(err)) {
