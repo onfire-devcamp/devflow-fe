@@ -52,7 +52,7 @@ export function RoadmapTaskItemButton({
       className={`w-full text-left flex items-center gap-3 px-3 py-2.5 rounded-xl text-[13px] font-medium select-none outline-none focus:outline-none border
         ${
           isSelected
-            ? 'bg-primary-soft text-fg font-semibold shadow-inner border-primary-mid/30 cursor-default'
+            ? 'bg-primary-mid/40 text-fg font-semibold shadow-inner border-primary-mid/30 cursor-default'
             : isLocked
               ? 'text-slate-300 cursor-not-allowed opacity-50 border-transparent pointer-events-none' // Added pointer-events-none to natively block clicks via CSS
               : 'text-fg hover:bg-primary/20 cursor-pointer border-transparent'
