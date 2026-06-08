@@ -115,7 +115,7 @@ export interface APITaskDetailsResponse {
       skillCategory?: string;
       fileId: TaskFile[];
     };
-    solutions?: any[];
+    solutions?: unknown[];
   };
   message?: string;
 }
