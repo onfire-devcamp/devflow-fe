@@ -74,17 +74,6 @@ export interface APIRoadmapResponse {
   data?: APIResponseData;
 }
 
-export interface APITaskDetailsResponse {
-  success: boolean;
-  data?: {
-    _id?: string;
-    id?: string;
-    title?: string;
-    description?: string;
-  };
-  message?: string;
-}
-
 // --- Local UI Component States ---
 export interface ProjectDetails {
   title: string;
@@ -107,7 +96,11 @@ export interface TaskFile {
 export interface APITaskDetailsResponse {
   success: boolean;
   data?: {
-    task: {
+    _id?: string;
+    id?: string;
+    title?: string;
+    description?: string;
+    task?: {
       _id: string;
       moduleId: string;
       title: string;
@@ -115,11 +108,16 @@ export interface APITaskDetailsResponse {
       instructions?: string;
       skillPoints?: number;
       concepts?: string;
+      mcq?: {
+        question?: string;
+        options?: string[];
+      };
       skillCategory?: string;
       fileId: TaskFile[];
     };
     solutions?: any[];
   };
+  message?: string;
 }
 
 export interface TaskDetailsState {
@@ -127,5 +125,9 @@ export interface TaskDetailsState {
   title: string;
   description: string;
   skillPoints: number;
+  mcq?: {
+    question?: string;
+    options?: string[];
+  };
   files: TaskFile[];
 }

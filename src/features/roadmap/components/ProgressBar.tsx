@@ -1,4 +1,3 @@
-import React from 'react';
 import { type ProgressBarProps } from '../RoadmapType';
 
 export function ProgressBar({ progress }: ProgressBarProps) {

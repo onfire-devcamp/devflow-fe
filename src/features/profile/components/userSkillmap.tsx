@@ -15,7 +15,7 @@ const theme = {
 export default function UserSkillMap() {
   const [skills, setSkills] = useState<SkillData[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
-  const token = useAuthStore((state) => state.token);
+  const token = useAuthStore((state) => state.accessToken);
   const [error, setError] = useState<string | null>(null);
 
   // Logic Fetch API

@@ -1,8 +1,9 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import Editor from '@monaco-editor/react';
 import { axiosClient } from '../../lib/axiosClient';
 import { Header } from '../../components/ui/Header';
+import { Pen, Send, Star, X } from 'lucide-react';
 import { SidebarHeader } from './components/SideBarHeader';
 import { TabSwitcher } from './components/TabSwitcher';
 import { ProgressBar } from './components/ProgressBar';
@@ -24,37 +25,17 @@ interface ChatMessage {
   id: string;
   sender: 'user' | 'ai';
   text: string;
+  isPassAction?: boolean;
 }
 
 export default function RoadmapLayout() {
   const { projectId } = useParams<{ projectId: string }>();
-  const [selectedTaskId, setSelectedTaskId] = useState<string>('');
 
-  const cleanProjectId = projectId?.trim();
-
-  // Fetch Roadmap
-  const {
-    data: roadmapDataResult,
-    loading: loadingRoadmap,
-    error: roadmapError,
-    execute: fetchRoadmap,
-  } = useApi(RoadmapService.getProjectRoadmap);
-
-  // Fetch Task Details
-  const {
-    data: taskDetails,
-    loading: loadingTask,
-    execute: fetchTaskDetails,
-    setData: setTaskDetails,
-  } = useApi(RoadmapService.getTaskDetails);
-  // EFFECT 1: Fetch roadmap when projectId changes
-  useEffect(() => {
-    if (cleanProjectId && cleanProjectId !== 'undefined') {
-      fetchRoadmap(cleanProjectId);
-    }
-  }, [cleanProjectId, fetchRoadmap]);
-
-  const projectDetails = roadmapDataResult?.project ?? null;
+  const [activeTaskId, setActiveTaskId] = useState<string>('');
+  const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(
+    null,
+  );
+  const [roadmapData, setRoadmapData] = useState<CategoryGroup[]>([]);
 
   const [taskDetails, setTaskDetails] = useState<TaskDetailsState | null>(null);
 
@@ -66,6 +47,10 @@ export default function RoadmapLayout() {
   const [isChatting, setIsChatting] = useState<boolean>(false);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
   const [inputMessage, setInputMessage] = useState<string>('');
+  const [showExplainToPassForm, setShowExplainToPassForm] =
+    useState<boolean>(false);
+  const [mcqAnswer, setMcqAnswer] = useState<string>('');
+  const [explanation, setExplanation] = useState<string>('');
 
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
   const [fileContents, setFileContents] = useState<Record<string, string>>({});
@@ -169,6 +154,7 @@ export default function RoadmapLayout() {
             title: fetchedTask.title,
             description: fetchedTask.description,
             skillPoints: fetchedTask.skillPoints || 10,
+            mcq: fetchedTask.mcq,
             files: fetchedTask.fileId || [],
           });
           const initialContents: Record<string, string> = {};
@@ -189,6 +175,9 @@ export default function RoadmapLayout() {
               text: `New task: **${fetchedTask.title}**. Submit code when you're ready — I'll point out anything missing.`,
             },
           ]);
+          setShowExplainToPassForm(false);
+          setMcqAnswer('');
+          setExplanation('');
         } else {
           setTaskDetails(null);
         }
@@ -225,7 +214,11 @@ export default function RoadmapLayout() {
     }, 800);
 
     return () => clearTimeout(delayDebounceTimer);
-  }, [fileContents[activeFileId], activeFileId, projectId]);
+  }, [
+    activeFileId ? fileContents[activeFileId] : undefined,
+    activeFileId,
+    projectId,
+  ]);
 
   // SUBMIT CODE & CALL AI API
   const handleSubmitCode = async () => {
@@ -254,13 +247,17 @@ export default function RoadmapLayout() {
           'Bài làm rất tốt! Bạn đã hoàn thành thử thách này.';
         const status = resJson.data.passStatus || 'UNKNOWN';
         const score = resJson.data.score !== undefined ? resJson.data.score : 0;
-        const combinedMessage = `**Status:** ${status} | **Score:** ${score}\n\n${aiFeedback}`;
+        const passedCodeReview = status === 'PASS' && Number(score) >= 7;
+        const combinedMessage = passedCodeReview
+          ? `**Task passed - Score:** ${score}/10\n\n${aiFeedback}\n\nLet's finish with the Explain-to-Pass quick check.`
+          : `**Status:** ${status} | **Score:** ${score}\n\n${aiFeedback}`;
         setMessages((prev) => [
           ...prev,
           {
             id: `ai-${Date.now()}`,
             sender: 'ai',
             text: combinedMessage,
+            isPassAction: passedCodeReview,
           },
         ]);
       } else {
@@ -281,6 +278,113 @@ export default function RoadmapLayout() {
           id: `ai-catch-${Date.now()}`,
           sender: 'ai',
           text: 'Hệ thống kết nối AI đang bận. Bạn vui lòng thử lại sau vài giây!',
+        },
+      ]);
+    } finally {
+      setIsEvaluating(false);
+    }
+  };
+
+  const markCurrentTaskCompleted = () => {
+    setRoadmapData((prev) =>
+      prev.map((group) => {
+        const activeIndex = group.tasks.findIndex(
+          (task) => task.id === activeTaskId,
+        );
+
+        if (activeIndex === -1) return group;
+
+        return {
+          ...group,
+          tasks: group.tasks.map((task, index) => {
+            if (task.id === activeTaskId) {
+              return { ...task, status: 'completed' };
+            }
+
+            if (index === activeIndex + 1 && task.status === 'locked') {
+              return { ...task, status: 'current' };
+            }
+
+            return task;
+          }),
+        };
+      }),
+    );
+  };
+
+  const handleOpenExplainToPass = () => {
+    setMcqAnswer('');
+    setExplanation('');
+    setShowExplainToPassForm(true);
+  };
+
+  const handleExplainToPassSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!projectId || !activeTaskId || !taskDetails) return;
+    if (!mcqAnswer || !explanation.trim()) return;
+
+    setMessages((prev) => [
+      ...prev,
+      {
+        id: `user-explain-${Date.now()}`,
+        sender: 'user',
+        text: 'Submitted my Explain-to-Pass answers.',
+      },
+    ]);
+    setIsEvaluating(true);
+
+    try {
+      const response = await axiosClient.post('/ai/explain-to-pass', {
+        projectId: projectId.trim(),
+        taskId: activeTaskId,
+        mcqAnswer,
+        explanation: explanation.trim(),
+      });
+
+      const resJson = response.data;
+      if (resJson && resJson.success && resJson.data) {
+        const totalScore = resJson.data.score ?? 0;
+        const passStatus = resJson.data.passStatus ?? 'UNKNOWN';
+        const feedback = resJson.data.feedback ?? 'No feedback provided.';
+        const didPass = passStatus === 'PASS' && Number(totalScore) >= 7;
+
+        setShowExplainToPassForm(false);
+        setMcqAnswer('');
+        setExplanation('');
+
+        if (didPass) {
+          markCurrentTaskCompleted();
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `ai-explain-pass-${Date.now()}`,
+              sender: 'ai',
+              text: `**Task officially completed - Explain-to-Pass Score:** ${totalScore}/10\n\n${feedback}\n\nNice. The next task should now be unlocked.`,
+            },
+          ]);
+        } else {
+          setMessages((prev) => [
+            ...prev,
+            {
+              id: `ai-explain-fail-${Date.now()}`,
+              sender: 'ai',
+              text: `**Explain-to-Pass needs one more try - Score:** ${totalScore}/10\n\n${feedback}`,
+              isPassAction: true,
+            },
+          ]);
+        }
+      } else {
+        throw new Error('Invalid explain-to-pass response');
+      }
+    } catch (err: any) {
+      console.error('Lỗi khi submit Explain-to-Pass:', err);
+      setMessages((prev) => [
+        ...prev,
+        {
+          id: `ai-explain-err-${Date.now()}`,
+          sender: 'ai',
+          text: 'Devi could not grade the Explain-to-Pass answer yet. Please try again.',
+          isPassAction: true,
         },
       ]);
     } finally {
@@ -395,30 +499,26 @@ export default function RoadmapLayout() {
   };
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
+  const currentProgress = projectDetails?.progressPercentage ?? 0;
+  const explainToPassMcq = taskDetails?.mcq;
+  const explainToPassMcqOptions = Array.isArray(explainToPassMcq?.options)
+    ? explainToPassMcq.options
+    : [];
+  const hasExplainToPassMcq =
+    Boolean(explainToPassMcq?.question) && explainToPassMcqOptions.length > 0;
 
-  const currentProgress = useMemo(() => {
-    if (projectDetails?.progressPercentage !== undefined) {
-      return projectDetails.progressPercentage;
-    }
-
-    let totalTasks = 0;
-    let completedTasks = 0;
-
-    roadmapData.forEach((module) => {
-      totalTasks += module.tasks.length;
-      completedTasks += module.tasks.filter(
-        (task) => task.status === 'completed',
-      ).length;
-    });
-
-    if (totalTasks === 0) return 0;
-    return Math.round((completedTasks / totalTasks) * 100);
-  }, [projectDetails, roadmapData]);
-
-  if (loadingRoadmap) {
+  if (loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
         <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-screen items-center justify-center bg-bg px-6 text-center text-sm text-slate-600">
+        {error}
       </div>
     );
   }
@@ -441,12 +541,13 @@ export default function RoadmapLayout() {
               <TaskList
                 academyData={roadmapData}
                 activeTaskId={activeTaskId}
-                onTaskSelect={setSelectedTaskId}
+                onTaskSelect={setActiveTaskId}
               />
             </div>
           </div>
         </aside>
 
+        {/* MIDDLE MAIN CONTENT */}
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
           <div className="max-w-3xl mx-auto w-full min-h-[500px]">
             {loadingTask ? (
@@ -708,6 +809,16 @@ export default function RoadmapLayout() {
                       >
                         {msg.text}
                       </ReactMarkdown>
+                      {msg.isPassAction && (
+                        <button
+                          type="button"
+                          onClick={handleOpenExplainToPass}
+                          disabled={isEvaluating}
+                          className="mt-1 w-full rounded-xl border border-primary-mid bg-primary px-3 py-2 text-left text-[11px] font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+                        >
+                          Answer Explain-to-Pass to Complete Task
+                        </button>
+                      )}
                     </div>
                   )}
                 </div>
@@ -756,6 +867,127 @@ export default function RoadmapLayout() {
           </form>
         </aside>
       </div>
+
+      {showExplainToPassForm && taskDetails && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-white/70 px-4 backdrop-blur-sm">
+          <form
+            onSubmit={handleExplainToPassSubmit}
+            className="w-full max-w-xl rounded-2xl border border-primary-mid bg-white p-6 shadow-2xl shadow-primary/20"
+          >
+            <div className="mb-5 flex items-start justify-between gap-4">
+              <div className="flex items-start gap-3">
+                <div className="h-12 w-12 overflow-hidden rounded-full border border-primary-mid bg-primary-soft">
+                  <img
+                    src={mascot}
+                    alt="Devi Avatar"
+                    className="h-full w-full object-cover"
+                  />
+                </div>
+                <div>
+                  <h3 className="text-lg font-bold text-slate-900">
+                    Quick check before you continue
+                  </h3>
+                  <p className="text-xs text-slate-500">
+                    Show you understood what you just built.
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setShowExplainToPassForm(false)}
+                className="rounded-full p-1.5 text-slate-500 transition hover:bg-primary-soft hover:text-slate-900"
+                aria-label="Close Explain-to-Pass form"
+              >
+                <X size={18} />
+              </button>
+            </div>
+
+            {hasExplainToPassMcq ? (
+              <>
+                <p className="mb-3 text-sm font-bold text-slate-800">
+                  {explainToPassMcq?.question}
+                </p>
+                <div className="space-y-2">
+                  {explainToPassMcqOptions.map((option: any, index) => {
+                    const optionLabel = String.fromCharCode(65 + index);
+                    
+                    // Safely extract the text and id based on the backend mapper structure
+                    // We use fallbacks just in case the backend sometimes sends raw strings
+                    const optionText = option?.text || option; 
+                    const optionValue = option?.id || optionText; 
+
+                    const isSelected = mcqAnswer === optionValue;
+
+                    return (
+                      <label
+                        key={`${optionValue}-${index}`}
+                        className={`flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 text-sm transition ${
+                          isSelected
+                            ? 'border-primary bg-primary-soft text-slate-900'
+                            : 'border-primary-mid bg-white text-slate-700 hover:bg-primary-soft/70'
+                        }`}
+                      >
+                        <input
+                          type="radio"
+                          name="explain-to-pass-mcq"
+                          value={optionValue}
+                          checked={isSelected}
+                          onChange={(e) => setMcqAnswer(e.target.value)}
+                          className="sr-only"
+                        />
+                        <span className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-full bg-primary-soft text-xs font-bold text-slate-500">
+                          {optionLabel}
+                        </span>
+                        <span>{optionText}</span>
+                      </label>
+                    );
+                  })}
+                </div>
+              </>
+            ) : (
+              <div className="rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-700">
+                This task does not have an Explain-to-Pass MCQ configured yet.
+              </div>
+            )}
+
+            <label className="mt-5 block text-sm font-bold text-slate-800">
+              In one sentence, what does your code do?
+            </label>
+            <textarea
+              value={explanation}
+              onChange={(e) => setExplanation(e.target.value)}
+              placeholder="In one sentence, what does your code do?"
+              rows={4}
+              className="mt-2 w-full resize-none rounded-xl border border-primary-mid px-4 py-3 text-sm text-slate-800 outline-none transition placeholder:text-slate-400 focus:border-primary"
+            />
+            <div className="mt-1 text-right text-xs text-slate-500">
+              {explanation.trim().split(/\s+/).filter(Boolean).length}/20
+            </div>
+
+            <div className="mt-6 flex justify-end gap-3">
+              <button
+                type="button"
+                onClick={() => setShowExplainToPassForm(false)}
+                className="rounded-xl border border-primary-mid bg-white px-5 py-2.5 text-sm font-semibold text-slate-700 transition hover:bg-primary-soft"
+              >
+                Cancel
+              </button>
+              <button
+                type="submit"
+                disabled={
+                  isEvaluating ||
+                  !hasExplainToPassMcq ||
+                  !mcqAnswer ||
+                  !explanation.trim()
+                }
+                className="rounded-xl bg-primary px-6 py-2.5 text-sm font-bold text-white shadow-sm transition hover:opacity-90 disabled:cursor-not-allowed disabled:opacity-50"
+              >
+                {isEvaluating ? 'Submitting...' : 'Submit Explanation'}
+              </button>
+            </div>
+          </form>
+        </div>
+      )}
     </div>
   );
 }
