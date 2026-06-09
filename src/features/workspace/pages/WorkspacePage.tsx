@@ -32,6 +32,7 @@ export default function WorkspacePage() {
     taskDetails,
     loadingTask,
     activeFileId,
+    forceSave,
     handleFileSelect,
     fileContents,
     editorInstance,
@@ -53,7 +54,7 @@ export default function WorkspacePage() {
     setMcqAnswer,
     explanation,
     setExplanation,
-    resetChatForNewTask,
+    initChatForTask,
     handleSubmitCode,
     handleOpenExplainToPass,
     handleExplainToPassSubmit,
@@ -68,15 +69,21 @@ export default function WorkspacePage() {
     onTaskCompleted: markCurrentTaskCompleted,
   });
 
-  // Synchronization: Reset chat when task details change
+  // Sync chat history with active task changes
   useEffect(() => {
     if (taskDetails) {
-      resetChatForNewTask(taskDetails.title);
+      void initChatForTask(taskDetails.title);
     }
-  }, [taskDetails, resetChatForNewTask]);
+  }, [taskDetails, initChatForTask]);
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
   const currentProgress = projectDetails?.progressPercentage ?? 0;
+
+  const handleTaskSelect = (newTaskId: string) => {
+    if (newTaskId === activeTaskId) return;
+    forceSave();
+    setActiveTaskId(newTaskId);
+  };
 
   const currentCategory = roadmapData.find((group) =>
     group.tasks.some((task) => task.id === activeTaskId),
@@ -112,7 +119,7 @@ export default function WorkspacePage() {
               <TaskList
                 academyData={roadmapData}
                 activeTaskId={activeTaskId}
-                onTaskSelect={setActiveTaskId}
+                onTaskSelect={handleTaskSelect}
               />
             </div>
           </div>

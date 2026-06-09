@@ -21,7 +21,6 @@ export function useDeviChat({
   taskDetails,
   onTaskCompleted,
 }: UseDeviChatParams) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isChatting, setIsChatting] = useState<boolean>(false);
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
   const [inputMessage, setInputMessage] = useState<string>('');
@@ -29,19 +28,64 @@ export function useDeviChat({
     useState<boolean>(false);
   const [mcqAnswer, setMcqAnswer] = useState<string>('');
   const [explanation, setExplanation] = useState<string>('');
+  const [chatHistory, setChatHistory] = useState<Record<string, ChatMessage[]>>(
+    {},
+  );
+  const messages = chatHistory[activeTaskId] || [];
+  const setMessages = useCallback(
+    (updater: React.SetStateAction<ChatMessage[]>) => {
+      setChatHistory((prev) => {
+        const current = prev[activeTaskId] || [];
+        const next = typeof updater === 'function' ? updater(current) : updater;
+        return { ...prev, [activeTaskId]: next };
+      });
+    },
+    [activeTaskId],
+  );
 
-  const resetChatForNewTask = useCallback((taskTitle: string) => {
-    setMessages([
-      {
-        id: 'welcome',
+  const initChatForTask = useCallback(
+    async (taskTitle: string) => {
+      if (!projectId || !activeTaskId) return;
+
+      let isAlreadyCached = false;
+      setChatHistory((prev) => {
+        isAlreadyCached = Boolean(prev[activeTaskId]);
+        return prev;
+      });
+
+      if (isAlreadyCached) return;
+
+      const welcomeMessage: ChatMessage = {
+        id: `welcome-${activeTaskId}`,
         sender: 'ai',
         text: `New task: **${taskTitle}**. Submit code when you're ready — I'll point out anything missing.`,
-      },
-    ]);
-    setShowExplainToPassForm(false);
-    setMcqAnswer('');
-    setExplanation('');
-  }, []);
+      };
+
+      try {
+        const response = await workspaceApi.fetchChatHistory(
+          projectId.trim(),
+          activeTaskId,
+        );
+
+        const loadedMessages =
+          response.success && response.data.length > 0
+            ? response.data
+            : [welcomeMessage];
+
+        setChatHistory((prev) => {
+          if (prev[activeTaskId]) return prev;
+          return { ...prev, [activeTaskId]: loadedMessages };
+        });
+      } catch (err: unknown) {
+        console.error('Failed to load chat history:', err);
+        setChatHistory((prev) => {
+          if (prev[activeTaskId]) return prev;
+          return { ...prev, [activeTaskId]: [welcomeMessage] };
+        });
+      }
+    },
+    [projectId, activeTaskId],
+  );
 
   const handleSubmitCode = useCallback(async () => {
     if (!projectId || !activeTaskId || !taskDetails) return;
@@ -316,7 +360,7 @@ export function useDeviChat({
     setMcqAnswer,
     explanation,
     setExplanation,
-    resetChatForNewTask,
+    initChatForTask,
     handleSubmitCode,
     handleOpenExplainToPass,
     handleExplainToPassSubmit,

@@ -28,7 +28,7 @@ export function DeviChatPanel({
         <div>
           <h3 className="font-bold text-sm text-slate-800">Devi</h3>
           <p className="text-[11px] text-fg-muted">
-            AI mentor • never hands you the answer
+            AI mentor • Here to save the day!
           </p>
         </div>
       </div>

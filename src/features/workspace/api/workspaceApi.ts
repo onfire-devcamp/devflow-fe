@@ -4,6 +4,7 @@ import type {
   APITaskDetailsResponse,
 } from '../../roadmap/RoadmapType';
 import type {
+  AIChatHistoryResponse,
   AIChatResponse,
   AIEvaluateResponse,
   AIExplainToPassResponse,
@@ -76,6 +77,16 @@ export const workspaceApi = {
       taskId: params.taskId,
       message: params.message,
     });
+    return response.data;
+  },
+
+  async fetchChatHistory(
+    projectId: string,
+    taskId: string,
+  ): Promise<AIChatHistoryResponse> {
+    const response = await axiosClient.get(
+      `/ai/chat/${projectId.trim()}/${taskId}`,
+    );
     return response.data;
   },
 };

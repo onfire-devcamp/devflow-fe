@@ -35,6 +35,11 @@ export interface AIChatResponse {
   };
 }
 
+export interface AIChatHistoryResponse {
+  success: boolean;
+  data: ChatMessage[];
+}
+
 export interface ChatMessage {
   id: string;
   sender: 'user' | 'ai';

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import type { editor } from 'monaco-editor';
 import { workspaceApi } from '../api/workspaceApi';
 import { useApi } from '../../roadmap/UseAPI';
@@ -44,11 +44,15 @@ export function useTaskEditor(
         files: fetchedTask.fileId || [],
       });
 
-      const initialContents: Record<string, string> = {};
-      files.forEach((f: TaskFile) => {
-        initialContents[f._id] = f.content || '';
+      setFileContents((prev) => {
+        const nextContents = { ...prev };
+        files.forEach((f: TaskFile) => {
+          if (nextContents[f._id] === undefined) {
+            nextContents[f._id] = f.content || '';
+          }
+        });
+        return nextContents;
       });
-      setFileContents(initialContents);
 
       if (files.length > 0) {
         setActiveFileId(files[0]._id);
@@ -89,7 +93,7 @@ export function useTaskEditor(
     });
   };
 
-  const handleFileSelect = (newFileId: string) => {
+  const forceSave = useCallback(() => {
     if (activeFileId && projectId && fileContents[activeFileId] !== undefined) {
       workspaceApi
         .autoSaveTaskFile({
@@ -97,8 +101,12 @@ export function useTaskEditor(
           fileId: activeFileId,
           newContent: fileContents[activeFileId],
         })
-        .catch((err) => console.error('Auto-save error on file switch:', err));
+        .catch((err) => console.error('Auto-save error on force save:', err));
     }
+  }, [activeFileId, projectId, fileContents]);
+
+  const handleFileSelect = (newFileId: string) => {
+    forceSave();
     setActiveFileId(newFileId);
   };
 
@@ -126,6 +134,7 @@ export function useTaskEditor(
     loadingTask,
     activeFileId,
     setActiveFileId,
+    forceSave,
     handleFileSelect,
     fileContents,
     editorInstance,
