@@ -58,16 +58,12 @@ export function ExplainToPassModal({
                   typeof option === 'string'
                     ? option
                     : String(
-                        (option as Record<string, unknown>)?.optionText ??
-                          option,
+                        (option as Record<string, unknown>)?.text ?? option,
                       );
                 const optionValue =
                   typeof option === 'string'
                     ? option
-                    : String(
-                        (option as Record<string, unknown>)?.optionValue ??
-                          option,
-                      );
+                    : String((option as Record<string, unknown>)?.id ?? option);
 
                 return (
                   <label

@@ -73,7 +73,7 @@ export function useTaskEditor(
           newContent: currentContent,
         });
       } catch (err) {
-        console.error('Auto-save lỗi:', err);
+        console.error('Auto-save failed:', err);
       }
     }, 800);
 
@@ -87,6 +87,19 @@ export function useTaskEditor(
       const hasText = !selection.isEmpty();
       setHasSelection(hasText);
     });
+  };
+
+  const handleFileSelect = (newFileId: string) => {
+    if (activeFileId && projectId && fileContents[activeFileId] !== undefined) {
+      workspaceApi
+        .autoSaveTaskFile({
+          projectId: projectId.trim(),
+          fileId: activeFileId,
+          newContent: fileContents[activeFileId],
+        })
+        .catch((err) => console.error('Auto-save error on file switch:', err));
+    }
+    setActiveFileId(newFileId);
   };
 
   const handleEditorChange = (value: string | undefined) => {
@@ -113,6 +126,7 @@ export function useTaskEditor(
     loadingTask,
     activeFileId,
     setActiveFileId,
+    handleFileSelect,
     fileContents,
     editorInstance,
     hasSelection,

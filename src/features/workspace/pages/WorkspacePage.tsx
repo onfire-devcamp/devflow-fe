@@ -32,7 +32,7 @@ export default function WorkspacePage() {
     taskDetails,
     loadingTask,
     activeFileId,
-    setActiveFileId,
+    handleFileSelect,
     fileContents,
     editorInstance,
     hasSelection,
@@ -136,7 +136,7 @@ export default function WorkspacePage() {
                   isEvaluating={isEvaluating}
                   isChatting={isChatting}
                   category={currentCategory}
-                  onFileSelect={setActiveFileId}
+                  onFileSelect={handleFileSelect}
                   onEditorMount={handleEditorMount}
                   onEditorChange={handleEditorChange}
                   onQuickAction={handleQuickAction}

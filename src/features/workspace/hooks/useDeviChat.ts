@@ -65,8 +65,7 @@ export function useDeviChat({
 
       if (response && response.success) {
         const aiFeedback =
-          response.data.feedback ||
-          'Bài làm rất tốt! Bạn đã hoàn thành thử thách này.';
+          response.data.feedback || 'No feedback provided by Devi.';
         const status = response.data.passStatus || 'UNKNOWN';
         const score =
           response.data.score !== undefined ? response.data.score : 0;
@@ -89,18 +88,18 @@ export function useDeviChat({
           {
             id: `ai-err-${Date.now()}`,
             sender: 'ai',
-            text: 'Devi đang gặp chút trục trặc khi đọc mã nguồn này. Hãy thử gửi lại nhé!',
+            text: "Devi couldn't evaluate the code right now. Please try again later.",
           },
         ]);
       }
     } catch (err: unknown) {
-      console.error('Lỗi khi call API evaluate:', err);
+      console.error('Code evaluation error:', err);
       setMessages((prev) => [
         ...prev,
         {
           id: `ai-catch-${Date.now()}`,
           sender: 'ai',
-          text: 'Hệ thống kết nối AI đang bận. Bạn vui lòng thử lại sau vài giây!',
+          text: 'Devi is having trouble evaluating the code right now. Please try again later.',
         },
       ]);
     } finally {
@@ -173,7 +172,7 @@ export function useDeviChat({
           throw new Error('Invalid explain-to-pass response');
         }
       } catch (err: unknown) {
-        console.error('Lỗi khi submit Explain-to-Pass:', err);
+        console.error('Error during Explain-to-Pass submission:', err);
         setMessages((prev) => [
           ...prev,
           {
@@ -240,13 +239,13 @@ export function useDeviChat({
           throw new Error('Invalid response');
         }
       } catch (err: unknown) {
-        console.error('Lỗi khi gọi API hint:', err);
+        console.error('AI quick action error:', err);
         setMessages((prev) => [
           ...prev,
           {
             id: `ai-hint-err-${Date.now()}`,
             sender: 'ai',
-            text: 'Oops, Devi chưa phân tích được đoạn code này. Bạn thử lại nhé!',
+            text: 'Devi is having trouble providing the hint right now. Please try again later.',
           },
         ]);
       } finally {
@@ -290,13 +289,13 @@ export function useDeviChat({
           throw new Error('Invalid response');
         }
       } catch (err: unknown) {
-        console.error('Lỗi khi gọi API chat:', err);
+        console.error('AI chat error:', err);
         setMessages((prev) => [
           ...prev,
           {
             id: `ai-chat-err-${Date.now()}`,
             sender: 'ai',
-            text: 'Oops, Devi đang bận chút xíu. Bạn hỏi lại câu khác nhé!',
+            text: 'Devi is busy right now. Please try again later.',
           },
         ]);
       } finally {

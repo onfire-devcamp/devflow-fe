@@ -34,7 +34,7 @@ export function WorkspaceEditor({
 
   return (
     <div className="space-y-4 animate-fadeIn">
-      {/* 1. Task Meta Header */}
+      {/* Task Meta Header */}
       <div>
         <span className="text-[11px] font-bold text-purple-500 tracking-wider uppercase block mb-1">
           {category || 'SETUP & FOUNDATIONS'}
@@ -47,7 +47,7 @@ export function WorkspaceEditor({
         </p>
       </div>
 
-      {/* 2. TAB BARS */}
+      {/* Tab bars */}
       {taskDetails.files.length > 0 && (
         <div className="flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar">
           {taskDetails.files.map((file) => (
@@ -71,7 +71,7 @@ export function WorkspaceEditor({
         </div>
       )}
 
-      {/* 3. Mock macOS Code Editor Window */}
+      {/* Code Editor Window */}
       <div className="w-full rounded-xl rounded-tl-none border border-slate-800 bg-[#1e1e1e] overflow-hidden shadow-md relative z-0">
         <div className="flex items-center justify-between px-4 py-2.5 bg-[#181818] border-b border-slate-900">
           <div className="flex items-center gap-1.5">
@@ -100,7 +100,7 @@ export function WorkspaceEditor({
             onMount={onEditorMount}
             onChange={onEditorChange}
           />
-          {/* FLOATING ACTION MENU */}
+          {/* Floating Action Menu */}
           {hasSelection && !isEvaluating && !isChatting && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-[#2d2d2d] border border-[#444] shadow-lg rounded-xl px-2 py-1.5 flex items-center gap-2 z-10 animate-fadeIn">
               <span className="text-[11px] font-medium text-slate-400 pl-2 pr-1">
