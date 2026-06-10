@@ -10,6 +10,39 @@ import type {
   APIRoadmapResponse,
 } from '../../roadmap/RoadmapType';
 
+const mapTaskStatus = (status?: string): 'completed' | 'current' | 'locked' => {
+  if (status === 'completed' || status === 'passed') return 'completed';
+  if (status === 'current' || status === 'unlocked') return 'current';
+  return 'locked';
+};
+
+const mapModuleToCategoryGroup = (module: RawModuleFromAPI): CategoryGroup => ({
+  category: (module?.title || '').toUpperCase(),
+  tasks: Array.isArray(module?.tasks)
+    ? module.tasks.map(
+        (task: RawTaskFromAPI): Task => ({
+          id: task?._id || task?.id || '',
+          title: task?.title || '',
+          status: mapTaskStatus(task?.status),
+        }),
+      )
+    : [],
+});
+
+const pickInitialActiveTaskId = (roadmap: CategoryGroup[]): string => {
+  const firstCurrentTask = roadmap
+    .flatMap((group) => group.tasks)
+    .find((task) => task.status === 'current');
+
+  if (firstCurrentTask) return firstCurrentTask.id;
+
+  const firstIncompleteTask = roadmap
+    .flatMap((group) => group.tasks)
+    .find((task) => task.status !== 'completed');
+
+  return firstIncompleteTask?.id ?? roadmap[0]?.tasks[0]?.id ?? '';
+};
+
 export function useWorkspaceData(projectId: string | undefined) {
   const [projectDetails, setProjectDetails] = useState<ProjectDetails | null>(
     null,
@@ -40,75 +73,66 @@ export function useWorkspaceData(projectId: string | undefined) {
       }
 
       if (Array.isArray(modules)) {
-        const formattedRoadmap: CategoryGroup[] = modules.map(
-          (module: RawModuleFromAPI): CategoryGroup => ({
-            category: (module?.title || '').toUpperCase(),
-            tasks: Array.isArray(module?.tasks)
-              ? module.tasks.map((task: RawTaskFromAPI): Task => {
-                  let assignedStatus: 'completed' | 'current' | 'locked' =
-                    'locked';
-                  if (
-                    task?.status === 'completed' ||
-                    task?.status === 'passed'
-                  ) {
-                    assignedStatus = 'completed';
-                  } else if (
-                    task?.status === 'current' ||
-                    task?.status === 'unlocked'
-                  ) {
-                    assignedStatus = 'current';
-                  }
-                  return {
-                    id: task?._id || task?.id || '',
-                    title: task?.title || '',
-                    status: assignedStatus,
-                  };
-                })
-              : [],
-          }),
-        );
+        const formattedRoadmap = modules.map(mapModuleToCategoryGroup);
 
         setRoadmapData(formattedRoadmap);
 
         setActiveTaskId((current) => {
           if (current) return current;
-          if (
-            formattedRoadmap.length > 0 &&
-            formattedRoadmap[0].tasks.length > 0
-          ) {
-            return formattedRoadmap[0].tasks[0].id;
-          }
-          return current;
+          return pickInitialActiveTaskId(formattedRoadmap);
         });
       }
     });
   }, [projectId, fetchRoadmap]);
 
   const markCurrentTaskCompleted = () => {
-    setRoadmapData((prev) =>
-      prev.map((group) => {
-        const activeIndex = group.tasks.findIndex(
+    setRoadmapData((prev) => {
+      const updatedRoadmap = prev.map((group) => {
+        const hasActiveTask = group.tasks.some(
           (task) => task.id === activeTaskId,
         );
-
-        if (activeIndex === -1) return group;
+        if (!hasActiveTask) return group;
 
         return {
           ...group,
-          tasks: group.tasks.map((task, index) => {
-            if (task.id === activeTaskId) {
-              return { ...task, status: 'completed' as const };
-            }
-
-            if (index === activeIndex + 1 && task.status === 'locked') {
-              return { ...task, status: 'current' as const };
-            }
-
-            return task;
-          }),
+          tasks: group.tasks.map((task) =>
+            task.id === activeTaskId
+              ? { ...task, status: 'completed' as const }
+              : task,
+          ),
         };
-      }),
-    );
+      });
+
+      const currentGroupIndex = updatedRoadmap.findIndex((group) =>
+        group.tasks.some((task) => task.id === activeTaskId),
+      );
+
+      if (currentGroupIndex === -1) return updatedRoadmap;
+
+      const isModuleFullyCompleted = updatedRoadmap[
+        currentGroupIndex
+      ].tasks.every((task) => task.status === 'completed');
+
+      if (
+        !isModuleFullyCompleted ||
+        currentGroupIndex + 1 >= updatedRoadmap.length
+      ) {
+        return updatedRoadmap;
+      }
+
+      return updatedRoadmap.map((group, index) => {
+        if (index !== currentGroupIndex + 1) return group;
+
+        return {
+          ...group,
+          tasks: group.tasks.map((task) =>
+            task.status === 'completed'
+              ? task
+              : { ...task, status: 'current' as const },
+          ),
+        };
+      });
+    });
   };
 
   return {
