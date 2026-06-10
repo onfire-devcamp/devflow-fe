@@ -43,6 +43,35 @@ export function useDeviChat({
     [activeTaskId],
   );
 
+  const persistChatMessage = useCallback(
+    (message: ChatMessage) => {
+      if (!projectId || !activeTaskId) return;
+
+      void workspaceApi
+        .appendChatMessage({
+          projectId: projectId.trim(),
+          taskId: activeTaskId,
+          sender: message.sender,
+          text: message.text,
+          isPassAction: message.isPassAction,
+        })
+        .catch((err: unknown) => {
+          console.error('Failed to persist chat message:', err);
+        });
+    },
+    [projectId, activeTaskId],
+  );
+
+  const appendMessage = useCallback(
+    (message: ChatMessage, options?: { persist?: boolean }) => {
+      setMessages((prev) => [...prev, message]);
+      if (options?.persist) {
+        persistChatMessage(message);
+      }
+    },
+    [persistChatMessage, setMessages],
+  );
+
   const initChatForTask = useCallback(
     async (taskTitle: string) => {
       if (!projectId || !activeTaskId) return;
@@ -127,29 +156,29 @@ export function useDeviChat({
           },
         ]);
       } else {
-        setMessages((prev) => [
-          ...prev,
+        appendMessage(
           {
             id: `ai-err-${Date.now()}`,
             sender: 'ai',
             text: "Devi couldn't evaluate the code right now. Please try again later.",
           },
-        ]);
+          { persist: true },
+        );
       }
     } catch (err: unknown) {
       console.error('Code evaluation error:', err);
-      setMessages((prev) => [
-        ...prev,
+      appendMessage(
         {
           id: `ai-catch-${Date.now()}`,
           sender: 'ai',
           text: 'Devi is having trouble evaluating the code right now. Please try again later.',
         },
-      ]);
+        { persist: true },
+      );
     } finally {
       setIsEvaluating(false);
     }
-  }, [projectId, activeTaskId, taskDetails]);
+  }, [projectId, activeTaskId, taskDetails, appendMessage, setMessages]);
 
   const handleOpenExplainToPass = useCallback(() => {
     setMcqAnswer('');
@@ -217,15 +246,15 @@ export function useDeviChat({
         }
       } catch (err: unknown) {
         console.error('Error during Explain-to-Pass submission:', err);
-        setMessages((prev) => [
-          ...prev,
+        appendMessage(
           {
             id: `ai-explain-err-${Date.now()}`,
             sender: 'ai',
             text: 'Devi could not grade the Explain-to-Pass answer yet. Please try again.',
             isPassAction: true,
           },
-        ]);
+          { persist: true },
+        );
       } finally {
         setIsEvaluating(false);
       }
@@ -237,6 +266,8 @@ export function useDeviChat({
       mcqAnswer,
       explanation,
       onTaskCompleted,
+      appendMessage,
+      setMessages,
     ],
   );
 
@@ -284,19 +315,26 @@ export function useDeviChat({
         }
       } catch (err: unknown) {
         console.error('AI quick action error:', err);
-        setMessages((prev) => [
-          ...prev,
+        appendMessage(
           {
             id: `ai-hint-err-${Date.now()}`,
             sender: 'ai',
             text: 'Devi is having trouble providing the hint right now. Please try again later.',
           },
-        ]);
+          { persist: true },
+        );
       } finally {
         setIsChatting(false);
       }
     },
-    [projectId, activeTaskId, activeFileId, editorInstance],
+    [
+      projectId,
+      activeTaskId,
+      activeFileId,
+      editorInstance,
+      appendMessage,
+      setMessages,
+    ],
   );
 
   const handleSendTextMessage = useCallback(
@@ -334,19 +372,19 @@ export function useDeviChat({
         }
       } catch (err: unknown) {
         console.error('AI chat error:', err);
-        setMessages((prev) => [
-          ...prev,
+        appendMessage(
           {
             id: `ai-chat-err-${Date.now()}`,
             sender: 'ai',
             text: 'Devi is busy right now. Please try again later.',
           },
-        ]);
+          { persist: true },
+        );
       } finally {
         setIsChatting(false);
       }
     },
-    [projectId, activeTaskId, inputMessage],
+    [projectId, activeTaskId, inputMessage, appendMessage, setMessages],
   );
 
   return {

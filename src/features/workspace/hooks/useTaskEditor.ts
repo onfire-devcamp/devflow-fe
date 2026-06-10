@@ -120,12 +120,20 @@ export function useTaskEditor(
   };
 
   const handleResetToSkeleton = () => {
-    if (activeFileId && taskDetails) {
-      const activeFile = taskDetails.files.find((f) => f._id === activeFileId);
-      setFileContents((prev) => ({
-        ...prev,
-        [activeFileId]: activeFile?.content || '',
-      }));
+    if (
+      window.confirm(
+        'Are you sure? This will delete your current code and reset to the starter template.',
+      )
+    ) {
+      if (activeFileId && taskDetails) {
+        const activeFile = taskDetails.files.find(
+          (f) => f._id === activeFileId,
+        );
+        setFileContents((prev) => ({
+          ...prev,
+          [activeFileId]: activeFile?.skeleton ?? activeFile?.content ?? '',
+        }));
+      }
     }
   };
 

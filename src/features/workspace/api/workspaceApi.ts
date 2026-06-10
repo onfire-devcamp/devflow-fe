@@ -9,6 +9,8 @@ import type {
   AIEvaluateResponse,
   AIExplainToPassResponse,
   AIHintResponse,
+  AppendChatMessageParams,
+  AppendChatMessageResponse,
   AutoSaveParams,
   EvaluateCodeParams,
   SubmitExplainToPassParams,
@@ -87,6 +89,19 @@ export const workspaceApi = {
     const response = await axiosClient.get(
       `/ai/chat/${projectId.trim()}/${taskId}`,
     );
+    return response.data;
+  },
+
+  async appendChatMessage(
+    params: AppendChatMessageParams,
+  ): Promise<AppendChatMessageResponse> {
+    const response = await axiosClient.post('/ai/chat/message', {
+      projectId: params.projectId.trim(),
+      taskId: params.taskId,
+      sender: params.sender,
+      text: params.text,
+      isPassAction: params.isPassAction,
+    });
     return response.data;
   },
 };

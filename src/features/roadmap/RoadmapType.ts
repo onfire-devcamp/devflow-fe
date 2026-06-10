@@ -91,6 +91,7 @@ export interface TaskFile {
   projectId: string;
   path: string;
   content: string;
+  skeleton?: string;
 }
 
 export interface APITaskDetailsResponse {

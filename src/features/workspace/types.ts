@@ -107,3 +107,16 @@ export interface SendAiChatMessageParams {
   taskId: string;
   message: string;
 }
+
+export interface AppendChatMessageParams {
+  projectId: string;
+  taskId: string;
+  sender: 'user' | 'ai';
+  text: string;
+  isPassAction?: boolean;
+}
+
+export interface AppendChatMessageResponse {
+  success: boolean;
+  data: ChatMessage;
+}
