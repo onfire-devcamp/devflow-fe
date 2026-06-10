@@ -85,9 +85,14 @@ export const workspaceApi = {
   async fetchChatHistory(
     projectId: string,
     taskId: string,
+    cursor?: string,
+    limit: number = 4,
   ): Promise<AIChatHistoryResponse> {
+    const params = new URLSearchParams({ limit: limit.toString() });
+    if (cursor) params.append('cursor', cursor);
+
     const response = await axiosClient.get(
-      `/ai/chat/${projectId.trim()}/${taskId}`,
+      `/ai/chat/${projectId.trim()}/${taskId}?${params.toString()}`,
     );
     return response.data;
   },

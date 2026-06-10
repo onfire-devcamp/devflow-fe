@@ -1,8 +1,19 @@
-import { useState, useCallback } from 'react';
+import { useMemo, useCallback, useState } from 'react';
 import type { editor } from 'monaco-editor';
+import {
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+  type InfiniteData,
+} from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
-import type { ChatMessage } from '../types';
+import type { AIChatHistoryResponse, ChatMessage } from '../types';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
+
+const CHAT_PAGE_SIZE = 4;
+
+export const chatHistoryQueryKey = (projectId: string, taskId: string) =>
+  ['chatHistory', projectId, taskId] as const;
 
 interface UseDeviChatParams {
   projectId: string | undefined;
@@ -21,164 +32,179 @@ export function useDeviChat({
   taskDetails,
   onTaskCompleted,
 }: UseDeviChatParams) {
-  const [isChatting, setIsChatting] = useState<boolean>(false);
+  const queryClient = useQueryClient();
   const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
+  const [isHintChatting, setIsHintChatting] = useState<boolean>(false);
   const [inputMessage, setInputMessage] = useState<string>('');
   const [showExplainToPassForm, setShowExplainToPassForm] =
     useState<boolean>(false);
   const [mcqAnswer, setMcqAnswer] = useState<string>('');
   const [explanation, setExplanation] = useState<string>('');
-  const [chatHistory, setChatHistory] = useState<Record<string, ChatMessage[]>>(
-    {},
-  );
-  const messages = chatHistory[activeTaskId] || [];
-  const setMessages = useCallback(
-    (updater: React.SetStateAction<ChatMessage[]>) => {
-      setChatHistory((prev) => {
-        const current = prev[activeTaskId] || [];
-        const next = typeof updater === 'function' ? updater(current) : updater;
-        return { ...prev, [activeTaskId]: next };
-      });
-    },
-    [activeTaskId],
-  );
+
+  const trimmedProjectId = projectId?.trim() ?? '';
+  const isChatEnabled = Boolean(trimmedProjectId && activeTaskId);
+
+  const {
+    data,
+    fetchNextPage,
+    hasNextPage,
+    isFetchingNextPage,
+    isLoading: isLoadingHistory,
+  } = useInfiniteQuery({
+    queryKey: chatHistoryQueryKey(trimmedProjectId, activeTaskId),
+    queryFn: ({ pageParam }) =>
+      workspaceApi.fetchChatHistory(
+        trimmedProjectId,
+        activeTaskId,
+        pageParam as string | undefined,
+        CHAT_PAGE_SIZE,
+      ),
+    initialPageParam: undefined as string | undefined,
+    getNextPageParam: (lastPage) => lastPage.data.nextCursor ?? undefined,
+    enabled: isChatEnabled,
+  });
+
+  const messages = useMemo(() => {
+    if (!data?.pages.length) return [];
+
+    return [...data.pages].reverse().flatMap((page) => page.data.messages);
+  }, [data?.pages]);
+
+  const invalidateChatHistory = useCallback(async () => {
+    if (!isChatEnabled) return;
+    await queryClient.invalidateQueries({
+      queryKey: chatHistoryQueryKey(trimmedProjectId, activeTaskId),
+    });
+  }, [queryClient, trimmedProjectId, activeTaskId, isChatEnabled]);
 
   const persistChatMessage = useCallback(
     (message: ChatMessage) => {
-      if (!projectId || !activeTaskId) return;
+      if (!isChatEnabled) return;
 
       void workspaceApi
         .appendChatMessage({
-          projectId: projectId.trim(),
+          projectId: trimmedProjectId,
           taskId: activeTaskId,
           sender: message.sender,
           text: message.text,
           isPassAction: message.isPassAction,
         })
+        .then(() => invalidateChatHistory())
         .catch((err: unknown) => {
           console.error('Failed to persist chat message:', err);
         });
     },
-    [projectId, activeTaskId],
+    [trimmedProjectId, activeTaskId, isChatEnabled, invalidateChatHistory],
   );
 
-  const appendMessage = useCallback(
-    (message: ChatMessage, options?: { persist?: boolean }) => {
-      setMessages((prev) => [...prev, message]);
-      if (options?.persist) {
-        persistChatMessage(message);
-      }
-    },
-    [persistChatMessage, setMessages],
-  );
+  const sendMessageMutation = useMutation({
+    mutationFn: (message: string) =>
+      workspaceApi.sendAiChatMessage({
+        projectId: trimmedProjectId,
+        taskId: activeTaskId,
+        message,
+      }),
+    onMutate: async (message: string) => {
+      const queryKey = chatHistoryQueryKey(trimmedProjectId, activeTaskId);
+      await queryClient.cancelQueries({ queryKey });
 
-  const initChatForTask = useCallback(
-    async (taskTitle: string) => {
-      if (!projectId || !activeTaskId) return;
+      const previousData =
+        queryClient.getQueryData<InfiniteData<AIChatHistoryResponse>>(queryKey);
 
-      let isAlreadyCached = false;
-      setChatHistory((prev) => {
-        isAlreadyCached = Boolean(prev[activeTaskId]);
-        return prev;
-      });
-
-      if (isAlreadyCached) return;
-
-      const welcomeMessage: ChatMessage = {
-        id: `welcome-${activeTaskId}`,
-        sender: 'ai',
-        text: `New task: **${taskTitle}**. Submit code when you're ready — I'll point out anything missing.`,
+      const optimisticMessage: ChatMessage = {
+        id: `optimistic-user-${Date.now()}`,
+        sender: 'user',
+        text: message,
       };
 
-      try {
-        const response = await workspaceApi.fetchChatHistory(
-          projectId.trim(),
-          activeTaskId,
+      queryClient.setQueryData<InfiniteData<AIChatHistoryResponse>>(
+        queryKey,
+        (old) => {
+          if (!old?.pages.length) {
+            return {
+              pages: [
+                {
+                  success: true,
+                  data: { messages: [optimisticMessage], nextCursor: null },
+                },
+              ],
+              pageParams: [undefined],
+            };
+          }
+
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    data: {
+                      ...page.data,
+                      messages: [...page.data.messages, optimisticMessage],
+                    },
+                  }
+                : page,
+            ),
+          };
+        },
+      );
+
+      return { previousData };
+    },
+    onError: (_error, _message, context) => {
+      if (context?.previousData) {
+        queryClient.setQueryData(
+          chatHistoryQueryKey(trimmedProjectId, activeTaskId),
+          context.previousData,
         );
-
-        const loadedMessages =
-          response.success && response.data.length > 0
-            ? response.data
-            : [welcomeMessage];
-
-        setChatHistory((prev) => {
-          if (prev[activeTaskId]) return prev;
-          return { ...prev, [activeTaskId]: loadedMessages };
-        });
-      } catch (err: unknown) {
-        console.error('Failed to load chat history:', err);
-        setChatHistory((prev) => {
-          if (prev[activeTaskId]) return prev;
-          return { ...prev, [activeTaskId]: [welcomeMessage] };
-        });
       }
     },
-    [projectId, activeTaskId],
-  );
+    onSettled: () => {
+      void invalidateChatHistory();
+    },
+  });
 
   const handleSubmitCode = useCallback(async () => {
-    if (!projectId || !activeTaskId || !taskDetails) return;
+    if (!isChatEnabled || !taskDetails) return;
 
     const targetFileId = taskDetails.files[0]?._id;
     if (!targetFileId) return;
 
-    const userMsg: ChatMessage = {
-      id: `user-${Date.now()}`,
-      sender: 'user',
-      text: 'Submitted my code for review.',
-    };
-    setMessages((prev) => [...prev, userMsg]);
     setIsEvaluating(true);
 
     try {
       const response = await workspaceApi.evaluateCode({
-        projectId: projectId.trim(),
+        projectId: trimmedProjectId,
         taskId: activeTaskId,
       });
 
-      if (response && response.success) {
-        const aiFeedback =
-          response.data.feedback || 'No feedback provided by Devi.';
-        const status = response.data.passStatus || 'UNKNOWN';
-        const score =
-          response.data.score !== undefined ? response.data.score : 0;
-        const passedCodeReview = status === 'PASS' && Number(score) >= 7;
-        const combinedMessage = passedCodeReview
-          ? `**Task passed - Score:** ${score}/10\n\n${aiFeedback}\n\nLet's finish with the Explain-to-Pass quick check.`
-          : `**Status:** ${status} | **Score:** ${score}\n\n${aiFeedback}`;
-        setMessages((prev) => [
-          ...prev,
-          {
-            id: `ai-${Date.now()}`,
-            sender: 'ai',
-            text: combinedMessage,
-            isPassAction: passedCodeReview,
-          },
-        ]);
+      if (!response?.success) {
+        persistChatMessage({
+          id: `ai-err-${Date.now()}`,
+          sender: 'ai',
+          text: "Devi couldn't evaluate the code right now. Please try again later.",
+        });
       } else {
-        appendMessage(
-          {
-            id: `ai-err-${Date.now()}`,
-            sender: 'ai',
-            text: "Devi couldn't evaluate the code right now. Please try again later.",
-          },
-          { persist: true },
-        );
+        await invalidateChatHistory();
       }
     } catch (err: unknown) {
       console.error('Code evaluation error:', err);
-      appendMessage(
-        {
-          id: `ai-catch-${Date.now()}`,
-          sender: 'ai',
-          text: 'Devi is having trouble evaluating the code right now. Please try again later.',
-        },
-        { persist: true },
-      );
+      persistChatMessage({
+        id: `ai-catch-${Date.now()}`,
+        sender: 'ai',
+        text: 'Devi is having trouble evaluating the code right now. Please try again later.',
+      });
     } finally {
       setIsEvaluating(false);
     }
-  }, [projectId, activeTaskId, taskDetails, appendMessage, setMessages]);
+  }, [
+    isChatEnabled,
+    taskDetails,
+    trimmedProjectId,
+    activeTaskId,
+    persistChatMessage,
+    invalidateChatHistory,
+  ]);
 
   const handleOpenExplainToPass = useCallback(() => {
     setMcqAnswer('');
@@ -189,31 +215,22 @@ export function useDeviChat({
   const handleExplainToPassSubmit = useCallback(
     async (e: React.FormEvent) => {
       e.preventDefault();
-      if (!projectId || !activeTaskId || !taskDetails) return;
+      if (!isChatEnabled || !taskDetails) return;
       if (!mcqAnswer || !explanation.trim()) return;
 
-      setMessages((prev) => [
-        ...prev,
-        {
-          id: `user-explain-${Date.now()}`,
-          sender: 'user',
-          text: 'Submitted my Explain-to-Pass answers.',
-        },
-      ]);
       setIsEvaluating(true);
 
       try {
         const response = await workspaceApi.submitExplainToPass({
-          projectId: projectId.trim(),
+          projectId: trimmedProjectId,
           taskId: activeTaskId,
           mcqAnswer,
           explanation: explanation.trim(),
         });
 
-        if (response && response.success && response.data) {
+        if (response?.success && response.data) {
           const totalScore = response.data.score ?? 0;
           const passStatus = response.data.passStatus ?? 'UNKNOWN';
-          const feedback = response.data.feedback ?? 'No feedback provided.';
           const didPass = passStatus === 'PASS' && Number(totalScore) >= 7;
 
           setShowExplainToPassForm(false);
@@ -222,59 +239,40 @@ export function useDeviChat({
 
           if (didPass) {
             onTaskCompleted();
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `ai-explain-pass-${Date.now()}`,
-                sender: 'ai',
-                text: `**Task officially completed - Explain-to-Pass Score:** ${totalScore}/10\n\n${feedback}\n\nNice. The next task should now be unlocked.`,
-              },
-            ]);
-          } else {
-            setMessages((prev) => [
-              ...prev,
-              {
-                id: `ai-explain-fail-${Date.now()}`,
-                sender: 'ai',
-                text: `**Explain-to-Pass needs one more try - Score:** ${totalScore}/10\n\n${feedback}`,
-                isPassAction: true,
-              },
-            ]);
           }
+
+          await invalidateChatHistory();
         } else {
           throw new Error('Invalid explain-to-pass response');
         }
       } catch (err: unknown) {
         console.error('Error during Explain-to-Pass submission:', err);
-        appendMessage(
-          {
-            id: `ai-explain-err-${Date.now()}`,
-            sender: 'ai',
-            text: 'Devi could not grade the Explain-to-Pass answer yet. Please try again.',
-            isPassAction: true,
-          },
-          { persist: true },
-        );
+        persistChatMessage({
+          id: `ai-explain-err-${Date.now()}`,
+          sender: 'ai',
+          text: 'Devi could not grade the Explain-to-Pass answer yet. Please try again.',
+          isPassAction: true,
+        });
       } finally {
         setIsEvaluating(false);
       }
     },
     [
-      projectId,
-      activeTaskId,
+      isChatEnabled,
       taskDetails,
+      trimmedProjectId,
+      activeTaskId,
       mcqAnswer,
       explanation,
       onTaskCompleted,
-      appendMessage,
-      setMessages,
+      persistChatMessage,
+      invalidateChatHistory,
     ],
   );
 
   const handleQuickAction = useCallback(
     async (type: 'explain' | 'hint') => {
-      if (!projectId || !activeTaskId || !activeFileId || !editorInstance)
-        return;
+      if (!isChatEnabled || !activeFileId || !editorInstance) return;
 
       const selection = editorInstance.getSelection();
       const model = editorInstance.getModel();
@@ -288,109 +286,65 @@ export function useDeviChat({
           ? 'Can you explain this highlighted code?'
           : 'Can you give me a hint for this highlighted code?';
 
-      setMessages((prev) => [
-        ...prev,
-        { id: `user-action-${Date.now()}`, sender: 'user', text: actionText },
-      ]);
-      setIsChatting(true);
+      setIsHintChatting(true);
 
       try {
         const response = await workspaceApi.requestAiHint({
-          projectId: projectId.trim(),
+          projectId: trimmedProjectId,
           taskId: activeTaskId,
           fileId: activeFileId,
-          type: type,
+          type,
           selectedCode: selectedText,
           userQuestion: actionText,
         });
 
-        if (response && response.success && response.data) {
-          const aiReply = response.data.aiResponse;
-          setMessages((prev) => [
-            ...prev,
-            { id: `ai-hint-${Date.now()}`, sender: 'ai', text: aiReply },
-          ]);
+        if (response?.success && response.data) {
+          await invalidateChatHistory();
         } else {
           throw new Error('Invalid response');
         }
       } catch (err: unknown) {
         console.error('AI quick action error:', err);
-        appendMessage(
-          {
-            id: `ai-hint-err-${Date.now()}`,
-            sender: 'ai',
-            text: 'Devi is having trouble providing the hint right now. Please try again later.',
-          },
-          { persist: true },
-        );
+        persistChatMessage({
+          id: `ai-hint-err-${Date.now()}`,
+          sender: 'ai',
+          text: 'Devi is having trouble providing the hint right now. Please try again later.',
+        });
       } finally {
-        setIsChatting(false);
+        setIsHintChatting(false);
       }
     },
     [
-      projectId,
-      activeTaskId,
+      isChatEnabled,
       activeFileId,
       editorInstance,
-      appendMessage,
-      setMessages,
+      trimmedProjectId,
+      activeTaskId,
+      persistChatMessage,
+      invalidateChatHistory,
     ],
   );
 
   const handleSendTextMessage = useCallback(
-    async (e: React.FormEvent) => {
+    (e: React.FormEvent) => {
       e.preventDefault();
       const question = inputMessage.trim();
-      if (!question || !projectId || !activeTaskId) return;
+      if (!question || !isChatEnabled) return;
 
-      setMessages((prev) => [
-        ...prev,
-        { id: `user-text-${Date.now()}`, sender: 'user', text: question },
-      ]);
       setInputMessage('');
-      setIsChatting(true);
-
-      try {
-        const response = await workspaceApi.sendAiChatMessage({
-          projectId: projectId.trim(),
-          taskId: activeTaskId,
-          message: question,
-        });
-
-        if (response && response.success && response.data) {
-          const aiReply = response.data.message;
-          setMessages((prev) => [
-            ...prev,
-            {
-              id: `ai-chat-${Date.now()}`,
-              sender: 'ai',
-              text: aiReply,
-            },
-          ]);
-        } else {
-          throw new Error('Invalid response');
-        }
-      } catch (err: unknown) {
-        console.error('AI chat error:', err);
-        appendMessage(
-          {
-            id: `ai-chat-err-${Date.now()}`,
-            sender: 'ai',
-            text: 'Devi is busy right now. Please try again later.',
-          },
-          { persist: true },
-        );
-      } finally {
-        setIsChatting(false);
-      }
+      sendMessageMutation.mutate(question);
     },
-    [projectId, activeTaskId, inputMessage, appendMessage, setMessages],
+    [inputMessage, isChatEnabled, sendMessageMutation],
   );
 
   return {
     messages,
-    isChatting,
+    isChatting: isHintChatting || sendMessageMutation.isPending,
     isEvaluating,
+    isLoadingHistory,
+    isFetchingNextPage,
+    hasNextPage: Boolean(hasNextPage),
+    fetchNextPage,
     inputMessage,
     setInputMessage,
     showExplainToPassForm,
@@ -398,7 +352,6 @@ export function useDeviChat({
     setMcqAnswer,
     explanation,
     setExplanation,
-    initChatForTask,
     handleSubmitCode,
     handleOpenExplainToPass,
     handleExplainToPassSubmit,

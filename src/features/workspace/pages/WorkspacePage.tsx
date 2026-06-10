@@ -1,4 +1,3 @@
-import { useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Header } from '../../../components/ui/Header';
 import { SidebarHeader } from '../../roadmap/components/SideBarHeader';
@@ -47,6 +46,10 @@ export default function WorkspacePage() {
     messages,
     isChatting,
     isEvaluating,
+    isLoadingHistory,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
     inputMessage,
     setInputMessage,
     showExplainToPassForm,
@@ -54,7 +57,6 @@ export default function WorkspacePage() {
     setMcqAnswer,
     explanation,
     setExplanation,
-    initChatForTask,
     handleSubmitCode,
     handleOpenExplainToPass,
     handleExplainToPassSubmit,
@@ -68,13 +70,6 @@ export default function WorkspacePage() {
     taskDetails,
     onTaskCompleted: markCurrentTaskCompleted,
   });
-
-  // Sync chat history with active task changes
-  useEffect(() => {
-    if (taskDetails) {
-      void initChatForTask(taskDetails.title);
-    }
-  }, [taskDetails, initChatForTask]);
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
   const currentProgress = projectDetails?.progressPercentage ?? 0;
@@ -170,6 +165,10 @@ export default function WorkspacePage() {
           messages={messages}
           isEvaluating={isEvaluating}
           isChatting={isChatting}
+          isLoadingHistory={isLoadingHistory}
+          isFetchingNextPage={isFetchingNextPage}
+          hasNextPage={hasNextPage}
+          onLoadOlderMessages={() => void fetchNextPage()}
           inputMessage={inputMessage}
           onInputChange={setInputMessage}
           onSendMessage={handleSendTextMessage}

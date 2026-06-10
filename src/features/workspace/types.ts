@@ -37,7 +37,10 @@ export interface AIChatResponse {
 
 export interface AIChatHistoryResponse {
   success: boolean;
-  data: ChatMessage[];
+  data: {
+    messages: ChatMessage[];
+    nextCursor: string | null;
+  };
 }
 
 export interface ChatMessage {

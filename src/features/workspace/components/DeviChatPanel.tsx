@@ -1,3 +1,5 @@
+import { useEffect } from 'react';
+import { useInView } from 'react-intersection-observer';
 import mascot from '../../../assets/mascot.png';
 import ReactMarkdown from 'react-markdown';
 import type { ChatMessage } from '../types';
@@ -6,6 +8,10 @@ interface DeviChatPanelProps {
   messages: ChatMessage[];
   isEvaluating: boolean;
   isChatting: boolean;
+  isLoadingHistory: boolean;
+  isFetchingNextPage: boolean;
+  hasNextPage: boolean;
+  onLoadOlderMessages: () => void;
   inputMessage: string;
   onInputChange: (value: string) => void;
   onSendMessage: (e: React.FormEvent) => void;
@@ -16,11 +22,27 @@ export function DeviChatPanel({
   messages,
   isEvaluating,
   isChatting,
+  isLoadingHistory,
+  isFetchingNextPage,
+  hasNextPage,
+  onLoadOlderMessages,
   inputMessage,
   onInputChange,
   onSendMessage,
   onOpenExplainToPass,
 }: DeviChatPanelProps) {
+  const { ref: loadOlderRef, inView } = useInView({
+    rootMargin: '100px',
+  });
+
+  useEffect(() => {
+    if (inView && hasNextPage && !isFetchingNextPage) {
+      onLoadOlderMessages();
+    }
+  }, [inView, hasNextPage, isFetchingNextPage, onLoadOlderMessages]);
+
+  const displayMessages = [...messages].reverse();
+
   return (
     <aside className="hidden xl:flex w-84 flex-shrink-0 bg-primary-soft border-l border-primary-mid flex-col h-full overflow-hidden">
       {/* Header Panel */}
@@ -34,8 +56,23 @@ export function DeviChatPanel({
       </div>
 
       {/* Chat Messages Log */}
-      <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col bg-transparent">
-        {messages.map((msg) => (
+      <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse bg-transparent">
+        {(isEvaluating || isChatting) && (
+          <div className="flex gap-2 max-w-[85%] self-start items-start animate-pulse">
+            <div className="w-7 h-7 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center text-xs flex-shrink-0">
+              <img
+                src={mascot}
+                alt="Devi Avatar"
+                className="w-full h-full object-cover"
+              />
+            </div>
+            <div className="px-3.5 py-2 text-xs rounded-2xl rounded-tl-none bg-purple-50 text-purple-600 font-medium border border-purple-100 italic">
+              {isEvaluating ? 'Reviewing your code...' : 'Thinking...'}
+            </div>
+          </div>
+        )}
+
+        {displayMessages.map((msg) => (
           <div
             key={msg.id}
             className={`flex gap-2 max-w-[85%] ${
@@ -44,7 +81,6 @@ export function DeviChatPanel({
                 : 'self-start items-start'
             }`}
           >
-            {/* AI Avatar capybara */}
             {msg.sender === 'ai' && (
               <div className="w-7 h-7 rounded-full overflow-hidden border border-amber-200 flex items-center justify-center shadow-sm flex-shrink-0 bg-amber-50">
                 <img
@@ -55,7 +91,6 @@ export function DeviChatPanel({
               </div>
             )}
 
-            {/* Message Bubble */}
             <div
               className={`px-3.5 py-2 text-xs rounded-2xl shadow-sm leading-relaxed min-w-0 break-words ${
                 msg.sender === 'user'
@@ -121,21 +156,19 @@ export function DeviChatPanel({
           </div>
         ))}
 
-        {/* AI Reviewing Loading Bubble */}
-        {(isEvaluating || isChatting) && (
-          <div className="flex gap-2 max-w-[85%] self-start items-start animate-pulse">
-            <div className="w-7 h-7 rounded-full bg-purple-100 border border-purple-200 flex items-center justify-center text-xs flex-shrink-0">
-              <img
-                src={mascot}
-                alt="Devi Avatar"
-                className="w-full h-full object-cover"
-              />
-            </div>
-            <div className="px-3.5 py-2 text-xs rounded-2xl rounded-tl-none bg-purple-50 text-purple-600 font-medium border border-purple-100 italic">
-              {isEvaluating ? 'Reviewing your code...' : 'Thinking...'}
-            </div>
+        {isLoadingHistory && (
+          <div className="py-2 text-center text-[11px] text-slate-400 italic">
+            Loading chat...
           </div>
         )}
+
+        {isFetchingNextPage && (
+          <div className="py-2 text-center text-[11px] text-slate-400 italic">
+            Loading older messages...
+          </div>
+        )}
+
+        {hasNextPage && <div ref={loadOlderRef} className="h-px w-full" />}
       </div>
 
       {/* Input Form */}
@@ -146,12 +179,17 @@ export function DeviChatPanel({
             value={inputMessage}
             onChange={(e) => onInputChange(e.target.value)}
             placeholder="Ask Devi for help..."
-            disabled={isEvaluating || isChatting}
+            disabled={isEvaluating || isChatting || isLoadingHistory}
             className="flex-1 px-3 py-2 text-xs rounded-xl border border-slate-200 bg-white text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 disabled:opacity-50 disabled:cursor-not-allowed"
           />
           <button
             type="submit"
-            disabled={!inputMessage.trim() || isEvaluating || isChatting}
+            disabled={
+              !inputMessage.trim() ||
+              isEvaluating ||
+              isChatting ||
+              isLoadingHistory
+            }
             className="px-3 py-2 text-xs font-semibold text-white bg-primary hover:opacity-90 rounded-xl shadow-sm transition disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Send
