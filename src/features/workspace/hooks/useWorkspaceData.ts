@@ -58,7 +58,6 @@ export function useWorkspaceData(projectId: string | undefined) {
                   ) {
                     assignedStatus = 'current';
                   }
-                  assignedStatus = 'current';
                   return {
                     id: task?._id || task?.id || '',
                     title: task?.title || '',
