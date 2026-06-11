@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
 import { Header } from '../../components/ui/Header';
 
@@ -30,6 +30,7 @@ export default function RoadmapLayout() {
     execute: fetchTaskDetails,
     setData: setTaskDetails,
   } = useApi(RoadmapService.getTaskDetails);
+
   // EFFECT 1: Fetch roadmap when projectId changes
   useEffect(() => {
     if (cleanProjectId && cleanProjectId !== 'undefined') {
@@ -38,21 +39,11 @@ export default function RoadmapLayout() {
   }, [cleanProjectId, fetchRoadmap]);
 
   const projectDetails = roadmapDataResult?.project ?? null;
+  const roadmapData = roadmapDataResult?.modules ?? [];
+  const currentProgress = roadmapDataResult?.calculatedProgress ?? 0;
 
-  const roadmapData = useMemo(() => {
-    return roadmapDataResult?.modules ?? [];
-  }, [roadmapDataResult]);
-
-  // DYNAMIC COMPUTATION
-  const activeTaskId = useMemo(() => {
-    if (selectedTaskId) return selectedTaskId;
-
-    if (roadmapData.length > 0 && roadmapData[0].tasks.length > 0) {
-      return roadmapData[0].tasks[0].id;
-    }
-
-    return '';
-  }, [selectedTaskId, roadmapData]);
+  const activeTaskId = selectedTaskId || roadmapDataResult?.defaultTaskId || '';
+  const currentProjectName = projectDetails?.title || 'Loading project...';
 
   // EFFECT 2: Fetch task details when activeTaskId changes
   useEffect(() => {
@@ -62,27 +53,6 @@ export default function RoadmapLayout() {
       setTaskDetails(null);
     }
   }, [activeTaskId, fetchTaskDetails, setTaskDetails]);
-
-  const currentProjectName = projectDetails?.title || 'Loading project...';
-
-  const currentProgress = useMemo(() => {
-    if (projectDetails?.progressPercentage !== undefined) {
-      return projectDetails.progressPercentage;
-    }
-
-    let totalTasks = 0;
-    let completedTasks = 0;
-
-    roadmapData.forEach((module) => {
-      totalTasks += module.tasks.length;
-      completedTasks += module.tasks.filter(
-        (task) => task.status === 'completed',
-      ).length;
-    });
-
-    if (totalTasks === 0) return 0;
-    return Math.round((completedTasks / totalTasks) * 100);
-  }, [projectDetails, roadmapData]);
 
   if (loadingRoadmap) {
     return (

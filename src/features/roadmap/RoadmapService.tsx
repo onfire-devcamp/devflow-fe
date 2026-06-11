@@ -16,13 +16,53 @@ const apiClient = axios.create({
   },
 });
 
+// status function
+
+const mapTaskStatus = (status?: string): 'completed' | 'current' | 'locked' => {
+  if (status === 'completed' || status === 'passed') return 'completed';
+  if (status === 'current' || status === 'unlocked') return 'current';
+  return 'locked';
+};
+
+const calculateProgress = (
+  modules: CategoryGroup[],
+  providedPercentage?: number,
+): number => {
+  if (providedPercentage !== undefined) return providedPercentage;
+
+  let totalTasks = 0;
+  let completedTasks = 0;
+
+  modules.forEach((module) => {
+    totalTasks += module.tasks.length;
+    completedTasks += module.tasks.filter(
+      (task) => task.status === 'completed',
+    ).length;
+  });
+
+  if (totalTasks === 0) return 0;
+  return Math.round((completedTasks / totalTasks) * 100);
+};
+
+const getFirstTaskId = (modules: CategoryGroup[]): string => {
+  if (modules.length > 0 && modules[0].tasks.length > 0) {
+    return modules[0].tasks[0].id;
+  }
+  return '';
+};
+
 export const RoadmapService = {
   /**
    * Fetches and processes project roadmap data directly for UI consumption
    */
   getProjectRoadmap: async (
     projectId: string,
-  ): Promise<{ project: ProjectDetails | null; modules: CategoryGroup[] }> => {
+  ): Promise<{
+    project: ProjectDetails | null;
+    modules: CategoryGroup[];
+    defaultTaskId: string;
+    calculatedProgress: number;
+  }> => {
     const response = await apiClient.get<APIRoadmapResponse>(
       `/api/project/${projectId}/roadmap`,
     );
@@ -35,51 +75,45 @@ export const RoadmapService = {
 
     const { project, modules } = resJson.data;
 
-    // 1. Map Project Details
-    const mappedProject: ProjectDetails | null = project
-      ? {
-          title: project.title,
-          description: project.description,
-          progressPercentage: project.progressPercentage,
-        }
-      : null;
-
-    // 2. Map Roadmap Modules
+    // 1. Map Roadmap Modules
     const mappedModules: CategoryGroup[] = Array.isArray(modules)
       ? modules.map(
           (module: RawModuleFromAPI): CategoryGroup => ({
             category: (module?.title || '').toUpperCase(),
             tasks: Array.isArray(module?.tasks)
-              ? module.tasks.map((task: RawTaskFromAPI): Task => {
-                  let assignedStatus: 'completed' | 'current' | 'locked' =
-                    'locked';
-
-                  if (
-                    task?.status === 'completed' ||
-                    task?.status === 'passed'
-                  ) {
-                    assignedStatus = 'completed';
-                  } else if (
-                    task?.status === 'current' ||
-                    task?.status === 'unlocked'
-                  ) {
-                    assignedStatus = 'current';
-                  }
-
-                  return {
+              ? module.tasks.map(
+                  (task: RawTaskFromAPI): Task => ({
                     id: task?._id || task?.id || '',
                     title: task?.title || '',
-                    status: assignedStatus,
-                  };
-                })
+                    status: mapTaskStatus(task?.status),
+                  }),
+                )
               : [],
           }),
         )
       : [];
 
+    // 2. Compute UI-specific logic
+    const calculatedProgress = calculateProgress(
+      mappedModules,
+      project?.progressPercentage,
+    );
+    const defaultTaskId = getFirstTaskId(mappedModules);
+
+    // 3. Map Project Details
+    const mappedProject: ProjectDetails | null = project
+      ? {
+          title: project.title,
+          description: project.description,
+          progressPercentage: calculatedProgress,
+        }
+      : null;
+
     return {
       project: mappedProject,
       modules: mappedModules,
+      defaultTaskId,
+      calculatedProgress,
     };
   },
 
