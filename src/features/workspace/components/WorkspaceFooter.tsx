@@ -1,5 +1,6 @@
 import { Star, Send } from 'lucide-react';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
+import { Button } from '../../../components/ui/Button';
 
 interface WorkspaceFooterProps {
   taskDetails: TaskDetailsState | null;
@@ -29,22 +30,21 @@ export function WorkspaceFooter({
       </div>
 
       <div className="flex items-center gap-3">
-        <button
+        <Button
+          variant="outline"
           onClick={onResetToSkeleton}
-          className="px-4 py-2 text-xs font-semibold text-slate-500 bg-white hover:bg-slate-50 rounded-xl border border-slate-200 transition shadow-sm cursor-pointer"
+          className="!w-auto px-4 !py-2 text-xs"
         >
           Reset to skeleton
-        </button>
-        <button
+        </Button>
+        <Button
           onClick={onSubmitCode}
           disabled={isEvaluating}
-          className={`px-5 py-2 text-xs font-semibold text-white bg-primary hover:opacity-90 rounded-xl shadow-md flex items-center gap-1.5 transition cursor-pointer ${
-            isEvaluating ? 'opacity-60 cursor-not-allowed' : ''
-          }`}
+          className="!w-auto px-5 !py-2 text-xs flex items-center gap-1.5"
         >
           <span>{isEvaluating ? 'Reviewing...' : 'Submit code'}</span>
           <Send className="w-3.5 h-3.5 transform rotate-90 flex-shrink-0" />
-        </button>
+        </Button>
       </div>
     </div>
   );

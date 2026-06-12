@@ -1,4 +1,4 @@
-import { useMemo, useCallback, useState } from 'react';
+import { useMemo, useCallback } from 'react';
 import type { editor } from 'monaco-editor';
 import {
   useInfiniteQuery,
@@ -7,7 +7,12 @@ import {
   type InfiniteData,
 } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
-import type { AIChatHistoryResponse, ChatMessage } from '../types';
+import type {
+  AIChatHistoryResponse,
+  ChatMessage,
+  RequestAiHintParams,
+  SubmitExplainToPassParams,
+} from '../types';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
 
 const CHAT_PAGE_SIZE = 4;
@@ -33,14 +38,6 @@ export function useDeviChat({
   onTaskCompleted,
 }: UseDeviChatParams) {
   const queryClient = useQueryClient();
-  const [isEvaluating, setIsEvaluating] = useState<boolean>(false);
-  const [isHintChatting, setIsHintChatting] = useState<boolean>(false);
-  const [inputMessage, setInputMessage] = useState<string>('');
-  const [showExplainToPassForm, setShowExplainToPassForm] =
-    useState<boolean>(false);
-  const [mcqAnswer, setMcqAnswer] = useState<string>('');
-  const [explanation, setExplanation] = useState<string>('');
-
   const trimmedProjectId = projectId?.trim() ?? '';
   const isChatEnabled = Boolean(trimmedProjectId && activeTaskId);
 
@@ -60,15 +57,16 @@ export function useDeviChat({
         CHAT_PAGE_SIZE,
       ),
     initialPageParam: undefined as string | undefined,
-    getNextPageParam: (lastPage) => lastPage.data.nextCursor ?? undefined,
+    getNextPageParam: (lastPage) => lastPage.data?.nextCursor ?? undefined,
     enabled: isChatEnabled,
   });
 
   const messages = useMemo(() => {
     if (!data?.pages.length) return [];
-
-    return [...data.pages].reverse().flatMap((page) => page.data.messages);
-  }, [data?.pages]);
+    return [...data.pages]
+      .reverse()
+      .flatMap((page) => page.data?.messages ?? []);
+  }, [data]);
 
   const invalidateChatHistory = useCallback(async () => {
     if (!isChatEnabled) return;
@@ -80,7 +78,6 @@ export function useDeviChat({
   const persistChatMessage = useCallback(
     (message: ChatMessage) => {
       if (!isChatEnabled) return;
-
       void workspaceApi
         .appendChatMessage({
           projectId: trimmedProjectId,
@@ -97,7 +94,7 @@ export function useDeviChat({
     [trimmedProjectId, activeTaskId, isChatEnabled, invalidateChatHistory],
   );
 
-  const sendMessageMutation = useMutation({
+  const { mutate: sendMessage, isPending: isSendingMessage } = useMutation({
     mutationFn: (message: string) =>
       workspaceApi.sendAiChatMessage({
         projectId: trimmedProjectId,
@@ -131,7 +128,6 @@ export function useDeviChat({
               pageParams: [undefined],
             };
           }
-
           return {
             ...old,
             pages: old.pages.map((page, index) =>
@@ -164,20 +160,13 @@ export function useDeviChat({
     },
   });
 
-  const handleSubmitCode = useCallback(async () => {
-    if (!isChatEnabled || !taskDetails) return;
-
-    const targetFileId = taskDetails.files[0]?._id;
-    if (!targetFileId) return;
-
-    setIsEvaluating(true);
-
-    try {
-      const response = await workspaceApi.evaluateCode({
+  const { mutate: submitCode, isPending: isSubmittingCode } = useMutation({
+    mutationFn: () =>
+      workspaceApi.evaluateCode({
         projectId: trimmedProjectId,
         taskId: activeTaskId,
-      });
-
+      }),
+    onSuccess: (response) => {
       if (!response?.success) {
         persistChatMessage({
           id: `ai-err-${Date.now()}`,
@@ -185,67 +174,52 @@ export function useDeviChat({
           text: "Devi couldn't evaluate the code right now. Please try again later.",
         });
       } else {
-        await invalidateChatHistory();
+        void invalidateChatHistory();
       }
-    } catch (err: unknown) {
+    },
+    onError: (err) => {
       console.error('Code evaluation error:', err);
       persistChatMessage({
         id: `ai-catch-${Date.now()}`,
         sender: 'ai',
         text: 'Devi is having trouble evaluating the code right now. Please try again later.',
       });
-    } finally {
-      setIsEvaluating(false);
-    }
-  }, [
-    isChatEnabled,
-    taskDetails,
-    trimmedProjectId,
-    activeTaskId,
-    persistChatMessage,
-    invalidateChatHistory,
-  ]);
+    },
+  });
 
-  const handleOpenExplainToPass = useCallback(() => {
-    setMcqAnswer('');
-    setExplanation('');
-    setShowExplainToPassForm(true);
-  }, []);
+  const handleSubmitCode = useCallback(() => {
+    if (!isChatEnabled || !taskDetails) return;
+    const targetFileId = taskDetails.files[0]?._id;
+    if (!targetFileId) return;
 
-  const handleExplainToPassSubmit = useCallback(
-    async (e: React.FormEvent) => {
-      e.preventDefault();
-      if (!isChatEnabled || !taskDetails) return;
-      if (!mcqAnswer || !explanation.trim()) return;
+    submitCode();
+  }, [isChatEnabled, taskDetails, submitCode]);
 
-      setIsEvaluating(true);
-
-      try {
-        const response = await workspaceApi.submitExplainToPass({
+  const { mutate: submitExplainToPass, isPending: isExplainingToPass } =
+    useMutation({
+      mutationFn: (
+        params: Pick<SubmitExplainToPassParams, 'mcqAnswer' | 'explanation'>,
+      ) =>
+        workspaceApi.submitExplainToPass({
           projectId: trimmedProjectId,
           taskId: activeTaskId,
-          mcqAnswer,
-          explanation: explanation.trim(),
-        });
-
+          ...params,
+        }),
+      onSuccess: (response) => {
         if (response?.success && response.data) {
           const totalScore = response.data.score ?? 0;
           const passStatus = response.data.passStatus ?? 'UNKNOWN';
           const didPass = passStatus === 'PASS' && Number(totalScore) >= 7;
 
-          setShowExplainToPassForm(false);
-          setMcqAnswer('');
-          setExplanation('');
-
           if (didPass) {
             onTaskCompleted();
           }
-
-          await invalidateChatHistory();
+          void invalidateChatHistory();
         } else {
           throw new Error('Invalid explain-to-pass response');
         }
-      } catch (err: unknown) {
+      },
+      onError: (err) => {
         console.error('Error during Explain-to-Pass submission:', err);
         persistChatMessage({
           id: `ai-explain-err-${Date.now()}`,
@@ -253,25 +227,52 @@ export function useDeviChat({
           text: 'Devi could not grade the Explain-to-Pass answer yet. Please try again.',
           isPassAction: true,
         });
-      } finally {
-        setIsEvaluating(false);
-      }
+      },
+    });
+
+  const handleExplainToPassSubmit = useCallback(
+    (mcqAnswer: string, explanation: string) => {
+      if (!isChatEnabled || !taskDetails) return;
+      if (!mcqAnswer || !explanation.trim()) return;
+
+      submitExplainToPass({ mcqAnswer, explanation });
     },
-    [
-      isChatEnabled,
-      taskDetails,
-      trimmedProjectId,
-      activeTaskId,
-      mcqAnswer,
-      explanation,
-      onTaskCompleted,
-      persistChatMessage,
-      invalidateChatHistory,
-    ],
+    [isChatEnabled, taskDetails, submitExplainToPass],
   );
 
+  const { mutate: requestQuickAction, isPending: isRequestingQuickAction } =
+    useMutation({
+      mutationFn: (
+        params: Pick<
+          RequestAiHintParams,
+          'type' | 'selectedCode' | 'userQuestion'
+        >,
+      ) =>
+        workspaceApi.requestAiHint({
+          projectId: trimmedProjectId,
+          taskId: activeTaskId,
+          fileId: activeFileId!,
+          ...params,
+        }),
+      onSuccess: (response) => {
+        if (response?.success && response.data) {
+          void invalidateChatHistory();
+        } else {
+          throw new Error('Invalid response');
+        }
+      },
+      onError: (err) => {
+        console.error('AI quick action error:', err);
+        persistChatMessage({
+          id: `ai-hint-err-${Date.now()}`,
+          sender: 'ai',
+          text: 'Devi is having trouble providing the hint right now. Please try again later.',
+        });
+      },
+    });
+
   const handleQuickAction = useCallback(
-    async (type: 'explain' | 'hint') => {
+    (type: 'explain' | 'hint') => {
       if (!isChatEnabled || !activeFileId || !editorInstance) return;
 
       const selection = editorInstance.getSelection();
@@ -286,74 +287,32 @@ export function useDeviChat({
           ? 'Can you explain this highlighted code?'
           : 'Can you give me a hint for this highlighted code?';
 
-      setIsHintChatting(true);
-
-      try {
-        const response = await workspaceApi.requestAiHint({
-          projectId: trimmedProjectId,
-          taskId: activeTaskId,
-          fileId: activeFileId,
-          type,
-          selectedCode: selectedText,
-          userQuestion: actionText,
-        });
-
-        if (response?.success && response.data) {
-          await invalidateChatHistory();
-        } else {
-          throw new Error('Invalid response');
-        }
-      } catch (err: unknown) {
-        console.error('AI quick action error:', err);
-        persistChatMessage({
-          id: `ai-hint-err-${Date.now()}`,
-          sender: 'ai',
-          text: 'Devi is having trouble providing the hint right now. Please try again later.',
-        });
-      } finally {
-        setIsHintChatting(false);
-      }
+      requestQuickAction({
+        type,
+        selectedCode: selectedText,
+        userQuestion: actionText,
+      });
     },
-    [
-      isChatEnabled,
-      activeFileId,
-      editorInstance,
-      trimmedProjectId,
-      activeTaskId,
-      persistChatMessage,
-      invalidateChatHistory,
-    ],
+    [isChatEnabled, activeFileId, editorInstance, requestQuickAction],
   );
 
   const handleSendTextMessage = useCallback(
-    (e: React.FormEvent) => {
-      e.preventDefault();
-      const question = inputMessage.trim();
-      if (!question || !isChatEnabled) return;
-
-      setInputMessage('');
-      sendMessageMutation.mutate(question);
+    (question: string) => {
+      if (!question.trim() || !isChatEnabled) return;
+      sendMessage(question.trim());
     },
-    [inputMessage, isChatEnabled, sendMessageMutation],
+    [isChatEnabled, sendMessage],
   );
 
   return {
     messages,
-    isChatting: isHintChatting || sendMessageMutation.isPending,
-    isEvaluating,
+    isChatting: isRequestingQuickAction || isSendingMessage,
+    isEvaluating: isSubmittingCode || isExplainingToPass,
     isLoadingHistory,
     isFetchingNextPage,
     hasNextPage: Boolean(hasNextPage),
     fetchNextPage,
-    inputMessage,
-    setInputMessage,
-    showExplainToPassForm,
-    mcqAnswer,
-    setMcqAnswer,
-    explanation,
-    setExplanation,
     handleSubmitCode,
-    handleOpenExplainToPass,
     handleExplainToPassSubmit,
     handleQuickAction,
     handleSendTextMessage,

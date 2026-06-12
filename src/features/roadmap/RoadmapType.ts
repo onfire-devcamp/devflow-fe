@@ -1,7 +1,9 @@
+export type TaskStatus = 'completed' | 'current' | 'locked';
+
 export interface Task {
   id: string;
   title: string;
-  status: 'completed' | 'current' | 'locked';
+  status: TaskStatus;
 }
 
 export interface CategoryGroup {
@@ -24,7 +26,7 @@ export interface SidebarHeaderProps {
 export interface RoadmapTaskItemButtonProps {
   children: React.ReactNode;
   isSelected: boolean;
-  status: 'completed' | 'current' | 'locked';
+  status: TaskStatus;
   onClick: () => void;
 }
 export interface TaskListProps {
@@ -111,7 +113,7 @@ export interface APITaskDetailsResponse {
       concepts?: string;
       mcq?: {
         question?: string;
-        options?: string[];
+        options?: { id: string; text: string }[];
       };
       skillCategory?: string;
       fileId: TaskFile[];
@@ -128,7 +130,7 @@ export interface TaskDetailsState {
   skillPoints: number;
   mcq?: {
     question?: string;
-    options?: string[];
+    options?: { id: string; text: string }[];
   };
   files: TaskFile[];
 }

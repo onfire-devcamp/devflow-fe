@@ -1,29 +1,35 @@
+import { useState } from 'react';
 import { X } from 'lucide-react';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
+import { Button } from '../../../components/ui/Button';
 
 interface ExplainToPassModalProps {
   taskDetails: TaskDetailsState | null;
   showForm: boolean;
-  mcqAnswer: string;
-  explanation: string;
   isEvaluating: boolean;
-  onMcqAnswerChange: (value: string) => void;
-  onExplanationChange: (value: string) => void;
-  onSubmit: (e: React.FormEvent) => void;
+  onSubmit: (mcqAnswer: string, explanation: string) => void;
   onClose: () => void;
 }
 
 export function ExplainToPassModal({
   taskDetails,
   showForm,
-  mcqAnswer,
-  explanation,
   isEvaluating,
-  onMcqAnswerChange,
-  onExplanationChange,
   onSubmit,
   onClose,
 }: ExplainToPassModalProps) {
+  const [mcqAnswer, setMcqAnswer] = useState('');
+  const [explanation, setExplanation] = useState('');
+
+  const [prevShowForm, setPrevShowForm] = useState(showForm);
+  if (showForm !== prevShowForm) {
+    setPrevShowForm(showForm);
+    if (showForm) {
+      setMcqAnswer('');
+      setExplanation('');
+    }
+  }
+
   if (!showForm || !taskDetails) return null;
 
   const explainToPassMcq = taskDetails.mcq;
@@ -33,15 +39,21 @@ export function ExplainToPassModal({
   const hasExplainToPassMcq =
     Boolean(explainToPassMcq?.question) && explainToPassMcqOptions.length > 0;
 
+  const handleSubmit = () => {
+    if (!mcqAnswer || !explanation.trim() || isEvaluating) return;
+    onSubmit(mcqAnswer, explanation);
+  };
+
   return (
     <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4">
       <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md p-6 relative">
-        <button
+        <Button
+          variant="ghost"
           onClick={onClose}
-          className="absolute top-4 right-4 text-slate-400 hover:text-slate-600 transition"
+          className="absolute top-4 right-4 !w-auto !p-1 text-slate-400 hover:text-slate-600 transition"
         >
           <X size={20} />
-        </button>
+        </Button>
 
         <h3 className="text-lg font-bold text-slate-800 mb-4">
           Explain-to-Pass
@@ -54,16 +66,8 @@ export function ExplainToPassModal({
             </p>
             <div className="space-y-2">
               {explainToPassMcqOptions.map((option, index) => {
-                const optionText =
-                  typeof option === 'string'
-                    ? option
-                    : String(
-                        (option as Record<string, unknown>)?.text ?? option,
-                      );
-                const optionValue =
-                  typeof option === 'string'
-                    ? option
-                    : String((option as Record<string, unknown>)?.id ?? option);
+                const optionText = option.text;
+                const optionValue = option.id;
 
                 return (
                   <label
@@ -79,7 +83,7 @@ export function ExplainToPassModal({
                       name="mcq-answer"
                       value={optionValue}
                       checked={mcqAnswer === optionValue}
-                      onChange={(e) => onMcqAnswerChange(e.target.value)}
+                      onChange={(e) => setMcqAnswer(e.target.value)}
                       className="w-4 h-4 text-primary focus:ring-primary"
                     />
                     <span className="text-sm text-slate-700">{optionText}</span>
@@ -96,20 +100,20 @@ export function ExplainToPassModal({
           </label>
           <textarea
             value={explanation}
-            onChange={(e) => onExplanationChange(e.target.value)}
+            onChange={(e) => setExplanation(e.target.value)}
             placeholder="Briefly explain why you chose this answer..."
             rows={3}
             className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
           />
         </div>
 
-        <button
-          onClick={onSubmit}
+        <Button
+          onClick={handleSubmit}
           disabled={!mcqAnswer || !explanation.trim() || isEvaluating}
-          className="w-full px-4 py-2.5 text-sm font-semibold text-white bg-primary hover:opacity-90 rounded-xl shadow-md transition disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full px-4 !py-2.5 text-sm"
         >
           {isEvaluating ? 'Submitting...' : 'Submit Explanation'}
-        </button>
+        </Button>
       </div>
     </div>
   );

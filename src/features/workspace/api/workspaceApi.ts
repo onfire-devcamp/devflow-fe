@@ -20,19 +20,19 @@ import type {
 
 export const workspaceApi = {
   async fetchProjectRoadmap(projectId: string): Promise<APIRoadmapResponse> {
-    const response = await axiosClient.get(
+    return axiosClient.get<APIRoadmapResponse, APIRoadmapResponse>(
       `/project/${projectId.trim()}/roadmap`,
     );
-    return response.data;
   },
 
   async fetchTaskDetails(taskId: string): Promise<APITaskDetailsResponse> {
-    const response = await axiosClient.get(`/project/tasks/${taskId}`);
-    return response.data;
+    return axiosClient.get<APITaskDetailsResponse, APITaskDetailsResponse>(
+      `/project/tasks/${taskId}`,
+    );
   },
 
   async autoSaveTaskFile(params: AutoSaveParams): Promise<void> {
-    await axiosClient.put('/workspace/file', {
+    return axiosClient.put('/workspace/file', {
       projectId: params.projectId.trim(),
       fileId: params.fileId,
       newContent: params.newContent,
@@ -40,27 +40,31 @@ export const workspaceApi = {
   },
 
   async evaluateCode(params: EvaluateCodeParams): Promise<AIEvaluateResponse> {
-    const response = await axiosClient.post('/ai/evaluate', {
-      projectId: params.projectId.trim(),
-      taskId: params.taskId,
-    });
-    return response.data;
+    return axiosClient.post<AIEvaluateResponse, AIEvaluateResponse>(
+      '/ai/evaluate',
+      {
+        projectId: params.projectId.trim(),
+        taskId: params.taskId,
+      },
+    );
   },
 
   async submitExplainToPass(
     params: SubmitExplainToPassParams,
   ): Promise<AIExplainToPassResponse> {
-    const response = await axiosClient.post('/ai/explain-to-pass', {
-      projectId: params.projectId.trim(),
-      taskId: params.taskId,
-      mcqAnswer: params.mcqAnswer,
-      explanation: params.explanation.trim(),
-    });
-    return response.data;
+    return axiosClient.post<AIExplainToPassResponse, AIExplainToPassResponse>(
+      '/ai/explain-to-pass',
+      {
+        projectId: params.projectId.trim(),
+        taskId: params.taskId,
+        mcqAnswer: params.mcqAnswer,
+        explanation: params.explanation.trim(),
+      },
+    );
   },
 
   async requestAiHint(params: RequestAiHintParams): Promise<AIHintResponse> {
-    const response = await axiosClient.post('/ai/hint', {
+    return axiosClient.post<AIHintResponse, AIHintResponse>('/ai/hint', {
       projectId: params.projectId.trim(),
       taskId: params.taskId,
       fileId: params.fileId,
@@ -68,18 +72,16 @@ export const workspaceApi = {
       selectedCode: params.selectedCode,
       userQuestion: params.userQuestion,
     });
-    return response.data;
   },
 
   async sendAiChatMessage(
     params: SendAiChatMessageParams,
   ): Promise<AIChatResponse> {
-    const response = await axiosClient.post('/ai/chat', {
+    return axiosClient.post<AIChatResponse, AIChatResponse>('/ai/chat', {
       projectId: params.projectId.trim(),
       taskId: params.taskId,
       message: params.message,
     });
-    return response.data;
   },
 
   async fetchChatHistory(
@@ -91,22 +93,23 @@ export const workspaceApi = {
     const params = new URLSearchParams({ limit: limit.toString() });
     if (cursor) params.append('cursor', cursor);
 
-    const response = await axiosClient.get(
+    return axiosClient.get<AIChatHistoryResponse, AIChatHistoryResponse>(
       `/ai/chat/${projectId.trim()}/${taskId}?${params.toString()}`,
     );
-    return response.data;
   },
 
   async appendChatMessage(
     params: AppendChatMessageParams,
   ): Promise<AppendChatMessageResponse> {
-    const response = await axiosClient.post('/ai/chat/message', {
+    return axiosClient.post<
+      AppendChatMessageResponse,
+      AppendChatMessageResponse
+    >('/ai/chat/message', {
       projectId: params.projectId.trim(),
       taskId: params.taskId,
       sender: params.sender,
       text: params.text,
       isPassAction: params.isPassAction,
     });
-    return response.data;
   },
 };

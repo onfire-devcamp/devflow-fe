@@ -43,9 +43,11 @@ export interface AIChatHistoryResponse {
   };
 }
 
+export type ChatSender = 'user' | 'ai';
+
 export interface ChatMessage {
   id: string;
-  sender: 'user' | 'ai';
+  sender: ChatSender;
   text: string;
   isPassAction?: boolean;
 }
@@ -114,7 +116,7 @@ export interface SendAiChatMessageParams {
 export interface AppendChatMessageParams {
   projectId: string;
   taskId: string;
-  sender: 'user' | 'ai';
+  sender: ChatSender;
   text: string;
   isPassAction?: boolean;
 }

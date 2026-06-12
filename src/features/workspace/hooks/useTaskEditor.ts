@@ -1,92 +1,89 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { editor } from 'monaco-editor';
+import { useQuery, useMutation } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
-import { useApi } from '../../roadmap/UseAPI';
-import type {
-  TaskDetailsState,
-  TaskFile,
-  APITaskDetailsResponse,
-} from '../../roadmap/RoadmapType';
+import type { TaskFile } from '../../roadmap/RoadmapType';
 
 export function useTaskEditor(
   projectId: string | undefined,
   activeTaskId: string,
 ) {
-  const [taskDetails, setTaskDetails] = useState<TaskDetailsState | null>(null);
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
-  const [fileContents, setFileContents] = useState<Record<string, string>>({});
+  const [edits, setEdits] = useState<Record<string, string>>({});
   const [editorInstance, setEditorInstance] =
     useState<editor.IStandaloneCodeEditor | null>(null);
   const [hasSelection, setHasSelection] = useState<boolean>(false);
+  const [prevTaskId, setPrevTaskId] = useState(activeTaskId);
 
-  const { execute: fetchTaskDetails, loading: loadingTask } = useApi<
-    APITaskDetailsResponse,
-    [string]
-  >(workspaceApi.fetchTaskDetails);
+  // Sync state cleanly without effects
+  if (activeTaskId !== prevTaskId) {
+    setPrevTaskId(activeTaskId);
+    setActiveFileId(null);
+    setEdits({});
+    setHasSelection(false);
+  }
 
-  useEffect(() => {
-    if (!activeTaskId) return;
-
-    fetchTaskDetails(activeTaskId).then((response) => {
-      if (!response || !response.success || !response.data?.task) {
-        setTaskDetails(null);
-        return;
-      }
-
-      const fetchedTask = response.data.task;
-      const files = fetchedTask.fileId || [];
-      setTaskDetails({
-        _id: fetchedTask._id,
-        title: fetchedTask.title,
-        description: fetchedTask.description,
-        skillPoints: fetchedTask.skillPoints || 10,
-        mcq: fetchedTask.mcq,
-        files: fetchedTask.fileId || [],
-      });
-
-      setFileContents((prev) => {
-        const nextContents = { ...prev };
-        files.forEach((f: TaskFile) => {
-          if (nextContents[f._id] === undefined) {
-            nextContents[f._id] = f.content || '';
+  const { data: taskDetails, isLoading: loadingTask } = useQuery({
+    queryKey: ['taskDetails', activeTaskId],
+    queryFn: () => workspaceApi.fetchTaskDetails(activeTaskId),
+    enabled: !!activeTaskId,
+    select: (res) => {
+      const fetchedTask = res?.data?.task;
+      return fetchedTask
+        ? {
+            _id: fetchedTask._id,
+            title: fetchedTask.title,
+            description: fetchedTask.description,
+            skillPoints: fetchedTask.skillPoints || 10,
+            mcq: fetchedTask.mcq,
+            files: fetchedTask.fileId || [],
           }
-        });
-        return nextContents;
+        : null;
+    },
+  });
+
+  const activeFileIdToUse =
+    activeFileId || taskDetails?.files?.[0]?._id || null;
+
+  const fileContents = useMemo(() => {
+    const contents: Record<string, string> = {};
+    if (taskDetails) {
+      taskDetails.files.forEach((f: TaskFile) => {
+        contents[f._id] =
+          edits[f._id] !== undefined ? edits[f._id] : f.content || '';
       });
+    }
+    return contents;
+  }, [taskDetails, edits]);
 
-      if (files.length > 0) {
-        setActiveFileId(files[0]._id);
-      } else {
-        setActiveFileId(null);
-      }
-    });
-  }, [activeTaskId, fetchTaskDetails]);
+  const currentContent = activeFileIdToUse
+    ? fileContents[activeFileIdToUse]
+    : undefined;
 
-  const currentContent = activeFileId ? fileContents[activeFileId] : undefined;
+  const { mutate: autoSave } = useMutation({
+    mutationFn: workspaceApi.autoSaveTaskFile,
+    onError: (err) => console.error('Auto-save failed:', err),
+  });
 
   // Debounced Auto-save Engine (800ms)
   useEffect(() => {
-    if (!projectId || !activeFileId) return;
-    if (currentContent === undefined) return;
+    if (!projectId || !activeFileIdToUse || currentContent === undefined)
+      return;
 
-    const delayDebounceTimer = setTimeout(async () => {
-      try {
-        await workspaceApi.autoSaveTaskFile({
-          projectId: projectId.trim(),
-          fileId: activeFileId,
-          newContent: currentContent,
-        });
-      } catch (err) {
-        console.error('Auto-save failed:', err);
-      }
+    const delayDebounceTimer = setTimeout(() => {
+      autoSave({
+        projectId: projectId.trim(),
+        fileId: activeFileIdToUse,
+        newContent: currentContent,
+      });
     }, 800);
 
     return () => clearTimeout(delayDebounceTimer);
-  }, [currentContent, activeFileId, projectId]);
+  }, [currentContent, activeFileIdToUse, projectId, autoSave]);
 
-  const handleEditorMount = (editorInstance: editor.IStandaloneCodeEditor) => {
-    setEditorInstance(editorInstance);
-    editorInstance.onDidChangeCursorSelection((e) => {
+  const handleEditorMount = (instance: editor.IStandaloneCodeEditor) => {
+    setEditorInstance(instance);
+    instance.onDidChangeCursorSelection((e) => {
       const selection = e.selection;
       const hasText = !selection.isEmpty();
       setHasSelection(hasText);
@@ -94,16 +91,18 @@ export function useTaskEditor(
   };
 
   const forceSave = useCallback(() => {
-    if (activeFileId && projectId && fileContents[activeFileId] !== undefined) {
-      workspaceApi
-        .autoSaveTaskFile({
-          projectId: projectId.trim(),
-          fileId: activeFileId,
-          newContent: fileContents[activeFileId],
-        })
-        .catch((err) => console.error('Auto-save error on force save:', err));
+    if (
+      activeFileIdToUse &&
+      projectId &&
+      fileContents[activeFileIdToUse] !== undefined
+    ) {
+      autoSave({
+        projectId: projectId.trim(),
+        fileId: activeFileIdToUse,
+        newContent: fileContents[activeFileIdToUse],
+      });
     }
-  }, [activeFileId, projectId, fileContents]);
+  }, [activeFileIdToUse, projectId, fileContents, autoSave]);
 
   const handleFileSelect = (newFileId: string) => {
     forceSave();
@@ -111,10 +110,10 @@ export function useTaskEditor(
   };
 
   const handleEditorChange = (value: string | undefined) => {
-    if (activeFileId) {
-      setFileContents((prev) => ({
+    if (activeFileIdToUse) {
+      setEdits((prev) => ({
         ...prev,
-        [activeFileId]: value || '',
+        [activeFileIdToUse]: value || '',
       }));
     }
   };
@@ -125,13 +124,14 @@ export function useTaskEditor(
         'Are you sure? This will delete your current code and reset to the starter template.',
       )
     ) {
-      if (activeFileId && taskDetails) {
+      if (activeFileIdToUse && taskDetails) {
         const activeFile = taskDetails.files.find(
-          (f) => f._id === activeFileId,
+          (f) => f._id === activeFileIdToUse,
         );
-        setFileContents((prev) => ({
+        setEdits((prev) => ({
           ...prev,
-          [activeFileId]: activeFile?.skeleton ?? activeFile?.content ?? '',
+          [activeFileIdToUse]:
+            activeFile?.skeleton ?? activeFile?.content ?? '',
         }));
       }
     }
@@ -140,7 +140,7 @@ export function useTaskEditor(
   return {
     taskDetails,
     loadingTask,
-    activeFileId,
+    activeFileId: activeFileIdToUse,
     setActiveFileId,
     forceSave,
     handleFileSelect,
