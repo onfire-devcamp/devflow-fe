@@ -74,7 +74,6 @@ export function WorkspaceEditor({
         </div>
       )}
 
-      {/* Code Editor Window */}
       <div className="w-full rounded-xl rounded-tl-none border border-slate-800 bg-slate-900 overflow-hidden shadow-md relative z-0">
         <div className="flex items-center justify-between px-4 py-2.5 bg-slate-950 border-b border-slate-900">
           <div className="flex items-center gap-1.5">
@@ -99,7 +98,6 @@ export function WorkspaceEditor({
             onMount={onEditorMount}
             onChange={onEditorChange}
           />
-          {/* Floating Action Menu */}
           {hasSelection && !isEvaluating && !isChatting && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 shadow-lg rounded-xl px-2 py-1.5 flex items-center gap-2 z-10 animate-fadeIn">
               <span className="text-[11px] font-medium text-slate-400 pl-2 pr-1">

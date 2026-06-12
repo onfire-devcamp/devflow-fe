@@ -59,7 +59,7 @@ export default function WorkspacePage() {
     activeTaskId,
     activeFileId,
     editorInstance,
-    taskDetails,
+    taskDetails: taskDetails ?? null,
     onTaskCompleted: markCurrentTaskCompleted,
   });
 
@@ -111,7 +111,6 @@ export default function WorkspacePage() {
     <div className="flex flex-col h-screen bg-bg select-none overflow-hidden text-fg">
       <Header />
       <div className="flex flex-1 overflow-hidden w-full">
-        {/* LEFT SIDEBAR */}
         <aside className="hidden lg:flex w-76 flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-y-auto">
           <div>
             <SidebarHeader projectName={currentProjectName} />
@@ -127,7 +126,6 @@ export default function WorkspacePage() {
           </div>
         </aside>
 
-        {/* MIDDLE MAIN CONTENT */}
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
           <div className="max-w-3xl mx-auto w-full min-h-[500px]">
             {loadingTask ? (
@@ -165,7 +163,6 @@ export default function WorkspacePage() {
           </div>
         </main>
 
-        {/* RIGHT SIDEBAR: AI MENTOR CHAT INTERFACE */}
         <DeviChatPanel
           messages={messages}
           isEvaluating={isEvaluating}
@@ -178,9 +175,8 @@ export default function WorkspacePage() {
           onOpenExplainToPass={handleOpenExplainToPass}
         />
 
-        {/* EXPLAIN-TO-PASS MODAL */}
         <ExplainToPassModal
-          taskDetails={taskDetails}
+          taskDetails={taskDetails ?? null}
           showForm={showExplainToPassForm}
           isEvaluating={isEvaluating}
           onSubmit={onExplainToPassSubmit}

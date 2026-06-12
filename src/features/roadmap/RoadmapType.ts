@@ -44,9 +44,7 @@ export interface RoadmapTabButtonProps {
   children: React.ReactNode;
   active?: boolean;
 }
-// src/features/roadmap/roadmapTypes.ts
 
-// --- Raw API Response Structures from MongoDB ---
 export interface RawTaskFromAPI {
   _id?: string;
   id?: string;
@@ -76,7 +74,6 @@ export interface APIRoadmapResponse {
   data?: APIResponseData;
 }
 
-// --- Local UI Component States ---
 export interface ProjectDetails {
   title: string;
   description?: string;
@@ -94,6 +91,15 @@ export interface TaskFile {
   path: string;
   content: string;
   skeleton?: string;
+}
+
+export interface TaskFileSolution {
+  _id: string;
+  taskId: string;
+  fileId: TaskFile;
+  content: string;
+  createdAt: string;
+  updatedAt: string;
 }
 
 export interface APITaskDetailsResponse {
@@ -118,7 +124,7 @@ export interface APITaskDetailsResponse {
       skillCategory?: string;
       fileId: TaskFile[];
     };
-    solutions?: unknown[];
+    solutions?: TaskFileSolution[];
   };
   message?: string;
 }
@@ -126,11 +132,12 @@ export interface APITaskDetailsResponse {
 export interface TaskDetailsState {
   _id: string;
   title: string;
-  description: string;
+  description?: string;
   skillPoints: number;
   mcq?: {
     question?: string;
     options?: { id: string; text: string }[];
   };
   files: TaskFile[];
+  solutions?: TaskFileSolution[];
 }

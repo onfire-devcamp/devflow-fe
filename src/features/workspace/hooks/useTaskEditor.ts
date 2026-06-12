@@ -15,7 +15,6 @@ export function useTaskEditor(
   const [hasSelection, setHasSelection] = useState<boolean>(false);
   const [prevTaskId, setPrevTaskId] = useState(activeTaskId);
 
-  // Sync state cleanly without effects
   if (activeTaskId !== prevTaskId) {
     setPrevTaskId(activeTaskId);
     setActiveFileId(null);
@@ -65,7 +64,6 @@ export function useTaskEditor(
     onError: (err) => console.error('Auto-save failed:', err),
   });
 
-  // Debounced Auto-save Engine (800ms)
   useEffect(() => {
     if (!projectId || !activeFileIdToUse || currentContent === undefined)
       return;
