@@ -24,30 +24,34 @@ export interface RefreshResponse {
 }
 
 export const login = async (data: LoginPayload): Promise<AuthResponse> => {
-  const response = await axiosClient.post<AuthResponse>('/user/login', data);
-  return response.data;
+  return await axiosClient.post<AuthResponse, AuthResponse>(
+    '/user/login',
+    data,
+  );
 };
 
 export const register = async (
   data: RegisterPayload,
 ): Promise<AuthResponse> => {
-  const response = await axiosClient.post<AuthResponse>('/user', data);
-  return response.data;
+  return await axiosClient.post<AuthResponse, AuthResponse>('/user', data);
 };
 
 export const googleAuth = async (
   accessToken: string,
 ): Promise<AuthResponse> => {
-  const response = await axiosClient.post<AuthResponse>('/user/google-auth', {
-    accessToken,
-  });
-  return response.data;
+  return await axiosClient.post<AuthResponse, AuthResponse>(
+    '/user/google-auth',
+    {
+      accessToken,
+    },
+  );
 };
 
 // Called by useAuthInit on app mount — do not call directly from other components
 export const refreshTokens = async (): Promise<RefreshResponse> => {
-  const response = await axiosClient.post<RefreshResponse>('/auth/refresh');
-  return response.data;
+  return await axiosClient.post<RefreshResponse, RefreshResponse>(
+    '/auth/refresh',
+  );
 };
 
 // Revokes the refresh token cookie on the server, then call authStore.logout()

@@ -35,14 +35,12 @@ export default function UserSkillMap() {
       setIsLoading(true);
       setError(null);
       try {
-        const response = await axiosClient.get('/user/skills', {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        });
+        const response = await axiosClient.get<SkillData[], SkillData[]>(
+          '/user/skills',
+        );
 
         if (isActive) {
-          setSkills(response.data as SkillData[]);
+          setSkills(response);
         }
       } catch (err) {
         console.error('Error in fetch data skills:', err);
