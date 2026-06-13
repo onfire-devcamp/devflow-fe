@@ -5,6 +5,7 @@ export type ProjectStatus = 'NOT_STARTED' | 'IN_PROGRESS' | 'COMPLETED';
 export interface ProjectDetail {
   id: string;
   title: string;
+  slug: string;
   description: string;
   category: ProjectCategory;
   difficulty: DifficultyLevel;

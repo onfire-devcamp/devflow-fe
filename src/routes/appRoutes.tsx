@@ -36,7 +36,7 @@ export function AppRoutes() {
           <Route path="/profile" element={<ProfilePage />} />
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/projects/:id" element={<ProjectDetailPage />} />
-          <Route path="/roadmap/:projectId" element={<RoadMapLayout />} />
+          <Route path="/workspace/:projectSlug" element={<RoadMapLayout />} />
         </Route>
       </Routes>
     </Suspense>

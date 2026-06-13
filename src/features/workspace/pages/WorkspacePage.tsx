@@ -1,5 +1,7 @@
 import { useState, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
+import { useQuery } from '@tanstack/react-query';
+import { workspaceApi } from '../api/workspaceApi';
 import { Header } from '../../../components/ui/Header';
 import { SidebarHeader } from '../../roadmap/components/SideBarHeader';
 import { TabSwitcher } from '../../roadmap/components/TabSwitcher';
@@ -16,7 +18,19 @@ import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 
 export default function WorkspacePage() {
-  const { projectId } = useParams<{ projectId: string }>();
+  const { projectSlug } = useParams<{ projectSlug: string }>();
+
+  const {
+    data: slugProjectDetails,
+    isLoading: isSlugLoading,
+    error: slugError,
+  } = useQuery({
+    queryKey: ['projectSlug', projectSlug],
+    queryFn: () => workspaceApi.fetchProjectBySlug(projectSlug!),
+    enabled: !!projectSlug,
+  });
+
+  const projectId = slugProjectDetails?.id;
 
   const {
     projectDetails,
@@ -91,7 +105,7 @@ export default function WorkspacePage() {
     group.tasks.some((task) => task.id === activeTaskId),
   )?.category;
 
-  if (loading) {
+  if (isSlugLoading || loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
         <GlobalLoader />
@@ -99,10 +113,14 @@ export default function WorkspacePage() {
     );
   }
 
-  if (error) {
+  if (slugError || error) {
     return (
       <div className="flex h-screen items-center justify-center bg-bg px-6">
-        <ErrorMessage message={error} />
+        <ErrorMessage
+          message={
+            (slugError as Error)?.message || error || 'An error occurred'
+          }
+        />
       </div>
     );
   }
