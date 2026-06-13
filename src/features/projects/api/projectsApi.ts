@@ -41,4 +41,6 @@ export const getProjectBySlug = async (
     systemFlowUrl: data.systemFlowUrl || '',
     codebaseUrl: 'https://github.com',
   };
+export const getProjectById = async (id: string): Promise<ProjectDetail> => {
+  return await axiosClient.get<ProjectDetail, ProjectDetail>(`/projects/${id}`);
 };
