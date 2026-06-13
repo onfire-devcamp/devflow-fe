@@ -63,7 +63,6 @@ export const workspaceApi = {
     };
   },
 
-export const workspaceApi = {
   async fetchProjectRoadmap(projectId: string): Promise<APIRoadmapResponse> {
     return axiosClient.get<APIRoadmapResponse, APIRoadmapResponse>(
       `/project/${projectId.trim()}/roadmap`,
