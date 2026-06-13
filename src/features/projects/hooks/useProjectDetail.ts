@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react';
-import { getProjectById } from '../api/projectsApi';
+import { getProjectBySlug } from '../api/projectsApi';
 import type { ProjectDetail } from '../types/projectTypes';
 import twitterPreview from '../../../assets/twitter-project.png';
 
 const MOCK_PROJECT: ProjectDetail = {
   id: 'demo',
   title: 'Build a Twitter Clone',
+  slug: 'twitter-clone',
   description:
     'You will build a working microblog: users sign up, post short messages, follow each other, and see a live feed. Along the way you will learn React state, REST APIs, auth tokens, and database design — by actually shipping each piece.',
   category: 'FULLSTACK',
@@ -48,11 +49,11 @@ type UseProjectDetailState = {
 const USE_MOCK_DATA = true;
 
 export function useProjectDetail(
-  id: string | undefined,
+  slug: string | undefined,
 ): UseProjectDetailState {
   const [state, setState] = useState<UseProjectDetailState>(() => {
-    // Handle missing ID at initialization
-    if (!id) {
+    // Handle missing slug at initialization
+    if (!slug) {
       return {
         project: null,
         isLoading: false,
@@ -63,7 +64,7 @@ export function useProjectDetail(
     // Handle mock data at initialization
     if (USE_MOCK_DATA) {
       return {
-        project: { ...MOCK_PROJECT, id },
+        project: { ...MOCK_PROJECT, slug },
         isLoading: false,
         error: null,
       };
@@ -78,14 +79,14 @@ export function useProjectDetail(
   });
 
   useEffect(() => {
-    // Skip effect if no ID or using mock data (already handled in initializer)
-    if (!id || USE_MOCK_DATA) {
+    // Skip effect if no slug or using mock data (already handled in initializer)
+    if (!slug || USE_MOCK_DATA) {
       return;
     }
 
     let active = true;
 
-    getProjectById(id)
+    getProjectBySlug(slug)
       .then((project) => {
         if (active) setState({ project, isLoading: false, error: null });
       })
@@ -101,7 +102,7 @@ export function useProjectDetail(
     return () => {
       active = false;
     };
-  }, [id]);
+  }, [slug]);
 
   return state;
 }

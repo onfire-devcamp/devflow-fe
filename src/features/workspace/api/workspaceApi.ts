@@ -1,5 +1,9 @@
 import { axiosClient } from '../../../lib/axiosClient';
 import type {
+  ProjectDetail,
+  DifficultyLevel,
+} from '../../projects/types/projectTypes';
+import type {
   APIRoadmapResponse,
   APITaskDetailsResponse,
 } from '../../roadmap/RoadmapType';
@@ -18,7 +22,47 @@ import type {
   SendAiChatMessageParams,
 } from '../types';
 
+interface ProjectDetailsResponse {
+  success: boolean;
+  data: {
+    _id: string;
+    title: string;
+    slug: string;
+    description?: string;
+    level: string;
+    previewUrl?: string;
+    systemFlowUrl?: string;
+    techStack: { name: string }[];
+    features: { title: string; description: string }[];
+  };
+}
+
 export const workspaceApi = {
+  async fetchProjectBySlug(slug: string): Promise<ProjectDetail> {
+    const res = await axiosClient.get<
+      ProjectDetailsResponse,
+      ProjectDetailsResponse
+    >(`/project/${slug}`);
+    const data = res.data;
+
+    return {
+      id: data._id,
+      title: data.title,
+      slug: data.slug,
+      description: data.description || '',
+      category: 'FULLSTACK',
+      difficulty: data.level.toUpperCase() as DifficultyLevel,
+      estimatedHours: 14,
+      moduleCount: 5,
+      status: 'NOT_STARTED',
+      previewUrl: data.previewUrl || '',
+      features: data.features?.map((f) => f.title) || [],
+      techStack: data.techStack?.map((t) => t.name) || [],
+      systemFlowUrl: data.systemFlowUrl || '',
+      codebaseUrl: 'https://github.com',
+    };
+  },
+
   async fetchProjectRoadmap(projectId: string): Promise<APIRoadmapResponse> {
     return axiosClient.get<APIRoadmapResponse, APIRoadmapResponse>(
       `/project/${projectId.trim()}/roadmap`,
