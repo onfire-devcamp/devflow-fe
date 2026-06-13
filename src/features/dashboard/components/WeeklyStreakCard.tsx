@@ -14,31 +14,36 @@ export function WeeklyStreakCard({
   message,
 }: WeeklyStreakCardProps) {
   return (
-    <div className="border border-slate-200 rounded-2xl p-5 bg-white shadow-xs">
+    <div className="h-full bg-white border border-primary-mid/80 rounded-2xl p-6 flex flex-col">
+      {/* Header */}
       <div className="flex items-center justify-between mb-4">
-        <h3 className="font-bold text-fg">This week</h3>
+        <h3 className="text-base font-semibold text-fg">This week</h3>
         <span className="text-sm text-fg-muted">
           {completedDays} of {totalDays} days
         </span>
       </div>
 
-      <div className="grid grid-cols-7 gap-1.5">
-        {days.map((day, index) => (
-          <div key={index} className="flex flex-col items-center gap-1.5">
+      {/* Day grid */}
+      <div className="grid grid-cols-7 gap-2 mb-4">
+        {days.map((day, idx) => (
+          <div key={idx} className="flex flex-col items-center gap-1">
             <div
-              className={`w-full aspect-square rounded-xl transition-colors ${
+              className={`w-full h-8 rounded-lg ${
                 day.completed
                   ? 'bg-primary'
-                  : 'bg-slate-100 border border-slate-200'
+                  : 'bg-gray-100 border border-gray-200'
               }`}
-              aria-label={`${day.label}: ${day.completed ? 'completed' : 'not completed'}`}
             />
-            <span className="text-xs text-fg-muted">{day.label}</span>
+            <span className="text-[11px] font-medium text-fg-muted">
+              {day.label}
+            </span>
           </div>
         ))}
       </div>
 
-      <p className="mt-4 text-sm text-fg-muted leading-relaxed">{message}</p>
+      <p className="mt-auto text-xs text-fg-muted text-center leading-relaxed">
+        {message}
+      </p>
     </div>
   );
 }
