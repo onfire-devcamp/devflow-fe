@@ -12,7 +12,6 @@ interface RefreshResponse {
   user: { id: string; username: string; email: string };
 }
 
-// Module-level state — intentionally outside the component tree
 let isRefreshing = false;
 let failedRequestQueue: FailedRequest[] = [];
 
@@ -28,11 +27,10 @@ const rejectQueue = (error: AxiosError) => {
 
 export const axiosClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL as string,
-  withCredentials: true, // Browser sends the HttpOnly refresh token cookie automatically
+  withCredentials: true,
   headers: { 'Content-Type': 'application/json' },
 });
 
-// Attach access token to every outgoing request
 axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken;
   if (token) {
@@ -43,7 +41,7 @@ axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 
 axiosClient.interceptors.request.use(
   (config) => {
-    const token = useAuthStore.getState().token;
+    const token = useAuthStore.getState().accessToken;
 
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
@@ -54,19 +52,17 @@ axiosClient.interceptors.request.use(
 );
 
 axiosClient.interceptors.response.use(
-  (response) => response,
+  (response) => response.data,
   async (error: AxiosError) => {
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
 
-    // Only intercept 401s, and never retry the refresh endpoint itself
     const isRefreshEndpoint = originalRequest?.url?.includes('/auth/refresh');
     if (error.response?.status !== 401 || isRefreshEndpoint) {
       return Promise.reject(error);
     }
 
-    // Another request is already refreshing — queue this one until it resolves
     if (isRefreshing) {
       return new Promise<string>((resolve, reject) => {
         failedRequestQueue.push({ resolve, reject });
@@ -76,12 +72,13 @@ axiosClient.interceptors.response.use(
       });
     }
 
-    // This is the first 401 — take the lead on refreshing
     originalRequest._retry = true;
     isRefreshing = true;
 
     try {
-      const { data } = await axiosClient.post<RefreshResponse>('/auth/refresh');
+      const data = await axiosClient.post<RefreshResponse, RefreshResponse>(
+        '/auth/refresh',
+      );
 
       useAuthStore.getState().login(data.accessToken, data.user);
       drainQueue(data.accessToken);

@@ -17,9 +17,6 @@ const apiClient = axios.create({
 });
 
 export const RoadmapService = {
-  /**
-   * Fetches and processes project roadmap data directly for UI consumption
-   */
   getProjectRoadmap: async (
     projectId: string,
   ): Promise<{ project: ProjectDetails | null; modules: CategoryGroup[] }> => {
@@ -35,7 +32,6 @@ export const RoadmapService = {
 
     const { project, modules } = resJson.data;
 
-    // 1. Map Project Details
     const mappedProject: ProjectDetails | null = project
       ? {
           title: project.title,
@@ -44,7 +40,6 @@ export const RoadmapService = {
         }
       : null;
 
-    // 2. Map Roadmap Modules
     const mappedModules: CategoryGroup[] = Array.isArray(modules)
       ? modules.map(
           (module: RawModuleFromAPI): CategoryGroup => ({
@@ -83,9 +78,6 @@ export const RoadmapService = {
     };
   },
 
-  /**
-   * Fetches and flattens specific task configurations for UI views
-   */
   getTaskDetails: async (taskId: string): Promise<TaskDetails | null> => {
     const response = await apiClient.get<APITaskDetailsResponse>(
       `/api/task/${taskId}`,

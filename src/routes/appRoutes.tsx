@@ -30,7 +30,7 @@ export function AppRoutes() {
           <Route path={PATHS.REGISTER} element={<RegisterPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/login" replace />} />
-        
+
         {/* PRIVATE ROUTES */}
         <Route element={<PrivateRoute />}>
           <Route path="/profile" element={<ProfilePage />} />

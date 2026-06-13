@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import axios from 'axios';
 import { Eye, EyeOff, Mail, Lock, User, Check } from 'lucide-react';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
@@ -53,13 +53,17 @@ export function RegisterForm() {
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     trigger,
     formState: { errors, isSubmitting, touchedFields },
   } = useForm<RegisterFormData>({ mode: 'onBlur' });
 
-  const password = watch('password', '');
-  const confirmPassword = watch('confirmPassword', '');
+  const password = useWatch({ control, name: 'password', defaultValue: '' });
+  const confirmPassword = useWatch({
+    control,
+    name: 'confirmPassword',
+    defaultValue: '',
+  });
   const passwordStrength = getPasswordStrength(password);
 
   const {
