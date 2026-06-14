@@ -1,6 +1,7 @@
 import { ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import mascot from '../../../assets/mascot.png';
+import { Button } from '../../../components/ui/Button';
 import type { ContinueLearningCardProps } from '../types/dashboardTypes';
 
 export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
@@ -32,12 +33,13 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
         </div>
 
         <div className="flex-shrink-0">
-          <button
+          <Button
             onClick={handleResume}
-            className="inline-flex items-center gap-1.5 px-5 py-2.5 bg-primary text-white rounded-full text-sm font-semibold hover:opacity-90 transition-opacity active:scale-95"
+            variant="primary"
+            className="!w-auto !rounded-full !px-5 !py-2.5 gap-1.5 text-sm font-semibold active:scale-95"
           >
             Resume <ChevronRight className="w-4 h-4" />
-          </button>
+          </Button>
         </div>
       </div>
       <div className="mt-5 h-2 bg-white/60 rounded-full overflow-hidden">

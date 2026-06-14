@@ -7,7 +7,7 @@ import { ProjectCard } from './ProjectCard';
 import { WeeklyStreakCard } from './WeeklyStreakCard';
 import { useDashboardData } from '../hooks/useDashboardData';
 import type { FilterCategory } from '../types/dashboardTypes';
-
+import { Button } from '../../../components/ui/Button';
 const FILTERS: { label: string; value: FilterCategory }[] = [
   { label: 'All projects', value: 'ALL' },
   { label: 'Frontend', value: 'FRONTEND' },
@@ -103,20 +103,23 @@ export default function DashboardPage() {
 
           {/* Row 2: Filters */}
           <div className="flex flex-wrap gap-2 mb-6">
-            {FILTERS.map(({ label, value }) => (
-              <button
-                key={value}
-                onClick={() => setActiveFilter(value)}
-                className={[
-                  'px-5 py-2 rounded-full text-sm font-medium transition-colors',
-                  activeFilter === value
-                    ? 'bg-primary text-white'
-                    : 'bg-white border border-primary-mid/80 text-gray-600 hover:border-primary hover:text-primary',
-                ].join(' ')}
-              >
-                {label}
-              </button>
-            ))}
+            {FILTERS.map(({ label, value }) => {
+              const isActive = activeFilter === value;
+              return (
+                <Button
+                  key={value}
+                  onClick={() => setActiveFilter(value)}
+                  variant={isActive ? 'primary' : 'outline'}
+                  className={`!w-auto !rounded-full px-5 !py-2 text-sm ${
+                    !isActive
+                      ? 'bg-white text-gray-600 hover:border-primary hover:text-primary hover:!bg-white'
+                      : ''
+                  }`}
+                >
+                  {label}
+                </Button>
+              );
+            })}
           </div>
 
           {/* Row 3: Project Library */}
