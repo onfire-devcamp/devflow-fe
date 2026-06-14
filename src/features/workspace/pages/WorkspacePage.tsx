@@ -51,6 +51,7 @@ export default function WorkspacePage() {
     fileContents,
     editorInstance,
     hasSelection,
+    isCodeModified,
     handleEditorMount,
     handleEditorChange,
     handleResetToSkeleton,
@@ -88,8 +89,7 @@ export default function WorkspacePage() {
   }, []);
 
   const onExplainToPassSubmit = (mcqAnswer: string, explanation: string) => {
-    handleExplainToPassSubmit(mcqAnswer, explanation);
-    setShowExplainToPassForm(false);
+    handleExplainToPassSubmit(mcqAnswer, explanation, handleCloseExplainToPass);
   };
 
   const currentProjectName = projectDetails?.title || 'Loading project...';
@@ -104,6 +104,12 @@ export default function WorkspacePage() {
   const currentCategory = roadmapData.find((group) =>
     group.tasks.some((task) => task.id === activeTaskId),
   )?.category;
+
+  const activeTaskObj = roadmapData
+    .flatMap((group) => group.tasks)
+    .find((task) => task.id === activeTaskId);
+
+  const isCompleted = activeTaskObj?.status === 'completed';
 
   if (isSlugLoading || loading) {
     return (
@@ -160,6 +166,7 @@ export default function WorkspacePage() {
                   isEvaluating={isEvaluating}
                   isChatting={isChatting}
                   category={currentCategory}
+                  isCompleted={isCompleted}
                   onFileSelect={handleFileSelect}
                   onEditorMount={handleEditorMount}
                   onEditorChange={handleEditorChange}
@@ -169,6 +176,8 @@ export default function WorkspacePage() {
                 <WorkspaceFooter
                   taskDetails={taskDetails}
                   isEvaluating={isEvaluating}
+                  isCompleted={isCompleted}
+                  isCodeModified={isCodeModified}
                   onResetToSkeleton={handleResetToSkeleton}
                   onSubmitCode={handleSubmitCode}
                 />

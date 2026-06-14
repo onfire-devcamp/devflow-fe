@@ -59,6 +59,25 @@ export function useTaskEditor(
     ? fileContents[activeFileIdToUse]
     : undefined;
 
+  const isCodeModified = useMemo(() => {
+    if (!taskDetails || !activeFileIdToUse || currentContent === undefined) {
+      return false;
+    }
+    const activeFile = taskDetails.files.find(
+      (f) => f._id === activeFileIdToUse,
+    );
+    if (!activeFile) return false;
+
+    const originalContent = (
+      activeFile.skeleton ??
+      activeFile.content ??
+      ''
+    ).trim();
+    const currentTrimmed = currentContent.trim();
+
+    return originalContent !== currentTrimmed;
+  }, [taskDetails, activeFileIdToUse, currentContent]);
+
   const { mutate: autoSave } = useMutation({
     mutationFn: workspaceApi.autoSaveTaskFile,
     onError: (err) => console.error('Auto-save failed:', err),
@@ -145,6 +164,7 @@ export function useTaskEditor(
     fileContents,
     editorInstance,
     hasSelection,
+    isCodeModified,
     handleEditorMount,
     handleEditorChange,
     handleResetToSkeleton,
