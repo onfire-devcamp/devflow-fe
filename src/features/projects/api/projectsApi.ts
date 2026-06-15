@@ -30,7 +30,7 @@ export const getProjectBySlug = async (
     title: data.title,
     slug: data.slug,
     description: data.description || '',
-    category: 'FULLSTACK', // Fallback for now as backend doesn't store this yet
+    category: 'FULLSTACK',
     difficulty: data.level.toUpperCase() as DifficultyLevel,
     estimatedHours: 14,
     moduleCount: 5,

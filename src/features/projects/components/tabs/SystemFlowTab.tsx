@@ -1,7 +1,7 @@
-import { TabPanel, EmptyPanel } from '.';
+import { TabPanel } from '.';
+import systemFlowImg from '../../../../assets/twitter-system.png';
 
 export function SystemFlowTab({
-  systemFlowUrl,
   title,
 }: {
   systemFlowUrl?: string;
@@ -9,15 +9,11 @@ export function SystemFlowTab({
 }) {
   return (
     <TabPanel tabId="system-flow" className="p-4 sm:p-6">
-      {systemFlowUrl ? (
-        <img
-          src={systemFlowUrl}
-          alt={`${title} system flow diagram`}
-          className="w-full rounded-xl object-contain shadow-sm"
-        />
-      ) : (
-        <EmptyPanel message="System flow diagram coming soon." />
-      )}
+      <img
+        src={systemFlowImg}
+        alt={`${title} system flow diagram`}
+        className="w-full rounded-xl object-contain shadow-sm"
+      />
     </TabPanel>
   );
 }
