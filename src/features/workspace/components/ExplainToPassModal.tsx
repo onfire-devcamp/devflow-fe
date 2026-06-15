@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
 import { Button } from '../../../components/ui/Button';
@@ -30,6 +30,22 @@ export function ExplainToPassModal({
     }
   }
 
+  useEffect(() => {
+    if (!showForm) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        onClose();
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, [showForm, onClose]);
+
   if (!showForm || !taskDetails) return null;
 
   const explainToPassMcq = taskDetails.mcq;
@@ -50,18 +66,24 @@ export function ExplainToPassModal({
         <Button
           variant="ghost"
           onClick={onClose}
-          className="absolute top-4 right-4 !w-auto !p-1 text-slate-400 hover:text-slate-600 transition"
+          className="absolute top-4 right-4 !w-auto !p-1 text-slate-400 hover:text-slate-900 transition"
         >
           <X size={20} />
         </Button>
 
-        <h3 className="text-lg font-bold text-slate-800 mb-4">
+        <h3
+          className="text-xl font-bold text-slate-800 mb-4 animate-fade-in"
+          style={{ animationDelay: '0ms' }}
+        >
           Explain-to-Pass
         </h3>
 
         {hasExplainToPassMcq && (
-          <div className="mb-4">
-            <p className="text-sm font-medium text-slate-700 mb-3">
+          <div
+            className="mb-4 animate-fade-in"
+            style={{ animationDelay: '100ms' }}
+          >
+            <p className="text-sm font-bold text-slate-700 mb-3">
               {explainToPassMcq?.question}
             </p>
             <div className="space-y-2">
@@ -72,11 +94,20 @@ export function ExplainToPassModal({
                 return (
                   <label
                     key={index}
-                    className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition ${
-                      mcqAnswer === optionValue
-                        ? 'border-primary bg-primary-soft'
-                        : 'border-slate-200 hover:border-slate-300'
-                    }`}
+                    className={`
+                      animate-fade-in
+                      flex items-center gap-3 p-3 rounded-xl border cursor-pointer
+                      transition hover:ring-2 hover:ring-primary/90
+                      hover:scale-[1.02] transition-transform
+                      ${
+                        mcqAnswer === option.id
+                          ? 'border-primary bg-primary-soft'
+                          : 'border-slate-200 hover:border-slate-300'
+                      }
+                    `}
+                    style={{
+                      animationDelay: `${200 + index * 75}ms`,
+                    }}
                   >
                     <input
                       type="radio"
@@ -95,7 +126,7 @@ export function ExplainToPassModal({
         )}
 
         <div className="mb-4">
-          <label className="block text-sm font-medium text-slate-700 mb-2">
+          <label className="block text-sm font-bold text-slate-700 mb-2">
             Explain your answer in one sentence:
           </label>
           <textarea
@@ -110,7 +141,7 @@ export function ExplainToPassModal({
         <Button
           onClick={handleSubmit}
           disabled={!mcqAnswer || !explanation.trim() || isEvaluating}
-          className="w-full px-4 !py-2.5 text-sm"
+          className="w-full px-4 !py-2.5 text-sm hover:scale-[1.02] transition-transform"
         >
           {isEvaluating ? 'Submitting...' : 'Submit Explanation'}
         </Button>
