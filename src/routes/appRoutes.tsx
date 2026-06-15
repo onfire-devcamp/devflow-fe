@@ -19,7 +19,6 @@ const DashboardPage = lazy(
 const ProjectDetailPage = lazy(
   () => import('../features/projects/components/ProjectDetailPage'),
 );
-
 export function AppRoutes() {
   return (
     <Suspense fallback={<PageLoader />}>
