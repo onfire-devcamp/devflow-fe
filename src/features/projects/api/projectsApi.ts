@@ -11,7 +11,7 @@ interface ProjectDetailsResponse {
     level: string;
     previewUrl?: string;
     systemFlowUrl?: string;
-    techStack: { name: string }[];
+    techStack: { name: string; iconUrl: string; category: string }[];
     features: { title: string; description: string }[];
   };
 }
@@ -36,8 +36,8 @@ export const getProjectBySlug = async (
     moduleCount: 5,
     status: 'NOT_STARTED',
     previewUrl: data.previewUrl || '',
-    features: data.features?.map((f) => f.title) || [],
-    techStack: data.techStack?.map((t) => t.name) || [],
+    features: data.features || [],
+    techStack: data.techStack || [],
     systemFlowUrl: data.systemFlowUrl || '',
     codebaseUrl: 'https://github.com',
   };

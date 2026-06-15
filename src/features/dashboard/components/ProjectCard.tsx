@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+import { PATHS } from '../../../config/paths';
 import type { ApiProject } from '../types/dashboardTypes';
 
 interface ProjectCardProps {
@@ -6,7 +8,10 @@ interface ProjectCardProps {
 
 export function ProjectCard({ project }: ProjectCardProps) {
   return (
-    <div className="bg-white border border-primary-mid/80 rounded-2xl p-5 flex flex-col hover:border-primary hover:shadow-sm transition-all duration-200 cursor-pointer group">
+    <Link
+      to={PATHS.PROJECT_DETAIL(project.slug)}
+      className="bg-white border border-primary-mid/80 rounded-2xl p-5 flex flex-col hover:border-primary hover:shadow-sm transition-all duration-200 cursor-pointer group"
+    >
       {/* Header: category · difficulty + duration */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <span className="text-xs font-semibold uppercase tracking-wide text-primary">
@@ -23,6 +28,6 @@ export function ProjectCard({ project }: ProjectCardProps) {
       <p className="flex-1 text-sm text-fg-muted leading-relaxed mb-4">
         {project.description}
       </p>
-    </div>
+    </Link>
   );
 }
