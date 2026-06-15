@@ -53,9 +53,9 @@ export function MarkdownRenderer({
           type="button"
           onClick={onOpenExplainToPass}
           disabled={isEvaluating}
-          className="mt-1 text-[11px] py-2 px-3"
+          className="mt-1 text-[12px] py-2 px-3"
         >
-          Answer Explain-to-Pass to Complete Task
+          Answer Explain-to-Pass
         </Button>
       )}
     </div>
