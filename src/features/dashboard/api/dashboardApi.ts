@@ -20,6 +20,7 @@ export const fetchUserProgress = async (): Promise<ContinueLearning> => {
     if (response.success) {
       return response.data;
     }
+    throw new Error(response.message || 'Failed to fetch streak');
   } catch (error) {
     console.error('Error fetching user progress:', error);
     throw error;
@@ -35,7 +36,7 @@ export const fetchAllProjects = async (): Promise<ApiProject[]> => {
     if (response.success) {
       return response.data;
     }
-    return [];
+    throw new Error(response.message || 'Failed to fetch projects');
   } catch (error) {
     console.error('Error fetching projects:', error);
     throw error;
@@ -51,6 +52,7 @@ export const fetchUserStreak = async (): Promise<StreakData> => {
     if (response.success) {
       return response.data;
     }
+    throw new Error(response.message || 'Failed to fetch streak');
   } catch (error) {
     console.error('Error fetching user streak:', error);
     throw error;
