@@ -1,13 +1,12 @@
 import { useRef, useState } from 'react';
 import { Code2, Cpu, GitBranch, Monitor, Sparkles } from 'lucide-react';
+import { TabButton } from '../../../../components/ui/TabButton';
 import type { ProjectDetail } from '../../types/projectTypes';
 import { UIPreviewTab } from './UIPreviewTab';
 import { FeaturesTab } from './FeaturesTab';
 import { TechStackTab } from './TechStackTab';
 import { SystemFlowTab } from './SystemFlowTab';
 import { CodebaseTab } from './CodebaseTab';
-
-// ─── Shared helpers (used by individual tab files) ────────────────────────────
 
 export function TabPanel({
   tabId,
@@ -33,8 +32,6 @@ export function TabPanel({
 export function EmptyPanel({ message }: { message: string }) {
   return <p className="py-16 text-center text-sm text-fg-muted">{message}</p>;
 }
-
-// ─── Tab config + bar ─────────────────────────────────────────────────────────
 
 const TABS = [
   { id: 'ui-preview' as const, label: 'UI Preview', Icon: Monitor },
@@ -77,41 +74,24 @@ function TabBar({
       {TABS.map(({ id, label, Icon }, index) => {
         const isActive = activeTab === id;
         return (
-          <button
+          <TabButton
             key={id}
             ref={(el) => {
               tabRefs.current[index] = el;
             }}
-            role="tab"
             id={`tab-${id}`}
-            aria-selected={isActive}
+            isActive={isActive}
+            label={label}
+            icon={Icon}
             aria-controls={`panel-${id}`}
-            tabIndex={isActive ? 0 : -1}
             onClick={() => onChange(id)}
             onKeyDown={(e) => handleKeyDown(e, index)}
-            className={[
-              'inline-flex items-center gap-2 px-4 py-3 text-sm font-medium whitespace-nowrap',
-              'border-b-2 -mb-px transition-colors duration-150',
-              'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-inset',
-              isActive
-                ? 'border-primary text-primary'
-                : 'border-transparent text-fg-muted hover:text-fg hover:border-slate-300 cursor-pointer',
-            ].join(' ')}
-          >
-            <Icon
-              className="w-4 h-4 shrink-0"
-              strokeWidth={2}
-              aria-hidden="true"
-            />
-            {label}
-          </button>
+          />
         );
       })}
     </div>
   );
 }
-
-// Public export
 
 export function ProjectDetailTabs({ project }: { project: ProjectDetail }) {
   const [activeTab, setActiveTab] = useState<ActiveTab>('ui-preview');

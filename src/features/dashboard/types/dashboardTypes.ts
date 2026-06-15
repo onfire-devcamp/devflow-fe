@@ -2,6 +2,7 @@ export type FilterCategory = 'ALL' | 'FRONTEND' | 'BACKEND' | 'FULLSTACK';
 
 export interface ApiProject {
   _id: string;
+  slug: string;
   title: string;
   description: string;
   level: string;

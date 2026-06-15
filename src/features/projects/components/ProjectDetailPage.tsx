@@ -75,8 +75,8 @@ function ProjectHero({
 }
 
 export default function ProjectDetailPage() {
-  const { id } = useParams<{ id: string }>();
-  const { project, isLoading, error } = useProjectDetail(id);
+  const { projectSlug } = useParams<{ projectSlug: string }>();
+  const { project, isLoading, error } = useProjectDetail(projectSlug);
 
   return (
     <PageContainer>
