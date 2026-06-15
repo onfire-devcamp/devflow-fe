@@ -16,7 +16,7 @@ interface WorkspaceEditorProps {
   category?: string;
   onFileSelect: (fileId: string) => void;
   onEditorMount: (editor: editor.IStandaloneCodeEditor) => void;
-  onEditorChange: (value: string | undefined) => void;
+  onEditorChange: (fileId: string, value: string | undefined) => void;
   onQuickAction: (type: 'explain' | 'hint') => void;
 }
 
@@ -91,6 +91,7 @@ export function WorkspaceEditor({
 
         <div className="py-2 bg-slate-900 relative">
           <Editor
+            key={activeFileId || 'empty'}
             height="420px"
             theme="vs-dark"
             language={getLanguageFromPath(
@@ -98,7 +99,11 @@ export function WorkspaceEditor({
             )}
             value={activeFileId ? fileContents[activeFileId] : ''}
             onMount={onEditorMount}
-            onChange={onEditorChange}
+            onChange={(value) => {
+              if (activeFileId) {
+                onEditorChange(activeFileId, value);
+              }
+            }}
             options={{ readOnly: isCompleted }}
           />
           {hasSelection && !isEvaluating && !isChatting && (

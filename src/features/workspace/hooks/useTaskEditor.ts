@@ -126,11 +126,11 @@ export function useTaskEditor(
     setActiveFileId(newFileId);
   };
 
-  const handleEditorChange = (value: string | undefined) => {
-    if (activeFileIdToUse) {
+  const handleEditorChange = (fileId: string, value: string | undefined) => {
+    if (fileId) {
       setEdits((prev) => ({
         ...prev,
-        [activeFileIdToUse]: value || '',
+        [fileId]: value || '',
       }));
     }
   };
