@@ -28,7 +28,7 @@ export default function HeroSection() {
                 </div>
 
                 <div className = "flex-1">
-                    <img src={Hero} className="w-full scale-110" />
+                    <img src={Hero} alt = "Workspace" className="w-full scale-110" />
                 </div>
             </div>
         </section>

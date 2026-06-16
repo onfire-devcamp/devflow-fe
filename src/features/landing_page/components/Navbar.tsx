@@ -11,10 +11,7 @@ export default function Navbar() {
                     className="flex items-center space-x-2 select-none cursor-pointer"
                 >
                     <img
-                    src={Logo}
-                    alt="DevFlow Logo"
-                    className="h-6 w-auto object-contain"
-                    />
+                    src={Logo} alt="DevFlow Logo" className="h-6 w-auto object-contain" />
                     <span className="font-bold text-lg text-slate-800 tracking-tight">
                     DevFlow
                     </span>
