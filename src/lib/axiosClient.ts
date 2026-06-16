@@ -39,18 +39,6 @@ axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   return config;
 });
 
-axiosClient.interceptors.request.use(
-  (config) => {
-    const token = useAuthStore.getState().accessToken;
-
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error) => Promise.reject(error),
-);
-
 axiosClient.interceptors.response.use(
   (response) => response.data,
   async (error: AxiosError) => {
