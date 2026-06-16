@@ -13,8 +13,8 @@ export interface ProjectDetail {
   moduleCount: number;
   status: ProjectStatus;
   previewUrl?: string;
-  features: string[];
-  techStack: string[];
+  features: { title: string; description: string }[];
+  techStack: { name: string; iconUrl: string; category: string }[];
   systemFlowUrl?: string;
   codebaseUrl?: string;
 }

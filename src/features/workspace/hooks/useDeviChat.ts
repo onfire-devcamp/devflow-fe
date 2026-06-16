@@ -231,11 +231,20 @@ export function useDeviChat({
     });
 
   const handleExplainToPassSubmit = useCallback(
-    (mcqAnswer: string, explanation: string) => {
+    (mcqAnswer: string, explanation: string, onExplainSuccess?: () => void) => {
       if (!isChatEnabled || !taskDetails) return;
       if (!mcqAnswer || !explanation.trim()) return;
 
-      submitExplainToPass({ mcqAnswer, explanation });
+      submitExplainToPass(
+        { mcqAnswer, explanation },
+        {
+          onSuccess: (response) => {
+            if (response?.success && response.data && onExplainSuccess) {
+              onExplainSuccess();
+            }
+          },
+        },
+      );
     },
     [isChatEnabled, taskDetails, submitExplainToPass],
   );

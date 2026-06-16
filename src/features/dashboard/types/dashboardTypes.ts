@@ -1,31 +1,49 @@
-import type {
-  DifficultyLevel,
-  ProjectCategory,
-} from '../../projects/types/projectTypes';
-
 export type FilterCategory = 'ALL' | 'FRONTEND' | 'BACKEND' | 'FULLSTACK';
 
-export interface DashboardProject {
-  id: string;
+export interface ApiProject {
+  _id: string;
+  slug: string;
   title: string;
   description: string;
-  category: ProjectCategory;
-  difficulty: DifficultyLevel;
-  estimatedHours: number;
-  completedTasks: number;
-  totalTasks: number;
+  level: string;
+  previewUrl: string;
+  systemFlowUrl: string;
+  createdAt: string;
+  updatedAt: string;
+  category?: string;
+  estimatedHours?: number;
+  completedTasks?: number;
+  totalTasks?: number;
 }
 
-export interface ContinueLearningData {
+export interface ContinueLearning {
   id: string;
+  projectId: string;
+  slug: string;
   title: string;
   moduleName: string;
   moduleHint: string;
   progressPercent: number;
-  thumbnailEmoji?: string;
 }
 
 export interface WeekDayData {
   label: string;
   completed: boolean;
+}
+export interface ContinueLearningCardProps {
+  data: {
+    id: string;
+    projectId: string;
+    slug: string;
+    title: string;
+    moduleName: string;
+    moduleHint: string;
+    progressPercent: number;
+  };
+}
+export interface StreakData {
+  weekDays: WeekDayData[];
+  completedDays: number;
+  totalDays: number;
+  message: string;
 }
