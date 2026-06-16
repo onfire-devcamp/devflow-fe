@@ -5,6 +5,7 @@ import { MarkdownRenderer } from '../../../components/MarkdownRenderer';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import type { ChatMessage } from '../types';
+import { Resizable } from 're-resizable';
 
 interface DeviChatPanelProps {
   messages: ChatMessage[];
@@ -93,7 +94,16 @@ export function DeviChatPanel({
   };
 
   return (
-    <aside className="hidden xl:flex w-84 flex-shrink-0 bg-primary-soft border-l border-primary-mid flex-col h-full overflow-hidden">
+    <Resizable
+      defaultSize={{ width: 336, height: '100%' }}
+      minWidth={280}
+      maxWidth={600}
+      enable={{ left: true }}
+      handleClasses={{
+        left: 'hover:bg-primary/40 transition-colors',
+      }}
+      className="hidden xl:flex flex-shrink-0 !h-full bg-primary-soft border-l border-primary-mid flex-col overflow-hidden"
+    >
       <div className="p-4 border-b border-primary-mid flex items-center justify-between bg-transparent">
         <div>
           <h3 className="font-bold text-sm text-slate-800">Devi</h3>
@@ -136,14 +146,14 @@ export function DeviChatPanel({
         {hasNextPage && <div ref={loadOlderRef} className="h-px w-full" />}
       </div>
 
-      <div className="p-4 border-t border-primary-mid bg-transparent">
-        <form onSubmit={handleSubmit} className="flex gap-2">
+      <div className="p-3 border-t border-primary-mid bg-transparent">
+        <form onSubmit={handleSubmit} className="flex gap-2 items-center">
           <Input
             value={inputMessage}
             onChange={(e) => setInputMessage(e.target.value)}
             placeholder="Ask Devi for help..."
             disabled={isEvaluating || isChatting || isLoadingHistory}
-            className="!rounded-xl"
+            className="!rounded-lg !h-9 !py-0 !px-3 !text-xs flex-1"
           />
           <Button
             type="submit"
@@ -153,12 +163,12 @@ export function DeviChatPanel({
               isChatting ||
               isLoadingHistory
             }
-            className="!w-auto px-4 !py-2 !rounded-xl text-xs"
+            className="!w-auto !h-9 px-3 !py-0 !rounded-lg text-xs flex-shrink-0"
           >
             Send
           </Button>
         </form>
       </div>
-    </aside>
+    </Resizable>
   );
 }
