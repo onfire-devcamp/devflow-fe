@@ -12,10 +12,11 @@ interface WorkspaceEditorProps {
   hasSelection: boolean;
   isEvaluating: boolean;
   isChatting: boolean;
+  isCompleted?: boolean;
   category?: string;
   onFileSelect: (fileId: string) => void;
   onEditorMount: (editor: editor.IStandaloneCodeEditor) => void;
-  onEditorChange: (value: string | undefined) => void;
+  onEditorChange: (fileId: string, value: string | undefined) => void;
   onQuickAction: (type: 'explain' | 'hint') => void;
 }
 
@@ -26,6 +27,7 @@ export function WorkspaceEditor({
   hasSelection,
   isEvaluating,
   isChatting,
+  isCompleted,
   category,
   onFileSelect,
   onEditorMount,
@@ -89,6 +91,7 @@ export function WorkspaceEditor({
 
         <div className="py-2 bg-slate-900 relative">
           <Editor
+            key={activeFileId || 'empty'}
             height="420px"
             theme="vs-dark"
             language={getLanguageFromPath(
@@ -96,7 +99,12 @@ export function WorkspaceEditor({
             )}
             value={activeFileId ? fileContents[activeFileId] : ''}
             onMount={onEditorMount}
-            onChange={onEditorChange}
+            onChange={(value) => {
+              if (activeFileId) {
+                onEditorChange(activeFileId, value);
+              }
+            }}
+            options={{ readOnly: isCompleted }}
           />
           {hasSelection && !isEvaluating && !isChatting && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 shadow-lg rounded-xl px-2 py-1.5 flex items-center gap-2 z-10 animate-fadeIn">

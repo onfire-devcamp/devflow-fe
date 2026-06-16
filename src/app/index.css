@@ -14,7 +14,8 @@
 
 @layer utilities {
   .animate-fade-in {
-    animation: fade-in 0.15s ease-out;
+    animation: fade-in 0.15s ease-out forwards;
+    opacity: 0;
   }
 }
 @theme {

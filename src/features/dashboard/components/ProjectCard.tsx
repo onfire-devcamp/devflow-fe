@@ -1,70 +1,33 @@
 import { Link } from 'react-router-dom';
 import { PATHS } from '../../../config/paths';
-import type { DashboardProject } from '../types/dashboardTypes';
+import type { ApiProject } from '../types/dashboardTypes';
 
 interface ProjectCardProps {
-  project: DashboardProject;
+  project: ApiProject;
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
-  const {
-    id,
-    title,
-    description,
-    category,
-    difficulty,
-    estimatedHours,
-    completedTasks,
-    totalTasks,
-  } = project;
-
-  const percentage = Math.round((completedTasks / totalTasks) * 100);
-
   return (
     <Link
-      to={PATHS.PROJECT_DETAIL(id)}
-      className="flex flex-col border border-slate-200 rounded-2xl p-5 bg-white hover:shadow-md hover:border-primary-mid transition-all duration-200 group"
+      to={PATHS.PROJECT_DETAIL(project.slug)}
+      className="bg-white border border-primary-mid/80 rounded-2xl p-5 flex flex-col hover:border-primary hover:shadow-sm transition-all duration-200 cursor-pointer group"
     >
-      {/* Meta row */}
-      <div className="flex items-center justify-between mb-3">
-        <span className="text-[11px] font-bold text-primary uppercase tracking-wide">
-          {category} · {difficulty}
-        </span>
-        <span className="text-xs text-fg-muted font-medium">
-          {estimatedHours}h
+      {/* Header: category · difficulty + duration */}
+      <div className="flex items-start justify-between gap-2 mb-3">
+        <span className="text-xs font-semibold uppercase tracking-wide text-primary">
+          {project.category ?? 'FULLSTACK'} · {project.level ?? 'INTERMEDIATE'}
         </span>
       </div>
 
       {/* Title */}
-      <h3 className="text-base font-bold text-fg mb-1.5 group-hover:text-primary transition-colors leading-snug">
-        {title}
+      <h3 className="text-base font-bold text-fg mb-1.5 line-clamp-2 group-hover:text-primary transition-colors">
+        {project.title}
       </h3>
 
-      {/* Description */}
-      <p className="text-sm text-fg-muted line-clamp-2 mb-5 flex-1">
-        {description}
+      {/* Description*/}
+      <p className="flex-1 text-sm text-fg-muted leading-relaxed mb-4">
+        {project.description}
       </p>
-
-      {/* Progress */}
-      <div>
-        <div className="flex items-center justify-between text-xs mb-1.5">
-          <span className="text-fg-muted">
-            {completedTasks}/{totalTasks} tasks
-          </span>
-          <span className="font-semibold text-fg">{percentage}%</span>
-        </div>
-        <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden">
-          <div
-            className="h-full bg-primary rounded-full transition-all duration-300"
-            style={{ width: `${percentage}%` }}
-            role="progressbar"
-            aria-valuenow={percentage}
-            aria-valuemin={0}
-            aria-valuemax={100}
-            aria-label={`${percentage}% complete`}
-          />
-        </div>
-      </div>
     </Link>
   );
 }

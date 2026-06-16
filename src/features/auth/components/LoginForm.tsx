@@ -50,7 +50,7 @@ export function LoginForm() {
         password: data.password,
       });
       setAuth(result.token, result.user);
-      navigate('/profile');
+      navigate('/dashboard');
     } catch (err: unknown) {
       let message = 'Login failed. Please try again.';
       if (axios.isAxiosError(err)) {

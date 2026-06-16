@@ -60,7 +60,7 @@ export const RoadmapService = {
                   ) {
                     assignedStatus = 'current';
                   }
-
+                  assignedStatus = 'current';
                   return {
                     id: task?._id || task?.id || '',
                     title: task?.title || '',

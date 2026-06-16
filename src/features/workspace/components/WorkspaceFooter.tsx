@@ -5,6 +5,8 @@ import { Button } from '../../../components/ui/Button';
 interface WorkspaceFooterProps {
   taskDetails: TaskDetailsState | null;
   isEvaluating: boolean;
+  isCompleted?: boolean;
+  isCodeModified?: boolean;
   onResetToSkeleton: () => void;
   onSubmitCode: () => void;
 }
@@ -12,6 +14,8 @@ interface WorkspaceFooterProps {
 export function WorkspaceFooter({
   taskDetails,
   isEvaluating,
+  isCompleted,
+  isCodeModified,
   onResetToSkeleton,
   onSubmitCode,
 }: WorkspaceFooterProps) {
@@ -33,16 +37,23 @@ export function WorkspaceFooter({
         <Button
           variant="outline"
           onClick={onResetToSkeleton}
+          disabled={isCompleted}
           className="!w-auto px-4 !py-2 text-xs"
         >
           Reset to skeleton
         </Button>
         <Button
           onClick={onSubmitCode}
-          disabled={isEvaluating}
+          disabled={isEvaluating || isCompleted || !isCodeModified}
           className="!w-auto px-5 !py-2 text-xs flex items-center gap-1.5"
         >
-          <span>{isEvaluating ? 'Reviewing...' : 'Submit code'}</span>
+          <span>
+            {isCompleted
+              ? 'Task Completed'
+              : isEvaluating
+                ? 'Reviewing...'
+                : 'Submit code'}
+          </span>
           <Send className="w-3.5 h-3.5 transform rotate-90 flex-shrink-0" />
         </Button>
       </div>
