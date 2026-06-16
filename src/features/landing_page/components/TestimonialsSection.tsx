@@ -22,10 +22,13 @@ const testimonials = [
 export default function Testimonials() {
   return (
     <section className="max-w-7xl mx-auto px-6 py-24">
-      <h2 className="text-center text-4xl lg:text-5xl font-bold text-slate-900">
-        Finally, a course that{' '}
+      <h2 className="text-center text-4xl lg:text-5xl font-Open Sans font-bold text-slate-900">
+        "Finally, a course that{' '}
         <span className="text-primary">
-          caught my fake confidence.
+          caught my fake confidence
+        </span>
+        <span>
+          ."
         </span>
       </h2>
 
@@ -33,7 +36,7 @@ export default function Testimonials() {
         {testimonials.map((item) => (
           <div
             key={item.name}
-            className="border border-primary-soft rounded-3xl p-8"
+            className="border border-primary rounded-3xl p-8"
           >
             <div className="text-yellow-400 text-lg">
               ★★★★★
@@ -45,7 +48,7 @@ export default function Testimonials() {
 
             <div className="mt-8 pt-6 border-t">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-full bg-primary text-white flex items-center justify-center text-sm font-semibold">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-purple-400 text-white flex items-center justify-center text-sm font-semibold">
                   {item.name[0]}
                 </div>
 

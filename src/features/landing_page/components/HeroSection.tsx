@@ -6,29 +6,29 @@ import { useNavigate } from 'react-router-dom';
 export default function HeroSection() {
     const navigate = useNavigate();
     return(
-        <section className='max-w-7xl mx-auto px-6 py-24'>
-            <div className= " flex flex-col lg:flex-row items-center justify-between gap-16">
+        <section className='max-w-7xl mx-auto px-6 min-h-[70vh] flex items-center'>
+            <div className= " flex flex-col lg:flex-row items-center gap-12">
 
-                <div className = " max-w-2xl">
+                <div className = " flex-1">
 
-                    <h1 className = "text-5xl lg:text-7xl font-bold leading-tight text-slate-900">
-                        Stop watching tutorials
+                    <h1 className = "text-4xl lg:text-5xl font-bold leading-tight text-slate-900">
+                        Stop watching tutorials.
                         <br />
                         <span className="text-primary">
                             Build real apps
                         </span>
                         <br />
-                        with an AI mentor
+                        with an AI mentor.
                     </h1>
 
-                    <Button variant = "primary" onClick={() => navigate(PATHS.DASHBOARD)} className="mt-10 w-auto inline-flex items-center gap-2 px-6 py-3 rounded-xl">
+                    <Button variant = "primary" onClick={() => navigate(PATHS.DASHBOARD)} className="mt-10 !w-auto inline-flex items-center gap-2 px-5 py-2 rounded-xl hover:scale-105">
                         Start your first project
                         <ArrowRight size={18} />
                     </Button>
                 </div>
 
-                <div className = "w-full max-w-xl">
-                    <img src={Hero} />
+                <div className = "flex-1">
+                    <img src={Hero} className="w-full scale-110" />
                 </div>
             </div>
         </section>

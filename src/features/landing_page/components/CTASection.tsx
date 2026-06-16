@@ -32,7 +32,7 @@ export default function CTA() {
           </Link>
           
           <Link to={PATHS.LOGIN}>
-            <Button variant = "ghost" className = "border border-white/40 px-6 py-3 rounded-xl font-medium hover:bg-white/10 transition-colors">
+            <Button variant = "ghost" className = "border border-white/40 text-white px-6 py-3 rounded-xl font-medium hover:scale-105 transition-colors">
               I already have an account
             </Button>
           </Link>

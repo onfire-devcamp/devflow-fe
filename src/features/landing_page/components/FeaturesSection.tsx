@@ -2,21 +2,21 @@ import { Code2, Braces, Hourglass } from "lucide-react";
 
 const features = [
     {
-        id: '1',
+        id: '01',
         title: 'Build',
         description: 'Pick a project, open the in-browser editor, ship the next task.',
         icon: Code2,
     },
 
     {
-        id: '2',
+        id: '02',
         title: 'Get reviewed',
         description: ' AI mentor flags bugs, suggests refactors, links docs in seconds.',
         icon: Braces,
     },
 
     {
-        id: '3',
+        id: '03',
         title: 'Explain to unlock',
         description: 'Answer one short question in your own words. Prove understanding. Level up.',
         icon: Hourglass,
@@ -29,7 +29,10 @@ export default function Features() {
             <h2 className = "text-center text-4xl lg:text-5xl font-bold text-slate-900">
                 A loop that makes learning{' '}
                 <span className = "text-primary">
-                    stick.
+                    stick
+                </span>
+                <span>
+                    .
                 </span>
             </h2>
             
@@ -37,7 +40,7 @@ export default function Features() {
                 {features.map((feature) => {
                     const Icon = feature.icon;
                     return(
-                        <div key = {feature.id} className = "border border-primary-soft rounded-3xl p-8 bg-white">
+                        <div key = {feature.id} className = "border border-primary rounded-3xl p-8 ">
                             <div className = "flex justify-between items-start">
                                 <div className = "w-12 h-12 rounded-xl bg-gradient-to-r from-pink-400 to-purple-400 flex items-center justify-center">
                                     <Icon className = "text-white" size={22}/>
