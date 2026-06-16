@@ -1,75 +1,81 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { withPreventDefault } from '../../../utils/form';
+import { useForm } from 'react-hook-form';
+import axios from 'axios';
+import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { GoogleButton } from '../../../components/ui/GoogleButton';
 import { Input } from '../../../components/ui/Input';
-import { Eye, EyeOff, Mail, Lock } from 'lucide-react';
 import { Button } from '../../../components/ui/Button';
+import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { login } from '../api/authApi';
-import axios from 'axios';
 import { useAuthStore } from '../stores/authStore';
+import { validateEmail, validatePassword } from '../utils/validation';
+
+const ERROR_DISMISS_MS = 3000;
+
+type LoginFormData = {
+  email: string;
+  password: string;
+};
+
 export function LoginForm() {
+  const [showPassword, setShowPassword] = useState(false);
+  const [formError, setFormError] = useState<string | null>(null);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.login);
-  const [email, setEmail] = useState<string>('');
-  const [password, setPassword] = useState<string>('');
-  const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [error, setError] = useState<string | null>(null);
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting, touchedFields },
+  } = useForm<LoginFormData>({ mode: 'onBlur' });
+
+  const {
+    googleLogin,
+    isGoogleLoading,
+    error: googleError,
+  } = useGoogleAuth('sign-in');
 
   useEffect(() => {
-    if (!error) {
-      return;
-    }
+    if (!formError) return;
+    const id = window.setTimeout(() => setFormError(null), ERROR_DISMISS_MS);
+    return () => window.clearTimeout(id);
+  }, [formError]);
 
-    const timeoutId = window.setTimeout(() => {
-      setError(null);
-    }, 3000);
-
-    return () => {
-      window.clearTimeout(timeoutId);
-    };
-  }, [error]);
-
-  const handleSignIn = withPreventDefault(async () => {
+  const onSubmit = async (data: LoginFormData) => {
     try {
-      setError(null);
-      // call api /user/login
-      const data = await login({
-        email,
-        password,
+      setFormError(null);
+      const result = await login({
+        email: data.email.trim(),
+        password: data.password,
       });
-      const { token, user } = data;
-
-      setAuth(token, user);
+      setAuth(result.token, result.user);
       navigate('/profile');
-    } catch (error: unknown) {
-      let errorMessage = 'Login error';
-      if (axios.isAxiosError(error)) {
-        errorMessage = error.response?.data?.message || errorMessage;
-      } else if (error instanceof Error) {
-        errorMessage = error.message;
+    } catch (err: unknown) {
+      let message = 'Login failed. Please try again.';
+      if (axios.isAxiosError(err)) {
+        message = err.response?.data?.message || message;
+      } else if (err instanceof Error) {
+        message = err.message;
       }
-
-      setError(errorMessage);
+      setFormError(message);
     }
-  });
+  };
 
-  const handleGoogleSignIn = () => {};
+  const displayError = formError || googleError;
+  const isLoading = isSubmitting || isGoogleLoading;
 
-  const passwordIcon = useMemo(() => {
-    return showPassword ? (
-      <Eye className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
-    ) : (
-      <EyeOff className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
-    );
-  }, [showPassword]);
   return (
     <div className="w-full border border-pink-200 p-8 sm:px-8 sm:py-9 rounded-[20px] bg-white shadow-sm flex flex-col justify-center">
       <h2 className="text-[28px] font-semibold mb-6 text-slate-900 tracking-tight">
         Welcome back
       </h2>
 
-      <GoogleButton onClick={handleGoogleSignIn} />
+      <GoogleButton
+        onClick={googleLogin}
+        disabled={isLoading}
+        label={isGoogleLoading ? 'Signing in...' : 'Continue with Google'}
+      />
 
       <div className="flex items-center my-5">
         <div className="flex-1 border-t border-pink-100"></div>
@@ -79,77 +85,113 @@ export function LoginForm() {
         <div className="flex-1 border-t border-pink-100"></div>
       </div>
 
-      <form onSubmit={handleSignIn} className="space-y-4">
-        {/* Email */}
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4" noValidate>
         <div>
-          <label className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide">
+          <label
+            htmlFor="email"
+            className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide"
+          >
             Email
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-3 text-fg-muted">
+            <span
+              className={`absolute left-3.5 top-3 transition-colors ${errors.email ? 'text-red-400' : 'text-fg-muted'}`}
+            >
               <Mail
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
-                viewBox="0 0 24 24"
               />
             </span>
-
             <Input
+              id="email"
               type="email"
+              autoComplete="email"
               placeholder="you@devflow.app"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
+              disabled={isLoading}
+              error={!!errors.email}
+              success={!errors.email && !!touchedFields.email}
+              {...register('email', {
+                validate: (v) => validateEmail(v) || true,
+              })}
             />
+          </div>
+          <div className="min-h-[18px] mt-1">
+            {errors.email && (
+              <p className="text-xs text-red-500 animate-fade-in" role="alert">
+                {errors.email.message}
+              </p>
+            )}
           </div>
         </div>
 
-        {/* Password */}
         <div>
-          <label className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide">
+          <label
+            htmlFor="password"
+            className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide"
+          >
             Password
           </label>
           <div className="relative">
-            <span className="absolute left-3.5 top-3 text-fg-muted">
+            <span
+              className={`absolute left-3.5 top-3 transition-colors ${errors.password ? 'text-red-400' : 'text-fg-muted'}`}
+            >
               <Lock
                 className="w-5 h-5"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="1.5"
-                viewBox="0 0 24 24"
               />
             </span>
-
             <Input
+              id="password"
               type={showPassword ? 'text' : 'password'}
+              autoComplete="current-password"
               placeholder="Your password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
+              disabled={isLoading}
+              error={!!errors.password}
+              success={!errors.password && !!touchedFields.password}
+              {...register('password', {
+                validate: (v) => validatePassword(v) || true,
+              })}
             />
-
-            {/* BUTTON ICON EYE */}
             <Button
               type="button"
               onClick={() => setShowPassword(!showPassword)}
               variant="ghost"
-              className="absolute right-4 top-3"
+              className="absolute right-3 top-2.5 p-1.5"
+              aria-label={showPassword ? 'Hide password' : 'Show password'}
             >
-              {passwordIcon}
+              {showPassword ? (
+                <Eye className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
+              ) : (
+                <EyeOff className="w-5 h-5 text-fg-muted" strokeWidth={1.5} />
+              )}
             </Button>
+          </div>
+          <div className="min-h-[18px] mt-1">
+            {errors.password && (
+              <p className="text-xs text-red-500 animate-fade-in" role="alert">
+                {errors.password.message}
+              </p>
+            )}
           </div>
         </div>
 
-        {error ? (
-          <p className="text-sm text-red-600" role="alert">
-            {error}
+        {displayError && (
+          <p className="text-sm text-red-600 animate-fade-in" role="alert">
+            {displayError}
           </p>
-        ) : null}
+        )}
 
-        <Button type="submit" variant="primary" className="mt-2">
-          Sign in
+        <Button
+          type="submit"
+          variant="primary"
+          className="mt-2"
+          disabled={isLoading}
+        >
+          {isSubmitting ? 'Signing in...' : 'Sign in'}
         </Button>
       </form>
 

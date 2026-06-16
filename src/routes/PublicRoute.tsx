@@ -2,12 +2,9 @@ import { Navigate, Outlet } from 'react-router-dom';
 import { useAuthStore } from '../features/auth/stores/authStore';
 
 export function PublicRoute() {
-  const token = useAuthStore((state) => state.token);
-  const user = useAuthStore((state) => state.user);
+  const status = useAuthStore((state) => state.status);
 
-  if (token && user) {
-    return <Navigate to="/profile" replace />;
-  }
+  if (status === 'authenticated') return <Navigate to="/dashboard" replace />;
 
   return <Outlet />;
 }
