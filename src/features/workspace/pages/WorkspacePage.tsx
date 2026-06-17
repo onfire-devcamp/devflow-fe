@@ -16,9 +16,10 @@ import { DeviChatPanel } from '../components/DeviChatPanel';
 import { ExplainToPassModal } from '../components/ExplainToPassModal';
 import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
-
+import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   const {
     data: slugProjectDetails,
@@ -52,6 +53,7 @@ export default function WorkspacePage() {
     editorInstance,
     hasSelection,
     isCodeModified,
+    saveStatus,
     handleEditorMount,
     handleEditorChange,
     handleResetToSkeleton,
@@ -101,6 +103,10 @@ export default function WorkspacePage() {
     setActiveTaskId(newTaskId);
   };
 
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prev) => !prev);
+  }, []);
+
   const currentCategory = roadmapData.find((group) =>
     group.tasks.some((task) => task.id === activeTaskId),
   )?.category;
@@ -135,9 +141,16 @@ export default function WorkspacePage() {
     <div className="flex flex-col h-screen bg-bg select-none overflow-hidden text-fg">
       <Header />
       <div className="flex flex-1 overflow-hidden w-full">
-        <aside className="hidden lg:flex w-76 flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-y-auto">
-          <div>
-            <SidebarHeader projectName={currentProjectName} />
+        <aside
+          className={`hidden lg:flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 ${
+            isSidebarOpen ? 'w-76' : 'w-0 border-r-0'
+          }`}
+        >
+          <div className="w-76 overflow-y-auto h-full">
+            <SidebarHeader
+              projectName={currentProjectName}
+              onToggleSidebar={handleToggleSidebar}
+            />
             <div className="p-4 space-y-5">
               <TabSwitcher />
               <ProgressBar progress={currentProgress} />
@@ -150,11 +163,21 @@ export default function WorkspacePage() {
           </div>
         </aside>
 
+        {!isSidebarOpen && (
+          <button
+            onClick={handleToggleSidebar}
+            aria-label="Open Sidebar"
+            className="hidden lg:flex items-center justify-center w-7 h-12 mt-4 flex-shrink-0 self-start bg-primary-soft border border-primary-mid border-l-0 rounded-r-lg hover:bg-primary-mid/30 transition-colors"
+          >
+            <SidebarToggleIcon className="w-4 h-4 rotate-180" />
+          </button>
+        )}
+
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
-          <div className="max-w-3xl mx-auto w-full min-h-[500px]">
+          <div className="relative max-w-3xl mx-auto w-full min-h-[500px]">
             {loadingTask ? (
-              <div className="flex items-center justify-center h-full min-h-[400px] text-slate-400 text-sm">
-                <div className="animate-pulse">Loading task contents...</div>
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
               </div>
             ) : taskDetails ? (
               <div className="space-y-4">
@@ -166,6 +189,7 @@ export default function WorkspacePage() {
                   isEvaluating={isEvaluating}
                   isChatting={isChatting}
                   category={currentCategory}
+                  saveStatus={saveStatus}
                   isCompleted={isCompleted}
                   onFileSelect={handleFileSelect}
                   onEditorMount={handleEditorMount}

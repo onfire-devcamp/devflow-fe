@@ -1,10 +1,10 @@
 import Editor from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
-import { Pen } from 'lucide-react';
+import { Pen, CheckCircle2, Loader2 } from 'lucide-react';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
 import { getLanguageFromPath } from '../utils/languageHelper';
 import { Button } from '../../../components/ui/Button';
-
+import { handleEditorBeforeMount } from '../utils/monacoConfig';
 interface WorkspaceEditorProps {
   taskDetails: TaskDetailsState | null;
   activeFileId: string | null;
@@ -14,6 +14,7 @@ interface WorkspaceEditorProps {
   isChatting: boolean;
   isCompleted?: boolean;
   category?: string;
+  saveStatus?: 'saved' | 'saving' | 'editing';
   onFileSelect: (fileId: string) => void;
   onEditorMount: (editor: editor.IStandaloneCodeEditor) => void;
   onEditorChange: (fileId: string, value: string | undefined) => void;
@@ -29,6 +30,7 @@ export function WorkspaceEditor({
   isChatting,
   isCompleted,
   category,
+  saveStatus = 'saved',
   onFileSelect,
   onEditorMount,
   onEditorChange,
@@ -36,6 +38,7 @@ export function WorkspaceEditor({
 }: WorkspaceEditorProps) {
   if (!taskDetails) return null;
 
+  const activeFile = taskDetails.files.find((f) => f._id === activeFileId);
   return (
     <div className="space-y-4 animate-fadeIn">
       {/* Task Meta Header */}
@@ -73,20 +76,47 @@ export function WorkspaceEditor({
               {file.path}
             </Button>
           ))}
+          <div className="hidden md:flex items-center gap-1.5 text-[11px] text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg whitespace-nowrap ml-auto mb-1 shadow-sm">
+            <span>Highlight code to</span>
+            <span className="text-purple-600 font-semibold bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-100">
+              Explain
+            </span>
+            <span className="text-slate-300">/</span>
+            <span className="text-amber-500 font-semibold bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
+              Hint
+            </span>
+          </div>
         </div>
       )}
 
       <div className="w-full rounded-xl rounded-tl-none border border-slate-800 bg-slate-900 overflow-hidden shadow-md relative z-0">
         <div className="flex items-center justify-between px-4 py-2.5 bg-slate-950 border-b border-slate-900">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-1.5 w-32">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 block" />
             <span className="w-2.5 h-2.5 rounded-full bg-amber-400 block" />
             <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 block" />
           </div>
+
           <span className="text-[11px] text-slate-500 font-mono">
             {taskDetails.files.find((f) => f._id === activeFileId)?.path || ''}
           </span>
-          <div className="w-10" />
+          <div className="w-32 flex justify-end select-none">
+            {saveStatus === 'saving' && (
+              <span className="text-amber-400 flex items-center gap-1.5 text-[10px] font-medium font-mono uppercase tracking-wider animate-pulse">
+                <Loader2 className="w-3 h-3 animate-spin" /> Saving...
+              </span>
+            )}
+            {saveStatus === 'editing' && (
+              <span className="text-slate-400 flex items-center gap-1.5 text-[10px] font-medium font-mono uppercase tracking-wider">
+                <Pen className="w-3 h-3" /> Editing
+              </span>
+            )}
+            {saveStatus === 'saved' && (
+              <span className="text-emerald-500/90 flex items-center gap-1.5 text-[10px] font-medium font-mono uppercase tracking-wider">
+                <CheckCircle2 className="w-3 h-3" /> Saved
+              </span>
+            )}
+          </div>
         </div>
 
         <div className="py-2 bg-slate-900 relative">
@@ -94,10 +124,12 @@ export function WorkspaceEditor({
             key={activeFileId || 'empty'}
             height="420px"
             theme="vs-dark"
+            path={activeFile?.path}
             language={getLanguageFromPath(
               taskDetails.files.find((f) => f._id === activeFileId)?.path,
             )}
             value={activeFileId ? fileContents[activeFileId] : ''}
+            beforeMount={handleEditorBeforeMount}
             onMount={onEditorMount}
             onChange={(value) => {
               if (activeFileId) {
@@ -107,21 +139,21 @@ export function WorkspaceEditor({
             options={{ readOnly: isCompleted }}
           />
           {hasSelection && !isEvaluating && !isChatting && (
-            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 shadow-lg rounded-xl px-2 py-1.5 flex items-center gap-2 z-10 animate-fadeIn">
-              <span className="text-[11px] font-medium text-slate-400 pl-2 pr-1">
+            <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 shadow-xl rounded-xl px-2.5 py-2 flex items-center gap-2 z-10 animate-fadeIn">
+              <span className="text-[11px] font-medium text-slate-500 pl-1.5 pr-1 select-none">
                 Devi:
               </span>
               <Button
                 variant="ghost"
                 onClick={() => onQuickAction('explain')}
-                className="!w-auto text-[11px] font-semibold px-3 py-1 bg-purple-500/20 text-purple-300 hover:bg-purple-500/40 hover:text-purple-300 rounded-lg transition"
+                className="!w-auto text-[11px] font-semibold px-3 py-1.5 bg-purple-500/20 text-purple-300 hover:bg-purple-500/30 rounded-lg transition-colors"
               >
                 Explain
               </Button>
               <Button
                 variant="ghost"
                 onClick={() => onQuickAction('hint')}
-                className="!w-auto text-[11px] font-semibold px-3 py-1 bg-amber-500/20 text-amber-300 hover:bg-amber-500/40 hover:text-amber-300 rounded-lg transition"
+                className="!w-auto !text-amber-200 text-[11px] font-semibold px-3 py-1.5 bg-amber-400/20 hover:bg-amber-400/30 rounded-lg transition-colors"
               >
                 Hint
               </Button>
