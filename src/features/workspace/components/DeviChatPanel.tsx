@@ -144,6 +144,7 @@ export function DeviChatPanel({
         )}
 
         {hasNextPage && <div ref={loadOlderRef} className="h-px w-full" />}
+        <div className="flex-1 min-h-[8px]" />
       </div>
 
       <div className="p-3 border-t border-primary-mid bg-transparent">
