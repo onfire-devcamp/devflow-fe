@@ -43,6 +43,7 @@ export interface IconProps {
 export interface RoadmapTabButtonProps {
   children: React.ReactNode;
   active?: boolean;
+  onClick?: () => void;
 }
 
 export interface RawTaskFromAPI {

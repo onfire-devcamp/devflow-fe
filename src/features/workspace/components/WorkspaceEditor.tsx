@@ -38,7 +38,15 @@ export function WorkspaceEditor({
 }: WorkspaceEditorProps) {
   if (!taskDetails) return null;
 
-  const activeFile = taskDetails.files.find((f) => f._id === activeFileId);
+  const currentTaskFiles = taskDetails.files;
+  const isOldFile =
+    activeFileId && !currentTaskFiles.some((f) => f._id === activeFileId);
+  const activeFileInTask = currentTaskFiles.find((f) => f._id === activeFileId);
+
+  // Try to find the path in taskDetails, otherwise it might just be available in the codebase.
+  // Actually, fileContents keys are IDs, but we don't have the path if it's an old file directly in WorkspaceEditor props.
+  // We can pass the path if we need to, but wait! The user just wants a read-only banner.
+
   return (
     <div className="space-y-4 animate-fadeIn">
       {/* Task Meta Header */}
@@ -54,10 +62,10 @@ export function WorkspaceEditor({
         </p>
       </div>
 
-      {/* Tab bars */}
-      {taskDetails.files.length > 0 && (
+      {/* Tab bars for CURRENT TASK FILES */}
+      {currentTaskFiles.length > 0 && (
         <div className="flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar">
-          {taskDetails.files.map((file) => (
+          {currentTaskFiles.map((file) => (
             <Button
               variant="ghost"
               key={file._id}
@@ -76,20 +84,41 @@ export function WorkspaceEditor({
               {file.path}
             </Button>
           ))}
-          <div className="hidden md:flex items-center gap-1.5 text-[11px] text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg whitespace-nowrap ml-auto mb-1 shadow-sm">
-            <span>Highlight code to</span>
-            <span className="text-purple-600 font-semibold bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-100">
-              Explain
-            </span>
-            <span className="text-slate-300">/</span>
-            <span className="text-amber-500 font-semibold bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
-              Hint
-            </span>
-          </div>
+          {!isOldFile && (
+            <div className="hidden md:flex items-center gap-1.5 text-[11px] text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg whitespace-nowrap ml-auto mb-1 shadow-sm">
+              <span>Highlight code to</span>
+              <span className="text-purple-600 font-semibold bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-100">
+                Explain
+              </span>
+              <span className="text-slate-300">/</span>
+              <span className="text-amber-500 font-semibold bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
+                Hint
+              </span>
+            </div>
+          )}
         </div>
       )}
 
-      <div className="w-full rounded-xl rounded-tl-none border border-slate-800 bg-slate-900 overflow-hidden shadow-md relative z-0">
+      {/* Read-Only Banner for Old Files */}
+      {isOldFile && (
+        <div className="flex items-center justify-between bg-amber-50 border border-amber-200 text-amber-800 px-4 py-2 rounded-t-xl -mb-4 relative z-10 shadow-sm text-sm">
+          <span>
+            <strong className="font-semibold">Read-only file.</strong> You are
+            browsing a file from a previous task.
+          </span>
+          <Button
+            variant="ghost"
+            className="text-amber-700 hover:bg-amber-100 px-3 py-1.5 h-auto text-xs font-semibold rounded-lg"
+            onClick={() => onFileSelect(currentTaskFiles[0]?._id)}
+          >
+            ← Back to Task
+          </Button>
+        </div>
+      )}
+
+      <div
+        className={`w-full rounded-xl ${isOldFile ? 'rounded-tl-xl' : 'rounded-tl-none'} border border-slate-800 bg-slate-900 overflow-hidden shadow-md relative z-0`}
+      >
         <div className="flex items-center justify-between px-4 py-2.5 bg-slate-950 border-b border-slate-900">
           <div className="flex items-center gap-1.5 w-32">
             <span className="w-2.5 h-2.5 rounded-full bg-red-500 block" />
@@ -98,20 +127,20 @@ export function WorkspaceEditor({
           </div>
 
           <span className="text-[11px] text-slate-500 font-mono">
-            {taskDetails.files.find((f) => f._id === activeFileId)?.path || ''}
+            {activeFileInTask?.path || (isOldFile ? 'Browsing past file' : '')}
           </span>
           <div className="w-32 flex justify-end select-none">
-            {saveStatus === 'saving' && (
+            {!isOldFile && saveStatus === 'saving' && (
               <span className="text-amber-400 flex items-center gap-1.5 text-[10px] font-medium font-mono uppercase tracking-wider animate-pulse">
                 <Loader2 className="w-3 h-3 animate-spin" /> Saving...
               </span>
             )}
-            {saveStatus === 'editing' && (
+            {!isOldFile && saveStatus === 'editing' && (
               <span className="text-slate-400 flex items-center gap-1.5 text-[10px] font-medium font-mono uppercase tracking-wider">
                 <Pen className="w-3 h-3" /> Editing
               </span>
             )}
-            {saveStatus === 'saved' && (
+            {!isOldFile && saveStatus === 'saved' && (
               <span className="text-emerald-500/90 flex items-center gap-1.5 text-[10px] font-medium font-mono uppercase tracking-wider">
                 <CheckCircle2 className="w-3 h-3" /> Saved
               </span>
@@ -124,21 +153,21 @@ export function WorkspaceEditor({
             key={activeFileId || 'empty'}
             height="420px"
             theme="vs-dark"
-            path={activeFile?.path}
+            path={activeFileInTask?.path || 'readonly.ts'}
             language={getLanguageFromPath(
-              taskDetails.files.find((f) => f._id === activeFileId)?.path,
+              activeFileInTask?.path || 'readonly.ts',
             )}
             value={activeFileId ? fileContents[activeFileId] : ''}
             beforeMount={handleEditorBeforeMount}
             onMount={onEditorMount}
             onChange={(value) => {
-              if (activeFileId) {
+              if (activeFileId && !isOldFile) {
                 onEditorChange(activeFileId, value);
               }
             }}
-            options={{ readOnly: isCompleted }}
+            options={{ readOnly: isCompleted || isOldFile }}
           />
-          {hasSelection && !isEvaluating && !isChatting && (
+          {hasSelection && !isEvaluating && !isChatting && !isOldFile && (
             <div className="absolute bottom-6 left-1/2 transform -translate-x-1/2 bg-slate-800 border border-slate-700 shadow-xl rounded-xl px-2.5 py-2 flex items-center gap-2 z-10 animate-fadeIn">
               <span className="text-[11px] font-medium text-slate-500 pl-1.5 pr-1 select-none">
                 Devi:

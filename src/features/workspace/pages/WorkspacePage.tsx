@@ -17,9 +17,12 @@ import { ExplainToPassModal } from '../components/ExplainToPassModal';
 import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
+import { ExplorerTab } from '../components/ExplorerTab';
+
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
 
   const {
     data: slugProjectDetails,
@@ -152,13 +155,27 @@ export default function WorkspacePage() {
               onToggleSidebar={handleToggleSidebar}
             />
             <div className="p-4 space-y-5">
-              <TabSwitcher />
+              <TabSwitcher activeTab={activeTab} onChange={setActiveTab} />
               <ProgressBar progress={currentProgress} />
-              <TaskList
-                academyData={roadmapData}
-                activeTaskId={activeTaskId}
-                onTaskSelect={handleTaskSelect}
-              />
+              {activeTab === 'roadmap' ? (
+                <TaskList
+                  academyData={roadmapData}
+                  activeTaskId={activeTaskId}
+                  onTaskSelect={handleTaskSelect}
+                />
+              ) : (
+                <ExplorerTab
+                  projectId={projectId!}
+                  projectSlug={projectSlug!}
+                  activeTaskId={activeTaskId}
+                  activeFileId={activeFileId}
+                  taskDetails={taskDetails}
+                  roadmapData={roadmapData}
+                  onFileSelect={(fileId) => {
+                    handleFileSelect(fileId);
+                  }}
+                />
+              )}
             </div>
           </div>
         </aside>

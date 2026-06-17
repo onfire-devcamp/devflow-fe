@@ -44,6 +44,12 @@ export function useTaskEditor(
     },
   });
 
+  const { data: userFilesResponse } = useQuery({
+    queryKey: ['userWorkspace', projectId],
+    queryFn: () => workspaceApi.fetchUserWorkspaceFiles(projectId!),
+    enabled: !!projectId,
+  });
+
   const activeFileIdToUse =
     activeFileId || taskDetails?.files?.[0]?._id || null;
 
@@ -55,8 +61,19 @@ export function useTaskEditor(
           edits[f._id] !== undefined ? edits[f._id] : f.content || '';
       });
     }
+    const userFiles = userFilesResponse?.data || [];
+    // Add userFiles so old completed files can be viewed
+    userFiles.forEach(
+      (uf: import('../../workspace/types').UserWorkspaceFileView) => {
+        const id = uf.fileId._id;
+        if (contents[id] === undefined) {
+          contents[id] = uf.content;
+        }
+      },
+    );
+
     return contents;
-  }, [taskDetails, edits]);
+  }, [taskDetails, edits, userFilesResponse?.data]);
 
   const currentContent = activeFileIdToUse
     ? fileContents[activeFileIdToUse]
