@@ -1,13 +1,7 @@
-import { useState } from 'react';
-import {
-  Folder,
-  FolderOpen,
-  FileCode2,
-  FileJson,
-  FileText,
-  Lock,
-} from 'lucide-react';
+import { memo, useState } from 'react';
+import { ChevronRight, Lock } from 'lucide-react';
 import type { FileNode } from '../../features/projects/types/fileTree';
+import { getFileIcon } from '../../utils/fileIcons';
 
 interface FileTreeProps {
   data: FileNode[];
@@ -25,7 +19,7 @@ export function FileTree({
   return (
     <div className={`text-sm ${className}`}>
       {data.map((node) => (
-        <FileTreeNode
+        <MemoizedFileTreeNode
           key={node.id}
           node={node}
           onNodeSelect={onNodeSelect}
@@ -62,14 +56,6 @@ function FileTreeNode({
     }
   };
 
-  const getFileIcon = (fileName: string) => {
-    if (fileName.endsWith('.tsx') || fileName.endsWith('.ts'))
-      return <FileCode2 className="w-4 h-4 text-blue-500" />;
-    if (fileName.endsWith('.json'))
-      return <FileJson className="w-4 h-4 text-yellow-500" />;
-    return <FileText className="w-4 h-4 text-slate-500" />;
-  };
-
   const getWeightClass = () => {
     if (node.isCurrentTask) return 'font-bold text-fg';
     if (node.isCompleted) return 'font-normal text-fg';
@@ -90,11 +76,9 @@ function FileTreeNode({
       >
         <span className="shrink-0 flex items-center justify-center w-4 h-4">
           {isFolder ? (
-            isOpen ? (
-              <FolderOpen className="w-4 h-4 text-slate-400" />
-            ) : (
-              <Folder className="w-4 h-4 text-slate-400" />
-            )
+            <ChevronRight
+              className={`w-4 h-4 text-slate-400 transition-transform duration-200 ${isOpen ? 'rotate-90' : ''}`}
+            />
           ) : (
             getFileIcon(node.name)
           )}
@@ -106,18 +90,21 @@ function FileTreeNode({
       </div>
 
       {isFolder && isOpen && node.children && (
-        <div className="flex flex-col">
+        <div className="flex flex-col ml-[1.1rem] border-l border-slate-200/60 relative">
           {node.children.map((child) => (
-            <FileTreeNode
-              key={child.id}
-              node={child}
-              onNodeSelect={onNodeSelect}
-              activeFileId={activeFileId}
-              depth={depth + 1}
-            />
+            <div key={child.id} className="relative">
+              <MemoizedFileTreeNode
+                node={child}
+                onNodeSelect={onNodeSelect}
+                activeFileId={activeFileId}
+                depth={depth + 1}
+              />
+            </div>
           ))}
         </div>
       )}
     </div>
   );
 }
+
+const MemoizedFileTreeNode = memo(FileTreeNode);

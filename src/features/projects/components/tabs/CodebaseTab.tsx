@@ -4,31 +4,63 @@ import Editor from '@monaco-editor/react';
 import { Code2 } from 'lucide-react';
 import { TabPanel, EmptyPanel } from '.';
 import { FileTree } from '../../../../components/ui/FileTree';
+import { LockedEditorOverlay } from '../../../../components/ui/LockedEditorOverlay';
 import { buildFileTreeFromPaths } from '../../../../utils/fileTreeUtils';
 import { getProjectCodebase } from '../../api/projectsApi';
+import { workspaceApi } from '../../../workspace/api/workspaceApi';
 import type { FileNode } from '../../types/fileTree';
+import type { ProjectDetail } from '../../types/projectTypes';
 import { getLanguageFromPath } from '../../../workspace/utils/languageHelper';
 import { handleEditorBeforeMount } from '../../../workspace/utils/monacoConfig';
 
-export function CodebaseTab({ projectSlug }: { projectSlug: string }) {
+export function CodebaseTab({ project }: { project: ProjectDetail }) {
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
 
-  const { data: codebase, isLoading } = useQuery({
-    queryKey: ['projectCodebase', projectSlug],
-    queryFn: () => getProjectCodebase(projectSlug),
-    enabled: !!projectSlug,
+  const { data: codebase, isLoading: isCodebaseLoading } = useQuery({
+    queryKey: ['projectCodebase', project.slug],
+    queryFn: () => getProjectCodebase(project.slug),
+    enabled: !!project.slug,
+  });
+
+  const { data: roadmapData, isLoading: isRoadmapLoading } = useQuery({
+    queryKey: ['projectRoadmap', project.id],
+    queryFn: () => workspaceApi.fetchProjectRoadmap(project.id),
+    enabled: !!project.id,
   });
 
   const fileTree = useMemo(() => {
     if (!codebase) return [];
+
+    const module1FileIds = new Set<string>();
+
+    // Extract file IDs from the first module
+    if (roadmapData?.data?.modules && roadmapData.data.modules.length > 0) {
+      const firstModuleTasks = roadmapData.data.modules[0].tasks || [];
+      firstModuleTasks.forEach(
+        (
+          task: import('../../../roadmap/RoadmapType').RawTaskFromAPI & {
+            fileId?: { _id?: string; id?: string }[];
+          },
+        ) => {
+          if (task.fileId && Array.isArray(task.fileId)) {
+            task.fileId.forEach((file: { _id?: string; id?: string }) => {
+              if (file._id) module1FileIds.add(file._id);
+              if (file.id) module1FileIds.add(file.id);
+            });
+          }
+        },
+      );
+    }
+
     return buildFileTreeFromPaths(
       codebase.map((file) => ({
         id: file._id,
         path: file.path,
         content: file.content,
+        isLocked: roadmapData ? !module1FileIds.has(file._id) : false,
       })),
     );
-  }, [codebase]);
+  }, [codebase, roadmapData]);
 
   const findNodeById = (nodes: FileNode[], id: string): FileNode | null => {
     for (const node of nodes) {
@@ -43,7 +75,7 @@ export function CodebaseTab({ projectSlug }: { projectSlug: string }) {
 
   const activeNode = activeFileId ? findNodeById(fileTree, activeFileId) : null;
 
-  if (isLoading) {
+  if (isCodebaseLoading || isRoadmapLoading) {
     return (
       <TabPanel tabId="codebase" className="flex justify-center py-16">
         <p className="text-sm text-fg-muted">Loading codebase...</p>
@@ -90,22 +122,33 @@ export function CodebaseTab({ projectSlug }: { projectSlug: string }) {
                 </span>
                 <div className="w-32" />
               </div>
-              <div className="flex-1 relative">
-                <Editor
-                  key={activeNode.id}
-                  height="100%"
-                  theme="vs-dark"
-                  path={activeNode.path}
-                  language={getLanguageFromPath(activeNode.path)}
-                  value={activeNode.skeletonCode}
-                  beforeMount={handleEditorBeforeMount}
-                  options={{
-                    readOnly: true,
-                    minimap: { enabled: false },
-                    scrollBeyondLastLine: false,
-                    padding: { top: 16, bottom: 16 },
-                  }}
-                />
+              <div className="flex-1 relative bg-slate-900">
+                {activeNode.isLocked && (
+                  <LockedEditorOverlay message="Enroll and complete module 1 to unlock this file" />
+                )}
+                <div
+                  className={
+                    activeNode.isLocked
+                      ? 'opacity-50 blur-[2px] pointer-events-none'
+                      : ''
+                  }
+                >
+                  <Editor
+                    key={activeNode.id}
+                    height="100%"
+                    theme="vs-dark"
+                    path={activeNode.path}
+                    language={getLanguageFromPath(activeNode.path)}
+                    value={activeNode.skeletonCode}
+                    beforeMount={handleEditorBeforeMount}
+                    options={{
+                      readOnly: true,
+                      minimap: { enabled: false },
+                      scrollBeyondLastLine: false,
+                      padding: { top: 16, bottom: 16 },
+                    }}
+                  />
+                </div>
               </div>
             </div>
           ) : (

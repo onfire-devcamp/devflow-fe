@@ -86,11 +86,6 @@ export function ExplorerTab({
         activeFileId={activeFileId}
         onNodeSelect={(node) => {
           if (node.type === 'file') {
-            if (node.isLocked) {
-              // TODO: Toast or alert
-              alert('Complete previous tasks to unlock this file.');
-              return;
-            }
             onFileSelect(node.id);
           }
         }}

@@ -115,7 +115,7 @@ export function ProjectDetailTabs({ project }: { project: ProjectDetail }) {
             title={project.title}
           />
         )}
-        {activeTab === 'codebase' && <CodebaseTab projectSlug={project.slug} />}
+        {activeTab === 'codebase' && <CodebaseTab project={project} />}
       </div>
     </>
   );

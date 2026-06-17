@@ -60,7 +60,8 @@ export default function WorkspacePage() {
     handleEditorMount,
     handleEditorChange,
     handleResetToSkeleton,
-  } = useTaskEditor(projectId, activeTaskId);
+    activeFileState,
+  } = useTaskEditor(projectId, projectSlug, activeTaskId);
 
   const {
     messages,
@@ -208,6 +209,7 @@ export default function WorkspacePage() {
                   category={currentCategory}
                   saveStatus={saveStatus}
                   isCompleted={isCompleted}
+                  activeFileState={activeFileState}
                   onFileSelect={handleFileSelect}
                   onEditorMount={handleEditorMount}
                   onEditorChange={handleEditorChange}
