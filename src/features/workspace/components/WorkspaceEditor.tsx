@@ -1,11 +1,10 @@
 import Editor from '@monaco-editor/react';
-import type { Monaco } from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
 import { Pen, CheckCircle2, Loader2 } from 'lucide-react';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
 import { getLanguageFromPath } from '../utils/languageHelper';
 import { Button } from '../../../components/ui/Button';
-
+import { handleEditorBeforeMount } from '../utils/monacoConfig';
 interface WorkspaceEditorProps {
   taskDetails: TaskDetailsState | null;
   activeFileId: string | null;
@@ -38,34 +37,7 @@ export function WorkspaceEditor({
   onQuickAction,
 }: WorkspaceEditorProps) {
   if (!taskDetails) return null;
-  const handleEditorBeforeMount = (monaco: Monaco) => {
-    const compilerOptions = {
-      target: monaco.languages.typescript.ScriptTarget.Latest,
-      allowNonTsExtensions: true,
-      moduleResolution: monaco.languages.typescript.ModuleResolutionKind.NodeJs,
-      module: monaco.languages.typescript.ModuleKind.CommonJS,
-      noEmit: true,
-      esModuleInterop: true,
-      jsx: monaco.languages.typescript.JsxEmit.React,
-      reactNamespace: 'React',
-      allowJs: true,
-    };
-    monaco.languages.typescript.typescriptDefaults.setCompilerOptions(
-      compilerOptions,
-    );
-    monaco.languages.typescript.javascriptDefaults.setCompilerOptions(
-      compilerOptions,
-    );
 
-    monaco.languages.typescript.typescriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true,
-      noSyntaxValidation: false,
-    });
-    monaco.languages.typescript.javascriptDefaults.setDiagnosticsOptions({
-      noSemanticValidation: true,
-      noSyntaxValidation: false,
-    });
-  };
   const activeFile = taskDetails.files.find((f) => f._id === activeFileId);
   return (
     <div className="space-y-4 animate-fadeIn">
