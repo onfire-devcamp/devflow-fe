@@ -6,7 +6,7 @@ import { PublicRoute } from './PublicRoute';
 import { LoginPage } from '../features/auth/components/LoginPage';
 import { PageLoader } from '../components/ui/PageLoader';
 import RoadMapLayout from '../features/roadmap/index';
-
+import LandingPage from '../features/landing_page/index';
 const RegisterPage = lazy(
   () => import('../features/auth/components/RegisterPage'),
 );
@@ -29,7 +29,7 @@ export function AppRoutes() {
           <Route path={PATHS.LOGIN} element={<LoginPage />} />
           <Route path={PATHS.REGISTER} element={<RegisterPage />} />
         </Route>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
 
         {/* PRIVATE ROUTES */}
         <Route element={<PrivateRoute />}>
