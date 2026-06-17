@@ -8,6 +8,7 @@ import { WeeklyStreakCard } from './WeeklyStreakCard';
 import { useDashboardData } from '../hooks/useDashboardData';
 import type { FilterCategory } from '../types/dashboardTypes';
 import { Button } from '../../../components/ui/Button';
+import { ArrowDown } from 'lucide-react';
 const FILTERS: { label: string; value: FilterCategory }[] = [
   { label: 'All projects', value: 'ALL' },
   { label: 'Frontend', value: 'FRONTEND' },
@@ -78,7 +79,11 @@ export default function DashboardPage() {
               <ContinueLearningCard data={continueData} />
             ) : (
               <CardPlaceholder className="h-full bg-primary-soft">
-                <p className="text-fg-muted">No project available</p>
+                <p className="text-sm text-slate-600 font-medium flex items-center gap-2">
+                  Your coding progress will be tracked here. Select a project
+                  below to start
+                  <ArrowDown className="w-4 h-4 animate-bounce text-slate-500 flex-shrink-0" />
+                </p>
               </CardPlaceholder>
             )}
             {isLoadingStreak ? (
