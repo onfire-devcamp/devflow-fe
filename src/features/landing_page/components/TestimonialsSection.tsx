@@ -1,4 +1,10 @@
-const testimonials = [
+interface Testimonial {
+  name: string;
+  role: string;
+  quote: string;
+}
+
+const testimonials: Testimonial[] = [
   {
     name: 'Maya R.',
     role: 'Frontend dev · ex-bootcamp',
@@ -24,12 +30,8 @@ export default function Testimonials() {
     <section className="max-w-7xl mx-auto px-6 py-24">
       <h2 className="text-center text-4xl lg:text-5xl font-Open Sans font-bold text-slate-900">
         "Finally, a course that{' '}
-        <span className="text-primary">
-          caught my fake confidence
-        </span>
-        <span>
-          ."
-        </span>
+        <span className="text-primary">caught my fake confidence</span>
+        <span>."</span>
       </h2>
 
       <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -38,9 +40,7 @@ export default function Testimonials() {
             key={item.name}
             className="border border-primary rounded-3xl p-8"
           >
-            <div className="text-yellow-400 text-lg">
-              ★★★★★
-            </div>
+            <div className="text-yellow-400 text-lg">★★★★★</div>
 
             <p className="mt-6 text-slate-600 leading-relaxed min-h-[130px]">
               "{item.quote}"
@@ -53,13 +53,9 @@ export default function Testimonials() {
                 </div>
 
                 <div>
-                  <p className="font-medium text-slate-900">
-                    {item.name}
-                  </p>
+                  <p className="font-medium text-slate-900">{item.name}</p>
 
-                  <p className="text-sm text-slate-500">
-                    {item.role}
-                  </p>
+                  <p className="text-sm text-slate-500">{item.role}</p>
                 </div>
               </div>
             </div>
