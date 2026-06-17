@@ -5,6 +5,7 @@ import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { LoginPage } from '../features/auth/components/LoginPage';
 import { PageLoader } from '../components/ui/PageLoader';
+import { NotFoundPage } from '../components/ui/NotFoundPage';
 import RoadMapLayout from '../features/roadmap/index';
 
 const RegisterPage = lazy(
@@ -38,6 +39,9 @@ export function AppRoutes() {
           <Route path="/project/:projectSlug" element={<ProjectDetailPage />} />
           <Route path="/workspace/:projectSlug" element={<RoadMapLayout />} />
         </Route>
+
+        {/* Catch-all: show 404 for any unmatched route */}
+        <Route path="*" element={<NotFoundPage />} />
       </Routes>
     </Suspense>
   );

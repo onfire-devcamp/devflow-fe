@@ -1,6 +1,7 @@
 import axios from 'axios';
 import type { AxiosError, InternalAxiosRequestConfig } from 'axios';
 import { useAuthStore } from '../features/auth/stores/authStore';
+import { useErrorStore } from '../stores/errorStore';
 
 interface FailedRequest {
   resolve: (token: string) => void;
@@ -42,6 +43,36 @@ axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
 axiosClient.interceptors.response.use(
   (response) => response.data,
   async (error: AxiosError) => {
+    // If the browser is offline, set a clear offline message
+    if (typeof navigator !== 'undefined' && !navigator.onLine) {
+      useErrorStore
+        .getState()
+        .setGlobalError(
+          'Network offline: please check your internet connection.',
+        );
+      return Promise.reject(error);
+    }
+
+    // Network error (no response) -> global error
+    if (!error.response || error.code === 'ERR_NETWORK') {
+      useErrorStore
+        .getState()
+        .setGlobalError(
+          'Network error: please check your internet connection and try again.',
+        );
+      return Promise.reject(error);
+    }
+
+    // Server errors (5xx) -> global error
+    if (error.response.status >= 500) {
+      useErrorStore
+        .getState()
+        .setGlobalError(
+          'Server error: something went wrong on the server. Please try again later.',
+        );
+      return Promise.reject(error);
+    }
+
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
