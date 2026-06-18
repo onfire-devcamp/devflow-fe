@@ -31,6 +31,7 @@ export function AppRoutes() {
           <Route path={PATHS.REGISTER} element={<RegisterPage />} />
         </Route>
         <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/404" element={<NotFoundPage />} />
 
         {/* PRIVATE ROUTES */}
         <Route element={<PrivateRoute />}>

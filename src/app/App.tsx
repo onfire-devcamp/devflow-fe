@@ -13,6 +13,7 @@ function AppContent() {
   const globalError = useErrorStore((s) => s.globalError);
   const clearGlobalError = useErrorStore((s) => s.clearGlobalError);
   const pushToast = useToastStore((s) => s.pushToast);
+  const clearPersistentToasts = useToastStore((s) => s.clearPersistentToasts);
 
   useEffect(() => {
     function handleOffline() {
@@ -22,8 +23,9 @@ function AppContent() {
       );
     }
 
-    function handleOnline() {
+    async function handleOnline() {
       clearGlobalError();
+      clearPersistentToasts();
       pushToast('Internet restored!', 'success');
     }
 

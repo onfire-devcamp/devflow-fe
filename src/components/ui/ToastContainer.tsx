@@ -6,9 +6,11 @@ export function ToastContainer() {
   const removeToast = useToastStore((state) => state.removeToast);
 
   useEffect(() => {
-    const timers = toasts.map((toast) =>
-      window.setTimeout(() => removeToast(toast.id), 4_000),
-    );
+    const timers = toasts
+      .filter((toast) => toast.autoDismiss)
+      .map((toast) =>
+        window.setTimeout(() => removeToast(toast.id), toast.duration ?? 4_000),
+      );
     return () => timers.forEach((id) => window.clearTimeout(id));
   }, [toasts, removeToast]);
 
