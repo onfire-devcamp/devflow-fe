@@ -2,7 +2,7 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { editor } from 'monaco-editor';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
-import type { TaskFile } from '../../roadmap/RoadmapType';
+import type { TaskFile, TaskDetailsState } from '../../roadmap/RoadmapType';
 import { useQueryClient } from '@tanstack/react-query';
 import { getProjectCodebase } from '../../projects/api/projectsApi';
 
@@ -32,7 +32,7 @@ export function useTaskEditor(
     queryKey: ['taskDetails', activeTaskId],
     queryFn: () => workspaceApi.fetchTaskDetails(activeTaskId),
     enabled: !!activeTaskId,
-    select: (res) => {
+    select: (res): TaskDetailsState | null => {
       const fetchedTask = res?.data?.task;
       return fetchedTask
         ? {

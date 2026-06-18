@@ -182,7 +182,7 @@ export default function WorkspacePage() {
                   projectSlug={projectSlug!}
                   activeTaskId={activeTaskId}
                   activeFileId={activeFileId}
-                  taskDetails={taskDetails}
+                  taskDetails={taskDetails ?? null}
                   roadmapData={roadmapData}
                   onFileSelect={(fileId) => {
                     handleFileSelect(fileId);
