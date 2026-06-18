@@ -58,6 +58,21 @@ export interface WorkspaceData {
   activeTaskId: string;
 }
 
+export interface UserWorkspaceFileView {
+  _id: string;
+  userId: string;
+  projectId: string;
+  fileId: {
+    _id: string;
+    path: string;
+    content?: string;
+    skeletonCode?: string;
+  };
+  content: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface TaskEditorState {
   activeFileId: string | null;
   fileContents: Record<string, string>;

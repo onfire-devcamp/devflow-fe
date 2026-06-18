@@ -2,10 +2,13 @@ import { useState, useCallback, useMemo, useEffect } from 'react';
 import type { editor } from 'monaco-editor';
 import { useQuery, useMutation } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
-import type { TaskFile } from '../../roadmap/RoadmapType';
+import type { TaskFile, TaskDetailsState } from '../../roadmap/RoadmapType';
 import { useQueryClient } from '@tanstack/react-query';
+import { getProjectCodebase } from '../../projects/api/projectsApi';
+
 export function useTaskEditor(
   projectId: string | undefined,
+  projectSlug: string | undefined,
   activeTaskId: string,
 ) {
   const [activeFileId, setActiveFileId] = useState<string | null>(null);
@@ -29,7 +32,7 @@ export function useTaskEditor(
     queryKey: ['taskDetails', activeTaskId],
     queryFn: () => workspaceApi.fetchTaskDetails(activeTaskId),
     enabled: !!activeTaskId,
-    select: (res) => {
+    select: (res): TaskDetailsState | null => {
       const fetchedTask = res?.data?.task;
       return fetchedTask
         ? {
@@ -44,19 +47,64 @@ export function useTaskEditor(
     },
   });
 
+  const { data: userFilesResponse } = useQuery({
+    queryKey: ['userWorkspace', projectId],
+    queryFn: () => workspaceApi.fetchUserWorkspaceFiles(projectId!),
+    enabled: !!projectId,
+  });
+
+  const { data: codebaseResponse } = useQuery({
+    queryKey: ['projectCodebase', projectSlug],
+    queryFn: () => getProjectCodebase(projectSlug!),
+    enabled: !!projectSlug,
+  });
+
   const activeFileIdToUse =
     activeFileId || taskDetails?.files?.[0]?._id || null;
 
+  const activeFileState = useMemo<'current' | 'completed' | 'locked'>(() => {
+    if (!activeFileIdToUse) return 'current';
+    if (taskDetails?.files.some((f) => f._id === activeFileIdToUse))
+      return 'current';
+
+    const userFiles = userFilesResponse?.data || [];
+    if (userFiles.some((f) => f.fileId._id === activeFileIdToUse))
+      return 'completed';
+
+    return 'locked';
+  }, [activeFileIdToUse, taskDetails, userFilesResponse?.data]);
+
   const fileContents = useMemo(() => {
     const contents: Record<string, string> = {};
+
+    // 1. Lowest priority: skeleton code from full codebase
+    if (codebaseResponse) {
+      codebaseResponse.forEach((file) => {
+        if (file.content) {
+          contents[file._id] = file.content;
+        }
+      });
+    }
+
+    // 2. Middle priority: user's completed files
+    const userFiles = userFilesResponse?.data || [];
+    userFiles.forEach(
+      (uf: import('../../workspace/types').UserWorkspaceFileView) => {
+        const id = uf.fileId._id;
+        contents[id] = uf.content;
+      },
+    );
+
+    // 3. Highest priority: current task files and active edits
     if (taskDetails) {
       taskDetails.files.forEach((f: TaskFile) => {
         contents[f._id] =
           edits[f._id] !== undefined ? edits[f._id] : f.content || '';
       });
     }
+
     return contents;
-  }, [taskDetails, edits]);
+  }, [taskDetails, edits, userFilesResponse?.data, codebaseResponse]);
 
   const currentContent = activeFileIdToUse
     ? fileContents[activeFileIdToUse]
@@ -182,5 +230,6 @@ export function useTaskEditor(
     handleEditorMount,
     handleEditorChange,
     handleResetToSkeleton,
+    activeFileState,
   };
 }

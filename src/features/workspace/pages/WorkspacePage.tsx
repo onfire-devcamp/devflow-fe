@@ -7,6 +7,7 @@ import { SidebarHeader } from '../../roadmap/components/SideBarHeader';
 import { TabSwitcher } from '../../roadmap/components/TabSwitcher';
 import { ProgressBar } from '../../roadmap/components/ProgressBar';
 import { TaskList } from '../../roadmap/components/TaskList';
+import { pickInitialActiveTaskId } from '../utils/helpers';
 import { useWorkspaceData } from '../hooks/useWorkspaceData';
 import { useTaskEditor } from '../hooks/useTaskEditor';
 import { useDeviChat } from '../hooks/useDeviChat';
@@ -17,9 +18,12 @@ import { ExplainToPassModal } from '../components/ExplainToPassModal';
 import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
+import { ExplorerTab } from '../components/ExplorerTab';
+
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
 
   const {
     data: slugProjectDetails,
@@ -57,7 +61,8 @@ export default function WorkspacePage() {
     handleEditorMount,
     handleEditorChange,
     handleResetToSkeleton,
-  } = useTaskEditor(projectId, activeTaskId);
+    activeFileState,
+  } = useTaskEditor(projectId, projectSlug, activeTaskId);
 
   const {
     messages,
@@ -97,15 +102,26 @@ export default function WorkspacePage() {
   const currentProjectName = projectDetails?.title || 'Loading project...';
   const currentProgress = projectDetails?.progressPercentage ?? 0;
 
-  const handleTaskSelect = (newTaskId: string) => {
-    if (newTaskId === activeTaskId) return;
-    forceSave();
-    setActiveTaskId(newTaskId);
-  };
+  const handleTaskSelect = useCallback(
+    (newTaskId: string) => {
+      if (newTaskId === activeTaskId) return;
+      forceSave();
+      setActiveTaskId(newTaskId);
+    },
+    [activeTaskId, forceSave, setActiveTaskId],
+  );
 
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
   }, []);
+
+  const handleBackToActiveTask = useCallback(() => {
+    const trueActiveTaskId =
+      roadmapData.length > 0 ? pickInitialActiveTaskId(roadmapData) : null;
+    if (trueActiveTaskId && trueActiveTaskId !== activeTaskId) {
+      handleTaskSelect(trueActiveTaskId);
+    }
+  }, [roadmapData, activeTaskId, handleTaskSelect]);
 
   const currentCategory = roadmapData.find((group) =>
     group.tasks.some((task) => task.id === activeTaskId),
@@ -152,13 +168,27 @@ export default function WorkspacePage() {
               onToggleSidebar={handleToggleSidebar}
             />
             <div className="p-4 space-y-5">
-              <TabSwitcher />
+              <TabSwitcher activeTab={activeTab} onChange={setActiveTab} />
               <ProgressBar progress={currentProgress} />
-              <TaskList
-                academyData={roadmapData}
-                activeTaskId={activeTaskId}
-                onTaskSelect={handleTaskSelect}
-              />
+              {activeTab === 'roadmap' ? (
+                <TaskList
+                  academyData={roadmapData}
+                  activeTaskId={activeTaskId}
+                  onTaskSelect={handleTaskSelect}
+                />
+              ) : (
+                <ExplorerTab
+                  projectId={projectId!}
+                  projectSlug={projectSlug!}
+                  activeTaskId={activeTaskId}
+                  activeFileId={activeFileId}
+                  taskDetails={taskDetails ?? null}
+                  roadmapData={roadmapData}
+                  onFileSelect={(fileId) => {
+                    handleFileSelect(fileId);
+                  }}
+                />
+              )}
             </div>
           </div>
         </aside>
@@ -191,10 +221,12 @@ export default function WorkspacePage() {
                   category={currentCategory}
                   saveStatus={saveStatus}
                   isCompleted={isCompleted}
+                  activeFileState={activeFileState}
                   onFileSelect={handleFileSelect}
                   onEditorMount={handleEditorMount}
                   onEditorChange={handleEditorChange}
                   onQuickAction={handleQuickAction}
+                  onBackToActiveTask={handleBackToActiveTask}
                 />
 
                 <WorkspaceFooter

@@ -1,6 +1,18 @@
 import { axiosClient } from '../../../lib/axiosClient';
 import type { ProjectDetail, DifficultyLevel } from '../types/projectTypes';
 
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+export interface ProjectTechStackItem {
+  name: string;
+  iconUrl: string;
+  category: string;
+}
+
 interface ProjectDetailsResponse {
   success: boolean;
   data: {
@@ -15,6 +27,48 @@ interface ProjectDetailsResponse {
     features: { title: string; description: string }[];
   };
 }
+
+export const getProjectTechStackGrouped = async (
+  projectId: string,
+): Promise<Record<string, ProjectTechStackItem[]>> => {
+  try {
+    const response = await axiosClient.get<
+      ApiResponse<Record<string, ProjectTechStackItem[]>>,
+      ApiResponse<Record<string, ProjectTechStackItem[]>>
+    >(`/project/${projectId}/tech-stack`);
+    if (response.success) {
+      return response.data;
+    }
+    throw new Error(response.message || 'Failed to fetch tech stack');
+  } catch (error) {
+    console.error('Error fetching tech stack:', error);
+    throw error;
+  }
+};
+
+export interface FileTemplateResponse {
+  _id: string;
+  path: string;
+  content?: string;
+}
+
+export const getProjectCodebase = async (
+  slug: string,
+): Promise<FileTemplateResponse[]> => {
+  try {
+    const response = await axiosClient.get<
+      ApiResponse<FileTemplateResponse[]>,
+      ApiResponse<FileTemplateResponse[]>
+    >(`/project/${slug}/codebase`);
+    if (response.success) {
+      return response.data;
+    }
+    throw new Error(response.message || 'Failed to fetch codebase');
+  } catch (error) {
+    console.error('Error fetching codebase:', error);
+    throw error;
+  }
+};
 
 export const getProjectBySlug = async (
   slug: string,

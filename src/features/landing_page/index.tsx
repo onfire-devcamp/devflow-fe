@@ -5,13 +5,13 @@ import Testimonials from './components/TestimonialsSection';
 import CTA from './components/CTASection';
 
 export default function LandingPage() {
-    return (
-        <>
-            <Navbar />
-            <Hero />
-            <Features />
-            <Testimonials />
-            <CTA />
-        </>
-    );
+  return (
+    <>
+      <Navbar />
+      <Hero />
+      <Features />
+      <Testimonials />
+      <CTA />
+    </>
+  );
 }

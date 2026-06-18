@@ -21,9 +21,11 @@ export function RoadmapIconButton({
 export function RoadmapTabButton({
   children,
   active = false,
+  onClick,
 }: RoadmapTabButtonProps) {
   return (
     <button
+      onClick={onClick}
       className={`flex-1 flex items-center justify-center gap-1.5 py-2 px-3 rounded-xl transition-all cursor-pointer
         ${
           active
