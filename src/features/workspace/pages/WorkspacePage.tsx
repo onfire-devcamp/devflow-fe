@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
 import { Header } from '../../../components/ui/Header';
-import { SidebarHeader } from '../../roadmap/components/SidebarHeader';
+import { SidebarHeader } from '../../roadmap/components/SideBarHeader';
 import { TabSwitcher } from '../../roadmap/components/TabSwitcher';
 import { ProgressBar } from '../../roadmap/components/ProgressBar';
 import { TaskList } from '../../roadmap/components/TaskList';
