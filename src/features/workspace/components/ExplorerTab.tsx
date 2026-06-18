@@ -58,8 +58,9 @@ export function ExplorerTab({
         const isCurrentTask = currentTaskFileIds.has(file._id);
         const hasUserFile = userFileIds.has(file._id);
 
-        // If it's not the current task, and the user hasn't touched it, it's locked
-        const isLocked = !isCurrentTask && !hasUserFile;
+        // If it's not the current task, and the user hasn't touched it, it's locked.
+        // However, read-only foundational files are NEVER locked.
+        const isLocked = !file.readOnly && !isCurrentTask && !hasUserFile;
         const isCompleted = !isCurrentTask && hasUserFile;
 
         return {
@@ -69,6 +70,7 @@ export function ExplorerTab({
           isLocked,
           isCurrentTask,
           isCompleted,
+          readOnly: file.readOnly,
         };
       }),
     );

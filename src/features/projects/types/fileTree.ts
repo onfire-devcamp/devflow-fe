@@ -9,4 +9,5 @@ export interface FileNode {
   isLocked?: boolean;
   isCurrentTask?: boolean;
   isCompleted?: boolean;
+  readOnly?: boolean;
 }

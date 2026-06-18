@@ -50,6 +50,7 @@ export interface FileTemplateResponse {
   _id: string;
   path: string;
   content?: string;
+  readOnly?: boolean;
 }
 
 export const getProjectCodebase = async (
