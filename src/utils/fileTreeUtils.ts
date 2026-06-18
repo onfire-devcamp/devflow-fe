@@ -31,6 +31,7 @@ export function buildFileTreeFromPaths(flatFiles: FlatFile[]): FileNode[] {
           path: currentPath,
           ...(isFile
             ? {
+                content: file.content,
                 skeletonCode: file.skeletonCode ?? file.content,
                 isLocked: file.isLocked,
                 isCurrentTask: file.isCurrentTask,

@@ -127,11 +127,11 @@ export function CodebaseTab({ project }: { project: ProjectDetail }) {
                   <LockedEditorOverlay message="Enroll and complete module 1 to unlock this file" />
                 )}
                 <div
-                  className={
+                  className={`absolute inset-0 ${
                     activeNode.isLocked
                       ? 'opacity-50 blur-[2px] pointer-events-none'
                       : ''
-                  }
+                  }`}
                 >
                   <Editor
                     key={activeNode.id}
@@ -139,7 +139,7 @@ export function CodebaseTab({ project }: { project: ProjectDetail }) {
                     theme="vs-dark"
                     path={activeNode.path}
                     language={getLanguageFromPath(activeNode.path)}
-                    value={activeNode.skeletonCode}
+                    value={activeNode.skeletonCode || activeNode.content || ''}
                     beforeMount={handleEditorBeforeMount}
                     options={{
                       readOnly: true,

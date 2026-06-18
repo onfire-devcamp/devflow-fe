@@ -66,12 +66,10 @@ function FileTreeNode({
   return (
     <div>
       <div
-        className={`flex items-center gap-2 py-1.5 px-2 cursor-pointer rounded-md hover:bg-slate-100/80 transition-colors ${
-          isActive && !isFolder
-            ? 'bg-primary-soft text-primary font-medium'
-            : getWeightClass()
-        }`}
-        style={{ paddingLeft: `${depth * 1 + 0.5}rem` }}
+        className={`flex items-center py-1.5 px-2 hover:bg-slate-100 cursor-pointer ${
+          isActive ? 'bg-slate-200 text-slate-900' : 'text-slate-700'
+        } ${getWeightClass()}`}
+        style={{ paddingLeft: `${depth * 0.5 + 0.5}rem` }}
         onClick={handleToggle}
       >
         <span className="shrink-0 flex items-center justify-center w-4 h-4">
@@ -90,7 +88,7 @@ function FileTreeNode({
       </div>
 
       {isFolder && isOpen && node.children && (
-        <div className="flex flex-col ml-[1.1rem] border-l border-slate-200/60 relative">
+        <div className="flex flex-col ml-3 border-l border-slate-200/60 relative">
           {node.children.map((child) => (
             <div key={child.id} className="relative">
               <MemoizedFileTreeNode

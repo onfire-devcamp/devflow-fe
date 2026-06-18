@@ -4,6 +4,7 @@ export interface FileNode {
   type: 'file' | 'folder';
   path: string;
   children?: FileNode[];
+  content?: string;
   skeletonCode?: string;
   isLocked?: boolean;
   isCurrentTask?: boolean;
