@@ -1,5 +1,9 @@
 import { axiosClient } from '../../../lib/axiosClient';
-import type { ProjectDetail, DifficultyLevel } from '../types/projectTypes';
+import type {
+  ProjectDetail,
+  DifficultyLevel,
+  ProjectCategory,
+} from '../types/projectTypes';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -21,6 +25,7 @@ interface ProjectDetailsResponse {
     slug: string;
     description?: string;
     level: string;
+    category: string;
     previewUrl?: string;
     systemFlowUrl?: string;
     techStack: { name: string; iconUrl: string; category: string }[];
@@ -85,7 +90,7 @@ export const getProjectBySlug = async (
     title: data.title,
     slug: data.slug,
     description: data.description || '',
-    category: 'FULLSTACK',
+    category: (data.category?.toUpperCase() || 'FULLSTACK') as ProjectCategory,
     difficulty: data.level.toUpperCase() as DifficultyLevel,
     estimatedHours: 14,
     moduleCount: 5,

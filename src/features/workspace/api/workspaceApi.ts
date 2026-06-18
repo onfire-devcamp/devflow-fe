@@ -85,6 +85,16 @@ export const workspaceApi = {
     >(`/workspace/${projectId.trim()}`);
   },
 
+  async initializeWorkspace(
+    projectId: string,
+    taskId: string,
+  ): Promise<{ success: boolean }> {
+    return axiosClient.post('/workspace/initialize', {
+      projectId: projectId.trim(),
+      taskId,
+    });
+  },
+
   async autoSaveTaskFile(params: AutoSaveParams): Promise<void> {
     return axiosClient.put('/workspace/file', {
       projectId: params.projectId.trim(),
