@@ -22,6 +22,7 @@ interface WorkspaceEditorProps {
   onEditorMount: (editor: editor.IStandaloneCodeEditor) => void;
   onEditorChange: (fileId: string, value: string | undefined) => void;
   onQuickAction: (type: 'explain' | 'hint') => void;
+  onBackToActiveTask?: () => void;
 }
 
 export function WorkspaceEditor({
@@ -39,6 +40,7 @@ export function WorkspaceEditor({
   onEditorMount,
   onEditorChange,
   onQuickAction,
+  onBackToActiveTask,
 }: WorkspaceEditorProps) {
   if (!taskDetails) return null;
 
@@ -96,7 +98,13 @@ export function WorkspaceEditor({
                 ? 'You are browsing a file from a completed task.'
                 : 'You are browsing a file from a previous task.'
             }
-            onBackToTask={() => onFileSelect(currentTaskFiles[0]?._id)}
+            onBackToTask={() => {
+              if (isCompleted && onBackToActiveTask) {
+                onBackToActiveTask();
+              } else {
+                onFileSelect(currentTaskFiles[0]?._id);
+              }
+            }}
           />
         )}
 

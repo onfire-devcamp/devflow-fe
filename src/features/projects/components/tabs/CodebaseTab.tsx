@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import Editor from '@monaco-editor/react';
 import { Code2 } from 'lucide-react';
@@ -62,6 +62,12 @@ export function CodebaseTab({ project }: { project: ProjectDetail }) {
     );
   }, [codebase, roadmapData]);
 
+  const handleNodeSelect = useCallback((node: FileNode) => {
+    if (node.type === 'file') {
+      setActiveFileId(node.id);
+    }
+  }, []);
+
   const findNodeById = (nodes: FileNode[], id: string): FileNode | null => {
     for (const node of nodes) {
       if (node.id === id) return node;
@@ -99,11 +105,7 @@ export function CodebaseTab({ project }: { project: ProjectDetail }) {
           <FileTree
             data={fileTree}
             activeFileId={activeFileId}
-            onNodeSelect={(node) => {
-              if (node.type === 'file') {
-                setActiveFileId(node.id);
-              }
-            }}
+            onNodeSelect={handleNodeSelect}
           />
         </div>
 

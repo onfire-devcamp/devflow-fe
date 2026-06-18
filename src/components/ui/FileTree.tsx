@@ -105,4 +105,17 @@ function FileTreeNode({
   );
 }
 
-const MemoizedFileTreeNode = memo(FileTreeNode);
+const MemoizedFileTreeNode = memo(FileTreeNode, (prevProps, nextProps) => {
+  // Always re-render if the core node data or depth changes
+  if (prevProps.node !== nextProps.node || prevProps.depth !== nextProps.depth)
+    return false;
+
+  // Folders must re-render to pass the new activeFileId down to their children
+  if (nextProps.node.type === 'folder') return false;
+
+  // For files, ONLY re-render if it is the file we just left, or the file we just entered
+  const wasActive = prevProps.node.id === prevProps.activeFileId;
+  const isActive = nextProps.node.id === nextProps.activeFileId;
+
+  return wasActive === isActive;
+});

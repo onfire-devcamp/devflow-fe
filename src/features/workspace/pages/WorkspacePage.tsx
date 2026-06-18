@@ -7,6 +7,7 @@ import { SidebarHeader } from '../../roadmap/components/SideBarHeader';
 import { TabSwitcher } from '../../roadmap/components/TabSwitcher';
 import { ProgressBar } from '../../roadmap/components/ProgressBar';
 import { TaskList } from '../../roadmap/components/TaskList';
+import { pickInitialActiveTaskId } from '../utils/helpers';
 import { useWorkspaceData } from '../hooks/useWorkspaceData';
 import { useTaskEditor } from '../hooks/useTaskEditor';
 import { useDeviChat } from '../hooks/useDeviChat';
@@ -101,15 +102,26 @@ export default function WorkspacePage() {
   const currentProjectName = projectDetails?.title || 'Loading project...';
   const currentProgress = projectDetails?.progressPercentage ?? 0;
 
-  const handleTaskSelect = (newTaskId: string) => {
-    if (newTaskId === activeTaskId) return;
-    forceSave();
-    setActiveTaskId(newTaskId);
-  };
+  const handleTaskSelect = useCallback(
+    (newTaskId: string) => {
+      if (newTaskId === activeTaskId) return;
+      forceSave();
+      setActiveTaskId(newTaskId);
+    },
+    [activeTaskId, forceSave, setActiveTaskId],
+  );
 
   const handleToggleSidebar = useCallback(() => {
     setIsSidebarOpen((prev) => !prev);
   }, []);
+
+  const handleBackToActiveTask = useCallback(() => {
+    const trueActiveTaskId =
+      roadmapData.length > 0 ? pickInitialActiveTaskId(roadmapData) : null;
+    if (trueActiveTaskId && trueActiveTaskId !== activeTaskId) {
+      handleTaskSelect(trueActiveTaskId);
+    }
+  }, [roadmapData, activeTaskId, handleTaskSelect]);
 
   const currentCategory = roadmapData.find((group) =>
     group.tasks.some((task) => task.id === activeTaskId),
@@ -214,6 +226,7 @@ export default function WorkspacePage() {
                   onEditorMount={handleEditorMount}
                   onEditorChange={handleEditorChange}
                   onQuickAction={handleQuickAction}
+                  onBackToActiveTask={handleBackToActiveTask}
                 />
 
                 <WorkspaceFooter

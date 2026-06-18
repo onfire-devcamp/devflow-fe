@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useCallback } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { FileTree } from '../../../components/ui/FileTree';
 import { buildFileTreeFromPaths } from '../../../utils/fileTreeUtils';
@@ -7,6 +7,7 @@ import type {
   TaskDetailsState,
   CategoryGroup,
 } from '../../roadmap/RoadmapType';
+import type { FileNode } from '../../projects/types/fileTree';
 import { axiosClient } from '../../../lib/axiosClient';
 
 interface ExplorerTabProps {
@@ -73,6 +74,15 @@ export function ExplorerTab({
     );
   }, [codebase, taskDetails, userFilesResponse?.data]);
 
+  const handleNodeSelect = useCallback(
+    (node: FileNode) => {
+      if (node.type === 'file') {
+        onFileSelect(node.id);
+      }
+    },
+    [onFileSelect],
+  );
+
   if (isCodebaseLoading) {
     return (
       <div className="p-4 text-sm text-slate-500">Loading codebase...</div>
@@ -84,11 +94,7 @@ export function ExplorerTab({
       <FileTree
         data={fileTree}
         activeFileId={activeFileId}
-        onNodeSelect={(node) => {
-          if (node.type === 'file') {
-            onFileSelect(node.id);
-          }
-        }}
+        onNodeSelect={handleNodeSelect}
       />
     </div>
   );
