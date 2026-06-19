@@ -59,6 +59,21 @@ export function useTaskEditor(
     enabled: !!projectSlug,
   });
 
+  useEffect(() => {
+    if (projectId && activeTaskId) {
+      workspaceApi
+        .initializeWorkspace(projectId, activeTaskId)
+        .then(() => {
+          void queryClient.invalidateQueries({
+            queryKey: ['userWorkspace', projectId],
+          });
+        })
+        .catch((err) => {
+          console.error('Failed to initialize workspace:', err);
+        });
+    }
+  }, [projectId, activeTaskId, queryClient]);
+
   const activeFileIdToUse =
     activeFileId || taskDetails?.files?.[0]?._id || null;
 

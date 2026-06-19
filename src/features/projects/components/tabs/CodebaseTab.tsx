@@ -57,7 +57,9 @@ export function CodebaseTab({ project }: { project: ProjectDetail }) {
         id: file._id,
         path: file.path,
         content: file.content,
-        isLocked: roadmapData ? !module1FileIds.has(file._id) : false,
+        isLocked:
+          roadmapData && !file.readOnly ? !module1FileIds.has(file._id) : false,
+        readOnly: file.readOnly,
       })),
     );
   }, [codebase, roadmapData]);

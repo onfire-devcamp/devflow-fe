@@ -67,6 +67,7 @@ export interface UserWorkspaceFileView {
     path: string;
     content?: string;
     skeletonCode?: string;
+    readOnly?: boolean;
   };
   content: string;
   createdAt: string;

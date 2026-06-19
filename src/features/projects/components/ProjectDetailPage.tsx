@@ -85,7 +85,7 @@ export default function ProjectDetailPage() {
       <main className="flex-1">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 py-8 pb-28">
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-primary transition-colors mb-8"
           >
             <ArrowLeft

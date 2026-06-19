@@ -1,5 +1,9 @@
 import { axiosClient } from '../../../lib/axiosClient';
-import type { ProjectDetail, DifficultyLevel } from '../types/projectTypes';
+import type {
+  ProjectDetail,
+  DifficultyLevel,
+  ProjectCategory,
+} from '../types/projectTypes';
 
 interface ApiResponse<T> {
   success: boolean;
@@ -21,10 +25,13 @@ interface ProjectDetailsResponse {
     slug: string;
     description?: string;
     level: string;
+    category: string;
     previewUrl?: string;
     systemFlowUrl?: string;
     techStack: { name: string; iconUrl: string; category: string }[];
     features: { title: string; description: string }[];
+    moduleCount?: number;
+    estimatedHours?: number;
   };
 }
 
@@ -50,6 +57,7 @@ export interface FileTemplateResponse {
   _id: string;
   path: string;
   content?: string;
+  readOnly?: boolean;
 }
 
 export const getProjectCodebase = async (
@@ -84,10 +92,10 @@ export const getProjectBySlug = async (
     title: data.title,
     slug: data.slug,
     description: data.description || '',
-    category: 'FULLSTACK',
+    category: (data.category?.toUpperCase() || 'FULLSTACK') as ProjectCategory,
     difficulty: data.level.toUpperCase() as DifficultyLevel,
-    estimatedHours: 14,
-    moduleCount: 5,
+    estimatedHours: data.estimatedHours || 0,
+    moduleCount: data.moduleCount || 0,
     status: 'NOT_STARTED',
     previewUrl: data.previewUrl || '',
     features: data.features || [],

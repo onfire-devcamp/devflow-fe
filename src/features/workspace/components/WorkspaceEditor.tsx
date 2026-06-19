@@ -1,5 +1,7 @@
 import Editor from '@monaco-editor/react';
 import type { editor } from 'monaco-editor';
+import { Link, useParams } from 'react-router-dom';
+import { ArrowLeft } from 'lucide-react';
 import { Pen, CheckCircle2, Loader2 } from 'lucide-react';
 import type { TaskDetailsState } from '../../roadmap/RoadmapType';
 import { getLanguageFromPath } from '../utils/languageHelper';
@@ -42,6 +44,8 @@ export function WorkspaceEditor({
   onQuickAction,
   onBackToActiveTask,
 }: WorkspaceEditorProps) {
+  const { projectSlug } = useParams<{ projectSlug: string }>();
+
   if (!taskDetails) return null;
 
   const currentTaskFiles = taskDetails.files;
@@ -51,6 +55,13 @@ export function WorkspaceEditor({
 
   return (
     <div className="space-y-4 animate-fadeIn">
+      <Link
+        to={`/project/${projectSlug}`}
+        className="inline-flex items-center gap-1 text-sm font-medium text-fg-muted hover:text-primary transition-colors mb-4"
+      >
+        <ArrowLeft className="w-4 h-4" strokeWidth={2.5} aria-hidden="true" />
+        Project Overview
+      </Link>
       {/* Task Meta Header */}
       <div>
         <span className="text-[11px] font-bold text-purple-500 tracking-wider uppercase block mb-1">

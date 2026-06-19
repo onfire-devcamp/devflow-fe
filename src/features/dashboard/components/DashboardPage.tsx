@@ -8,7 +8,9 @@ import { WeeklyStreakCard } from './WeeklyStreakCard';
 import { useDashboardData } from '../hooks/useDashboardData';
 import type { FilterCategory } from '../types/dashboardTypes';
 import { Button } from '../../../components/ui/Button';
-import { ArrowDown } from 'lucide-react';
+import { Search } from 'lucide-react';
+import { Input } from '../../../components/ui/Input';
+
 const FILTERS: { label: string; value: FilterCategory }[] = [
   { label: 'All projects', value: 'ALL' },
   { label: 'Frontend', value: 'FRONTEND' },
@@ -34,6 +36,7 @@ export default function DashboardPage() {
   const firstName = username.split(' ')[0];
 
   const [activeFilter, setActiveFilter] = useState<FilterCategory>('ALL');
+  const [searchQuery, setSearchQuery] = useState('');
   const {
     continueData,
     projects,
@@ -46,8 +49,16 @@ export default function DashboardPage() {
 
   const filteredProjects =
     activeFilter === 'ALL'
-      ? projects
-      : projects.filter((p) => (p.category || 'FULLSTACK') === activeFilter);
+      ? projects.filter((p) =>
+          p.title.toLowerCase().includes(searchQuery.toLowerCase()),
+        )
+      : projects
+          .filter(
+            (p) => (p.category || 'Fullstack').toUpperCase() === activeFilter,
+          )
+          .filter((p) =>
+            p.title.toLowerCase().includes(searchQuery.toLowerCase()),
+          );
 
   return (
     <PageContainer>
@@ -59,7 +70,7 @@ export default function DashboardPage() {
             <div>
               <p className="text-sm text-fg-muted mb-1">Welcome back</p>
               <h2 className="text-3xl font-semibold text-fg">
-                Hey {firstName} — ready to build?
+                Hey {firstName} - ready to build?
               </h2>
             </div>
           </div>
@@ -75,16 +86,8 @@ export default function DashboardPage() {
               <CardPlaceholder className="h-full bg-primary-soft">
                 <p className="text-fg-muted">Is loading...</p>
               </CardPlaceholder>
-            ) : continueData ? (
-              <ContinueLearningCard data={continueData} />
             ) : (
-              <CardPlaceholder className="h-full bg-primary-soft">
-                <p className="text-sm text-slate-600 font-medium flex items-center gap-2">
-                  Your coding progress will be tracked here. Select a project
-                  below to start
-                  <ArrowDown className="w-4 h-4 animate-bounce text-slate-500 flex-shrink-0" />
-                </p>
-              </CardPlaceholder>
+              <ContinueLearningCard data={continueData} />
             )}
             {isLoadingStreak ? (
               <CardPlaceholder className="w-full h-[180px] bg-white">
@@ -106,25 +109,38 @@ export default function DashboardPage() {
             )}
           </div>
 
-          {/* Row 2: Filters */}
-          <div className="flex flex-wrap gap-2 mb-6">
-            {FILTERS.map(({ label, value }) => {
-              const isActive = activeFilter === value;
-              return (
-                <Button
-                  key={value}
-                  onClick={() => setActiveFilter(value)}
-                  variant={isActive ? 'primary' : 'outline'}
-                  className={`!w-auto !rounded-full px-5 !py-2 text-sm ${
-                    !isActive
-                      ? 'bg-white text-gray-600 hover:border-primary hover:text-primary hover:!bg-white'
-                      : ''
-                  }`}
-                >
-                  {label}
-                </Button>
-              );
-            })}
+          {/* Row 2: Filters and Search */}
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
+            <div className="flex flex-wrap gap-2">
+              {FILTERS.map(({ label, value }) => {
+                const isActive = activeFilter === value;
+                return (
+                  <Button
+                    key={value}
+                    onClick={() => setActiveFilter(value)}
+                    variant={isActive ? 'primary' : 'outline'}
+                    className={`!w-auto !rounded-full px-5 !py-2 text-sm ${
+                      !isActive
+                        ? 'bg-white text-gray-600 hover:border-primary hover:text-primary hover:!bg-white'
+                        : ''
+                    }`}
+                  >
+                    {label}
+                  </Button>
+                );
+              })}
+            </div>
+
+            {/* Search Bar */}
+            <div className="relative w-full md:w-72 flex-shrink-0">
+              <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-fg-muted" />
+              <Input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search for a project"
+                className="!py-2 !pl-10 !pr-4 !rounded-full !bg-white"
+              />
+            </div>
           </div>
 
           {/* Row 3: Project Library */}
