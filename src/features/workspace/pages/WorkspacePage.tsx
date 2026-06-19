@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
 import { Header } from '../../../components/ui/Header';
@@ -22,6 +22,7 @@ import { ExplorerTab } from '../components/ExplorerTab';
 
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
 
@@ -142,6 +143,14 @@ export default function WorkspacePage() {
   }
 
   if (slugError || error) {
+    const errorMsg =
+      (slugError as Error)?.message?.toLowerCase() ||
+      error?.toLowerCase() ||
+      '';
+    if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+      return <Navigate to="/404" replace />;
+    }
+
     return (
       <div className="flex h-screen items-center justify-center bg-bg px-6">
         <ErrorMessage
@@ -151,6 +160,15 @@ export default function WorkspacePage() {
         />
       </div>
     );
+  }
+
+  // If the workspace data indicates the user hasn't initialized the project, and we didn't just come from the start button
+  if (
+    projectDetails &&
+    !projectDetails.isInitialized &&
+    !location.state?.initializing
+  ) {
+    return <Navigate to={`/project/${projectSlug}`} replace />;
   }
 
   return (

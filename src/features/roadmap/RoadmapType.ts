@@ -62,6 +62,7 @@ export interface RawProjectFromAPI {
   title: string;
   description?: string;
   progressPercentage?: number;
+  isInitialized?: boolean;
 }
 
 export interface APIResponseData {
@@ -79,6 +80,7 @@ export interface ProjectDetails {
   title: string;
   description?: string;
   progressPercentage?: number;
+  isInitialized?: boolean;
 }
 
 export interface TaskDetails {
