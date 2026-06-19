@@ -16,6 +16,7 @@ import { WorkspaceFooter } from '../components/WorkspaceFooter';
 import { DeviChatPanel } from '../components/DeviChatPanel';
 import { ExplainToPassModal } from '../components/ExplainToPassModal';
 import { ProjectCompletionModal } from '../components/ProjectCompletionModal';
+import { ProjectScorecardModal } from '../components/ProjectScorecardModal';
 import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
@@ -27,6 +28,7 @@ export default function WorkspacePage() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showScorecardModal, setShowScorecardModal] = useState(false);
 
   const {
     data: slugProjectDetails,
@@ -145,6 +147,12 @@ export default function WorkspacePage() {
 
   const isCompleted = activeTaskObj?.status === 'completed';
 
+  const isProjectCompleted =
+    roadmapData.length > 0 &&
+    roadmapData.every((group) =>
+      group.tasks.every((task) => task.status === 'completed'),
+    );
+
   if (isSlugLoading || loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
@@ -240,6 +248,30 @@ export default function WorkspacePage() {
               </div>
             ) : taskDetails ? (
               <div className="space-y-4">
+                {isProjectCompleted && projectSlug && (
+                  <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between mb-4 animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                        <span className="text-xl">🏆</span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-800">
+                          Project Completed!
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          You've finished all tasks in this project.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowScorecardModal(true)}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors"
+                    >
+                      View Scorecard
+                    </button>
+                  </div>
+                )}
+
                 <WorkspaceEditor
                   taskDetails={taskDetails}
                   activeFileId={activeFileId}
@@ -298,6 +330,17 @@ export default function WorkspacePage() {
 
       {showCompletionModal && projectSlug && (
         <ProjectCompletionModal projectSlug={projectSlug} />
+      )}
+
+      {showScorecardModal && projectId && projectSlug && (
+        <ProjectScorecardModal
+          projectTitle={currentProjectName}
+          projectSlug={projectSlug}
+          projectId={projectId}
+          roadmapData={roadmapData}
+          isOpen={showScorecardModal}
+          onClose={() => setShowScorecardModal(false)}
+        />
       )}
     </div>
   );

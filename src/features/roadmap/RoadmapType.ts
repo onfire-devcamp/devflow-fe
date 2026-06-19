@@ -5,6 +5,7 @@ export interface Task {
   title: string;
   status: TaskStatus;
   skillPoints?: number;
+  aiScore?: number;
 }
 
 export interface CategoryGroup {
@@ -53,6 +54,7 @@ export interface RawTaskFromAPI {
   title?: string;
   status?: string;
   skillPoints?: number;
+  aiScore?: number;
 }
 
 export interface RawModuleFromAPI {

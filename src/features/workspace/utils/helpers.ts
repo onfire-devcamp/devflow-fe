@@ -23,6 +23,7 @@ export const mapModuleToCategoryGroup = (
           title: task?.title || '',
           status: mapTaskStatus(task?.status),
           skillPoints: task?.skillPoints || 0,
+          aiScore: task?.aiScore,
         }),
       )
     : [],
