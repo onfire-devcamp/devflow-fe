@@ -20,6 +20,7 @@ import type {
   SubmitExplainToPassParams,
   RequestAiHintParams,
   SendAiChatMessageParams,
+  UserWorkspaceFileView,
 } from '../types';
 
 interface ProjectDetailsResponse {
@@ -73,6 +74,25 @@ export const workspaceApi = {
     return axiosClient.get<APITaskDetailsResponse, APITaskDetailsResponse>(
       `/project/tasks/${taskId}`,
     );
+  },
+
+  async fetchUserWorkspaceFiles(
+    projectId: string,
+  ): Promise<{ success: boolean; data: UserWorkspaceFileView[] }> {
+    return axiosClient.get<
+      { success: boolean; data: UserWorkspaceFileView[] },
+      { success: boolean; data: UserWorkspaceFileView[] }
+    >(`/workspace/${projectId.trim()}`);
+  },
+
+  async initializeWorkspace(
+    projectId: string,
+    taskId: string,
+  ): Promise<{ success: boolean }> {
+    return axiosClient.post('/workspace/initialize', {
+      projectId: projectId.trim(),
+      taskId,
+    });
   },
 
   async autoSaveTaskFile(params: AutoSaveParams): Promise<void> {

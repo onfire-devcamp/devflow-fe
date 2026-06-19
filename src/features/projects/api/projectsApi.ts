@@ -1,5 +1,21 @@
 import { axiosClient } from '../../../lib/axiosClient';
-import type { ProjectDetail, DifficultyLevel } from '../types/projectTypes';
+import type {
+  ProjectDetail,
+  DifficultyLevel,
+  ProjectCategory,
+} from '../types/projectTypes';
+
+interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+  message?: string;
+}
+
+export interface ProjectTechStackItem {
+  name: string;
+  iconUrl: string;
+  category: string;
+}
 
 interface ProjectDetailsResponse {
   success: boolean;
@@ -9,12 +25,58 @@ interface ProjectDetailsResponse {
     slug: string;
     description?: string;
     level: string;
+    category: string;
     previewUrl?: string;
     systemFlowUrl?: string;
     techStack: { name: string; iconUrl: string; category: string }[];
     features: { title: string; description: string }[];
+    moduleCount?: number;
+    estimatedHours?: number;
   };
 }
+
+export const getProjectTechStackGrouped = async (
+  projectId: string,
+): Promise<Record<string, ProjectTechStackItem[]>> => {
+  try {
+    const response = await axiosClient.get<
+      ApiResponse<Record<string, ProjectTechStackItem[]>>,
+      ApiResponse<Record<string, ProjectTechStackItem[]>>
+    >(`/project/${projectId}/tech-stack`);
+    if (response.success) {
+      return response.data;
+    }
+    throw new Error(response.message || 'Failed to fetch tech stack');
+  } catch (error) {
+    console.error('Error fetching tech stack:', error);
+    throw error;
+  }
+};
+
+export interface FileTemplateResponse {
+  _id: string;
+  path: string;
+  content?: string;
+  readOnly?: boolean;
+}
+
+export const getProjectCodebase = async (
+  slug: string,
+): Promise<FileTemplateResponse[]> => {
+  try {
+    const response = await axiosClient.get<
+      ApiResponse<FileTemplateResponse[]>,
+      ApiResponse<FileTemplateResponse[]>
+    >(`/project/${slug}/codebase`);
+    if (response.success) {
+      return response.data;
+    }
+    throw new Error(response.message || 'Failed to fetch codebase');
+  } catch (error) {
+    console.error('Error fetching codebase:', error);
+    throw error;
+  }
+};
 
 export const getProjectBySlug = async (
   slug: string,
@@ -30,10 +92,10 @@ export const getProjectBySlug = async (
     title: data.title,
     slug: data.slug,
     description: data.description || '',
-    category: 'FULLSTACK',
+    category: (data.category?.toUpperCase() || 'FULLSTACK') as ProjectCategory,
     difficulty: data.level.toUpperCase() as DifficultyLevel,
-    estimatedHours: 14,
-    moduleCount: 5,
+    estimatedHours: data.estimatedHours || 0,
+    moduleCount: data.moduleCount || 0,
     status: 'NOT_STARTED',
     previewUrl: data.previewUrl || '',
     features: data.features || [],

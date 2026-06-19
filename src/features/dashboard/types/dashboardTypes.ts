@@ -31,15 +31,7 @@ export interface WeekDayData {
   completed: boolean;
 }
 export interface ContinueLearningCardProps {
-  data: {
-    id: string;
-    projectId: string;
-    slug: string;
-    title: string;
-    moduleName: string;
-    moduleHint: string;
-    progressPercent: number;
-  };
+  data: ContinueLearning | null;
 }
 export interface StreakData {
   weekDays: WeekDayData[];
