@@ -20,6 +20,9 @@ const DashboardPage = lazy(
 const ProjectDetailPage = lazy(
   () => import('../features/projects/components/ProjectDetailPage'),
 );
+const ProjectSummaryPage = lazy(
+  () => import('../features/workspace/pages/ProjectSummaryPage'),
+);
 
 export function AppRoutes() {
   return (
@@ -39,6 +42,10 @@ export function AppRoutes() {
           <Route path="/dashboard" element={<DashboardPage />} />
           <Route path="/project/:projectSlug" element={<ProjectDetailPage />} />
           <Route path="/workspace/:projectSlug" element={<RoadMapLayout />} />
+          <Route
+            path="/workspace/:projectSlug/summary"
+            element={<ProjectSummaryPage />}
+          />
         </Route>
 
         {/* Catch-all: show 404 for any unmatched route */}

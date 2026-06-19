@@ -4,6 +4,7 @@ export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
+  skillPoints?: number;
 }
 
 export interface CategoryGroup {
@@ -51,6 +52,7 @@ export interface RawTaskFromAPI {
   id?: string;
   title?: string;
   status?: string;
+  skillPoints?: number;
 }
 
 export interface RawModuleFromAPI {

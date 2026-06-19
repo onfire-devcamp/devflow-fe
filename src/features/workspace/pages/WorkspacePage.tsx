@@ -15,6 +15,7 @@ import { WorkspaceEditor } from '../components/WorkspaceEditor';
 import { WorkspaceFooter } from '../components/WorkspaceFooter';
 import { DeviChatPanel } from '../components/DeviChatPanel';
 import { ExplainToPassModal } from '../components/ExplainToPassModal';
+import { ProjectCompletionModal } from '../components/ProjectCompletionModal';
 import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
@@ -25,6 +26,7 @@ export default function WorkspacePage() {
   const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
 
   const {
     data: slugProjectDetails,
@@ -65,6 +67,15 @@ export default function WorkspacePage() {
     activeFileState,
   } = useTaskEditor(projectId, projectSlug, activeTaskId);
 
+  const handleTaskCompleted = useCallback(() => {
+    markCurrentTaskCompleted();
+    const allTasks = roadmapData.flatMap((group) => group.tasks);
+    const isLastTask = activeTaskId === allTasks[allTasks.length - 1]?.id;
+    if (isLastTask) {
+      setShowCompletionModal(true);
+    }
+  }, [markCurrentTaskCompleted, roadmapData, activeTaskId]);
+
   const {
     messages,
     isChatting,
@@ -83,7 +94,7 @@ export default function WorkspacePage() {
     activeFileId,
     editorInstance,
     taskDetails: taskDetails ?? null,
-    onTaskCompleted: markCurrentTaskCompleted,
+    onTaskCompleted: handleTaskCompleted,
   });
 
   const [showExplainToPassForm, setShowExplainToPassForm] = useState(false);
@@ -284,6 +295,10 @@ export default function WorkspacePage() {
           onClose={handleCloseExplainToPass}
         />
       </div>
+
+      {showCompletionModal && projectSlug && (
+        <ProjectCompletionModal projectSlug={projectSlug} />
+      )}
     </div>
   );
 }
