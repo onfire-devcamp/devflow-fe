@@ -1,5 +1,6 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, Share2, X, ChevronDown, ChevronUp } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
 import { workspaceApi } from '../api/workspaceApi';
 import {
   exportWorkspaceToZip,
@@ -28,6 +29,21 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
   const [expandedModules, setExpandedModules] = useState<
     Record<number, boolean>
   >({});
+  const [showShareMenu, setShowShareMenu] = useState(false);
+
+  useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') onClose();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [onClose]);
+
+  const handleBackdropClick = (e: React.MouseEvent) => {
+    if (e.target === e.currentTarget) {
+      onClose();
+    }
+  };
 
   if (!isOpen) return null;
 
@@ -75,34 +91,74 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
     }
   };
 
-  const handleShareResult = () => {
-    if (projectSlug) {
-      // Capture only the scorecard part, not the action buttons
-      downloadSummaryScreenshot('summary-scorecard-content', projectSlug);
-    }
-  };
+  const shareUrl = window.location.origin + `/project/${projectSlug}`;
+
+  const shareOptions = [
+    {
+      name: 'Save to Device',
+      action: () => {
+        downloadSummaryScreenshot('summary-scorecard-content', projectSlug);
+        setShowShareMenu(false);
+      },
+    },
+    {
+      name: 'Share via Email',
+      action: () => {
+        window.location.href = `mailto:?subject=${encodeURIComponent(
+          `Check out my completed project: ${projectTitle}`,
+        )}&body=${encodeURIComponent(
+          `I just finished ${projectTitle} on DevFlow!\n\n${shareUrl}`,
+        )}`;
+        setShowShareMenu(false);
+      },
+    },
+    {
+      name: 'Share on Facebook',
+      action: () => {
+        window.open(
+          `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(shareUrl)}`,
+          '_blank',
+        );
+        setShowShareMenu(false);
+      },
+    },
+    {
+      name: 'Share on Instagram',
+      action: () => {
+        navigator.clipboard.writeText(
+          `I just finished ${projectTitle} on DevFlow! Check it out: ${shareUrl}`,
+        );
+        alert('Link copied to clipboard for Instagram!');
+        setShowShareMenu(false);
+      },
+    },
+  ];
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      onClick={handleBackdropClick}
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-in fade-in duration-200 cursor-default"
+    >
       <div className="bg-white rounded-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in zoom-in-95 duration-200">
         {/* Header */}
         <div className="flex justify-between items-center px-6 py-4 border-b border-slate-100 bg-white">
           <h2 className="text-xl font-bold text-slate-800">
             Project Scorecard
           </h2>
-          <button
+          <Button
+            variant="ghost"
             onClick={onClose}
-            className="p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 rounded-lg transition-colors"
+            className="!p-2 !text-slate-400 hover:!bg-slate-100 hover:!text-slate-600 !rounded-lg !transition-colors !cursor-pointer"
           >
             <X className="w-5 h-5" />
-          </button>
+          </Button>
         </div>
 
         <div className="flex-1 overflow-y-auto p-6 md:p-8 flex flex-col md:flex-row gap-8 bg-slate-50">
           {/* Main Scorecard to be screenshotted */}
           <div
             id="summary-scorecard-content"
-            className="flex-1 bg-white border border-primary/20 rounded-3xl p-8 shadow-sm flex flex-col"
+            className="w-full md:flex-1 h-max bg-white border border-primary/20 rounded-3xl p-8 shadow-sm flex flex-col"
           >
             <div className="text-center mb-8">
               <h1 className="text-3xl font-bold text-slate-800 tracking-tight">
@@ -114,22 +170,22 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
             </div>
 
             {/* Overall Score */}
-            <div className="bg-gradient-to-br from-primary to-primary-hover rounded-2xl p-6 text-white text-center shadow-lg shadow-primary/20 mb-8 mx-auto w-full max-w-sm transform hover:scale-[1.02] transition-transform">
-              <div className="text-primary-soft text-sm font-bold uppercase tracking-wider mb-1">
+            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-800 text-center mb-8 mx-auto w-full max-w-sm">
+              <div className="text-slate-500 text-sm font-bold uppercase tracking-wider mb-1">
                 Overall Score
               </div>
               <div className="flex items-baseline justify-center gap-2">
-                <span className="text-6xl font-extrabold tracking-tight">
+                <span className="text-6xl font-extrabold tracking-tight text-primary">
                   {avgScore}
                 </span>
-                <span className="text-2xl font-medium text-primary-soft">
+                <span className="text-2xl font-medium text-slate-400">
                   / 10
                 </span>
               </div>
             </div>
 
             {/* Module Breakdown */}
-            <div className="space-y-4 flex-1">
+            <div className="space-y-4">
               <h3 className="text-lg font-bold text-slate-800 mb-4 px-2">
                 Module Breakdown
               </h3>
@@ -152,9 +208,10 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
                     key={index}
                     className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm transition-all"
                   >
-                    <button
+                    <Button
+                      variant="ghost"
                       onClick={() => toggleModule(index)}
-                      className="w-full flex items-center justify-between p-4 bg-slate-50/50 hover:bg-slate-50 transition-colors"
+                      className="!w-full !flex !items-center !justify-between !p-4 !bg-slate-50/50 hover:!bg-slate-50 !transition-colors !cursor-pointer !rounded-none !h-auto"
                     >
                       <div className="flex items-center gap-3">
                         <div className="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold text-sm">
@@ -174,7 +231,7 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
                           <ChevronDown className="w-5 h-5 text-slate-400" />
                         )}
                       </div>
-                    </button>
+                    </Button>
 
                     {isExpanded && (
                       <div className="border-t border-slate-100 p-2">
@@ -211,18 +268,36 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
           <div className="w-full md:w-64 flex-shrink-0 flex flex-col gap-4">
             <h2 className="text-xl font-bold text-slate-800 mb-2">Actions</h2>
 
-            <button
-              onClick={handleShareResult}
-              className="w-full flex items-center justify-center gap-2 bg-white border-2 border-primary hover:bg-primary-soft hover:text-primary hover:border-primary text-primary font-bold py-3.5 px-4 rounded-xl transition-all shadow-sm active:scale-[0.98]"
-            >
-              <Share2 className="w-5 h-5" />
-              Share Result
-            </button>
+            <div className="relative w-full">
+              <Button
+                variant="outline"
+                onClick={() => setShowShareMenu(!showShareMenu)}
+                className="!w-full !flex !items-center !justify-center !gap-2 !bg-white !border-2 !border-primary hover:!bg-primary-soft hover:!text-primary hover:!border-primary !text-primary !font-bold !py-3.5 !px-4 !rounded-xl !transition-all !shadow-sm active:!scale-[0.98] !cursor-pointer"
+              >
+                <Share2 className="w-5 h-5" />
+                Share Result
+              </Button>
+              {showShareMenu && (
+                <div className="absolute top-full left-0 right-0 mt-2 bg-white border border-slate-200 rounded-xl shadow-lg z-10 overflow-hidden">
+                  {shareOptions.map((opt) => (
+                    <Button
+                      variant="ghost"
+                      key={opt.name}
+                      onClick={opt.action}
+                      className="!w-full !text-left !px-4 !py-3 hover:!bg-slate-50 !text-sm !font-semibold !text-slate-700 !cursor-pointer !border-b last:!border-b-0 !border-slate-100 !justify-start !rounded-none !h-auto"
+                    >
+                      {opt.name}
+                    </Button>
+                  ))}
+                </div>
+              )}
+            </div>
 
-            <button
+            <Button
+              variant="primary"
               onClick={handleDownloadSourceCode}
               disabled={isExportingZip}
-              className="w-full flex items-center justify-center gap-2 bg-primary hover:bg-primary-hover text-white font-bold py-3.5 px-4 rounded-xl transition-all shadow-md active:scale-[0.98] disabled:opacity-70 disabled:cursor-not-allowed disabled:active:scale-100"
+              className="!w-full !flex !items-center !justify-center !gap-2 !bg-primary hover:!bg-primary-hover !text-white !font-bold !py-3.5 !px-4 !rounded-xl !transition-all !shadow-md active:!scale-[0.98] disabled:!opacity-70 disabled:!cursor-not-allowed disabled:active:!scale-100 !cursor-pointer"
             >
               {isExportingZip ? (
                 <>
@@ -235,7 +310,7 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
                   Download Code (.zip)
                 </>
               )}
-            </button>
+            </Button>
 
             {/* Additional info block to fill the sidebar visually */}
             <div className="mt-auto pt-6 text-xs text-slate-500 text-center space-y-2 hidden md:block">

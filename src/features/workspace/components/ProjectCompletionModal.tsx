@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { Trophy } from 'lucide-react';
+import { Button } from '../../../components/ui/Button';
 
 interface ProjectCompletionModalProps {
   projectSlug: string;
@@ -25,12 +26,12 @@ export function ProjectCompletionModal({
           Incredible work! You've built the entire application from scratch.
         </p>
 
-        <button
+        <Button
           onClick={() => navigate(`/workspace/${projectSlug}/summary`)}
-          className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold text-lg py-4 px-6 rounded-xl transition-all shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 active:scale-[0.98]"
+          className="!w-full !bg-indigo-600 hover:!bg-indigo-700 !text-white !font-bold !text-lg !py-4 !px-6 !rounded-xl !shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 active:scale-[0.98]"
         >
           View My Scorecard
-        </button>
+        </Button>
       </div>
     </div>
   );
