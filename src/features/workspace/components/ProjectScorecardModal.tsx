@@ -30,6 +30,10 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
     Record<number, boolean>
   >({});
   const [showShareMenu, setShowShareMenu] = useState(false);
+  const [showScore, setShowScore] = useState(false);
+  const [showModules, setShowModules] = useState(false);
+  const [showFooter, setShowFooter] = useState(false);
+  const [displayedScore, setDisplayedScore] = useState(0);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -39,13 +43,26 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [onClose]);
 
+  useEffect(() => {
+    if (!isOpen) return;
+    const t1 = setTimeout(() => setShowScore(true), 100);
+    const t2 = setTimeout(() => setShowModules(true), 600);
+    const t3 = setTimeout(
+      () => setShowFooter(true),
+      600 + roadmapData.length * 150 + 400,
+    );
+    return () => {
+      clearTimeout(t1);
+      clearTimeout(t2);
+      clearTimeout(t3);
+    };
+  }, [isOpen, roadmapData.length]);
+
   const handleBackdropClick = (e: React.MouseEvent) => {
     if (e.target === e.currentTarget) {
       onClose();
     }
   };
-
-  if (!isOpen) return null;
 
   // Calculate Average Score
   let totalScore = 0;
@@ -64,6 +81,33 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
     totalTasksWithScore > 0
       ? (totalScore / totalTasksWithScore).toFixed(1)
       : '0.0';
+
+  useEffect(() => {
+    if (!showScore) return;
+    const targetScore = parseFloat(avgScore);
+    if (isNaN(targetScore) || targetScore === 0) {
+      setDisplayedScore(0);
+      return;
+    }
+    const duration = 1000;
+    const steps = 30;
+    const interval = duration / steps;
+    const increment = targetScore / steps;
+    let current = 0;
+
+    const timer = setInterval(() => {
+      current += increment;
+      if (current >= targetScore) {
+        setDisplayedScore(targetScore);
+        clearInterval(timer);
+      } else {
+        setDisplayedScore(current);
+      }
+    }, interval);
+    return () => clearInterval(timer);
+  }, [showScore, avgScore]);
+
+  if (!isOpen) return null;
 
   const toggleModule = (index: number) => {
     setExpandedModules((prev) => ({
@@ -170,13 +214,15 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
             </div>
 
             {/* Overall Score */}
-            <div className="bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-800 text-center mb-8 mx-auto w-full max-w-sm">
+            <div
+              className={`transition-all duration-700 transform ${showScore ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} bg-slate-50 border border-slate-200 rounded-2xl p-6 text-slate-800 text-center mb-8 mx-auto w-full max-w-sm hover:border-primary hover:ring-2 hover:ring-primary/20 cursor-default`}
+            >
               <div className="text-slate-500 text-sm font-bold uppercase tracking-wider mb-1">
                 Overall Score
               </div>
               <div className="flex items-baseline justify-center gap-2">
                 <span className="text-6xl font-extrabold tracking-tight text-primary">
-                  {avgScore}
+                  {displayedScore.toFixed(1)}
                 </span>
                 <span className="text-2xl font-medium text-slate-400">
                   / 10
@@ -206,7 +252,10 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
                 return (
                   <div
                     key={index}
-                    className="bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm transition-all"
+                    style={{
+                      transitionDelay: showModules ? `${index * 150}ms` : '0ms',
+                    }}
+                    className={`bg-white border border-slate-200 rounded-xl overflow-hidden shadow-sm hover:border-primary hover:ring-1 hover:ring-primary/30 transition-all duration-700 transform ${showModules ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'}`}
                   >
                     <Button
                       variant="ghost"
@@ -233,33 +282,43 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
                       </div>
                     </Button>
 
-                    {isExpanded && (
-                      <div className="border-t border-slate-100 p-2">
-                        <ul className="space-y-1">
-                          {mod.tasks.map((task) => (
-                            <li
-                              key={task.id}
-                              className="flex items-center justify-between px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors"
-                            >
-                              <span className="text-sm text-slate-600 font-medium">
-                                {task.title}
-                              </span>
-                              <span className="text-sm font-bold text-slate-800">
-                                {task.aiScore !== undefined
-                                  ? `${task.aiScore} / 10`
-                                  : '- / 10'}
-                              </span>
-                            </li>
-                          ))}
-                        </ul>
+                    <div
+                      className={`grid transition-all duration-500 ease-in-out ${
+                        isExpanded
+                          ? 'grid-rows-[1fr] opacity-100'
+                          : 'grid-rows-[0fr] opacity-0'
+                      }`}
+                    >
+                      <div className="overflow-hidden">
+                        <div className="border-t border-slate-100 p-2">
+                          <ul className="space-y-1">
+                            {mod.tasks.map((task) => (
+                              <li
+                                key={task.id}
+                                className="flex items-center justify-between px-4 py-2 hover:bg-slate-50 rounded-lg transition-colors"
+                              >
+                                <span className="text-sm text-slate-600 font-medium">
+                                  {task.title}
+                                </span>
+                                <span className="text-sm font-bold text-slate-800">
+                                  {task.aiScore !== undefined
+                                    ? `${task.aiScore} / 10`
+                                    : '- / 10'}
+                                </span>
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
                       </div>
-                    )}
+                    </div>
                   </div>
                 );
               })}
             </div>
 
-            <div className="mt-8 text-center text-sm font-bold text-slate-400 pt-6 border-t border-slate-100">
+            <div
+              className={`transition-all duration-700 transform ${showFooter ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'} mt-8 text-center text-sm font-bold text-slate-400 pt-6 border-t border-slate-100`}
+            >
               DevFlow - Personalized Learning Platform
             </div>
           </div>

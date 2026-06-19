@@ -28,7 +28,7 @@ export function ProjectCompletionModal({
 
         <Button
           onClick={() => navigate(`/workspace/${projectSlug}/summary`)}
-          className="!w-full !bg-indigo-600 hover:!bg-indigo-700 !text-white !font-bold !text-lg !py-4 !px-6 !rounded-xl !shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 active:scale-[0.98]"
+          className="!w-full !bg-indigo-600 hover:!bg-indigo-700 !text-white !font-bold !text-lg !py-4 !px-6 !rounded-xl !shadow-lg shadow-indigo-500/30 hover:shadow-indigo-500/50 active:scale-[0.98] !cursor-pointer"
         >
           View My Scorecard
         </Button>
