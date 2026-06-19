@@ -7,7 +7,15 @@ interface TechItem {
   category: string;
 }
 
-export function TechStackTab({ techStack }: { techStack: TechItem[] }) {
+interface TechStackTabProps {
+  techStack: TechItem[];
+  isLoading?: boolean;
+}
+
+export function TechStackTab({
+  techStack,
+  isLoading = false,
+}: TechStackTabProps) {
   const groupedTech = useMemo(() => {
     return techStack.reduce(
       (acc, tech) => {
@@ -22,6 +30,31 @@ export function TechStackTab({ techStack }: { techStack: TechItem[] }) {
     );
   }, [techStack]);
 
+  if (isLoading) {
+    return (
+      <TabPanel tabId="tech-stack" className="p-6 sm:p-8">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {[1, 2, 3, 4].map((skeletonIdx) => (
+            <div
+              key={`skeleton-category-${skeletonIdx}`}
+              className="border border-slate-200 rounded-xl p-5 bg-white animate-pulse"
+            >
+              <div className="h-3 bg-slate-200 rounded w-1/3 mb-5"></div>
+
+              <div className="flex flex-wrap gap-2">
+                {[1, 2, 3].map((itemIdx) => (
+                  <div
+                    key={`skeleton-item-${itemIdx}`}
+                    className="h-8 w-24 bg-slate-200 rounded-full"
+                  ></div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+      </TabPanel>
+    );
+  }
   return (
     <TabPanel tabId="tech-stack" className="p-6 sm:p-8">
       {techStack.length > 0 ? (
