@@ -25,6 +25,7 @@ export function useWorkspaceData(projectId: string | undefined) {
             title: response.data.project.title,
             description: response.data.project.description,
             progressPercentage: response.data.project.progressPercentage,
+            isInitialized: response.data.project.isInitialized,
           }
         : null;
 

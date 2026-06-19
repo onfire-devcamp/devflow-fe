@@ -4,6 +4,8 @@ export interface Task {
   id: string;
   title: string;
   status: TaskStatus;
+  skillPoints?: number;
+  aiScore?: number;
 }
 
 export interface CategoryGroup {
@@ -51,6 +53,8 @@ export interface RawTaskFromAPI {
   id?: string;
   title?: string;
   status?: string;
+  skillPoints?: number;
+  aiScore?: number;
 }
 
 export interface RawModuleFromAPI {
@@ -62,6 +66,7 @@ export interface RawProjectFromAPI {
   title: string;
   description?: string;
   progressPercentage?: number;
+  isInitialized?: boolean;
 }
 
 export interface APIResponseData {
@@ -79,6 +84,7 @@ export interface ProjectDetails {
   title: string;
   description?: string;
   progressPercentage?: number;
+  isInitialized?: boolean;
 }
 
 export interface TaskDetails {

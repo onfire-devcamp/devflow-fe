@@ -1,5 +1,5 @@
 import { useState, useCallback } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, Navigate, useLocation } from 'react-router-dom';
 import { useQuery } from '@tanstack/react-query';
 import { workspaceApi } from '../api/workspaceApi';
 import { Header } from '../../../components/ui/Header';
@@ -15,6 +15,8 @@ import { WorkspaceEditor } from '../components/WorkspaceEditor';
 import { WorkspaceFooter } from '../components/WorkspaceFooter';
 import { DeviChatPanel } from '../components/DeviChatPanel';
 import { ExplainToPassModal } from '../components/ExplainToPassModal';
+import { ProjectCompletionModal } from '../components/ProjectCompletionModal';
+import { ProjectScorecardModal } from '../components/ProjectScorecardModal';
 import { GlobalLoader } from '../../../components/ui/GlobalLoader';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
@@ -22,8 +24,11 @@ import { ExplorerTab } from '../components/ExplorerTab';
 
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
+  const location = useLocation();
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
+  const [showCompletionModal, setShowCompletionModal] = useState(false);
+  const [showScorecardModal, setShowScorecardModal] = useState(false);
 
   const {
     data: slugProjectDetails,
@@ -64,6 +69,15 @@ export default function WorkspacePage() {
     activeFileState,
   } = useTaskEditor(projectId, projectSlug, activeTaskId);
 
+  const handleTaskCompleted = useCallback(() => {
+    markCurrentTaskCompleted();
+    const allTasks = roadmapData.flatMap((group) => group.tasks);
+    const isLastTask = activeTaskId === allTasks[allTasks.length - 1]?.id;
+    if (isLastTask) {
+      setShowCompletionModal(true);
+    }
+  }, [markCurrentTaskCompleted, roadmapData, activeTaskId]);
+
   const {
     messages,
     isChatting,
@@ -82,7 +96,7 @@ export default function WorkspacePage() {
     activeFileId,
     editorInstance,
     taskDetails: taskDetails ?? null,
-    onTaskCompleted: markCurrentTaskCompleted,
+    onTaskCompleted: handleTaskCompleted,
   });
 
   const [showExplainToPassForm, setShowExplainToPassForm] = useState(false);
@@ -133,6 +147,12 @@ export default function WorkspacePage() {
 
   const isCompleted = activeTaskObj?.status === 'completed';
 
+  const isProjectCompleted =
+    roadmapData.length > 0 &&
+    roadmapData.every((group) =>
+      group.tasks.every((task) => task.status === 'completed'),
+    );
+
   if (isSlugLoading || loading) {
     return (
       <div className="flex items-center justify-center h-screen bg-bg text-fg">
@@ -142,6 +162,14 @@ export default function WorkspacePage() {
   }
 
   if (slugError || error) {
+    const errorMsg =
+      (slugError as Error)?.message?.toLowerCase() ||
+      error?.toLowerCase() ||
+      '';
+    if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+      return <Navigate to="/404" replace />;
+    }
+
     return (
       <div className="flex h-screen items-center justify-center bg-bg px-6">
         <ErrorMessage
@@ -151,6 +179,15 @@ export default function WorkspacePage() {
         />
       </div>
     );
+  }
+
+  // If the workspace data indicates the user hasn't initialized the project, and we didn't just come from the start button
+  if (
+    projectDetails &&
+    !projectDetails.isInitialized &&
+    !location.state?.initializing
+  ) {
+    return <Navigate to={`/project/${projectSlug}`} replace />;
   }
 
   return (
@@ -211,6 +248,30 @@ export default function WorkspacePage() {
               </div>
             ) : taskDetails ? (
               <div className="space-y-4">
+                {isProjectCompleted && projectSlug && (
+                  <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between mb-4 animate-fadeIn">
+                    <div className="flex items-center gap-3">
+                      <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
+                        <span className="text-xl">🏆</span>
+                      </div>
+                      <div>
+                        <h3 className="text-sm font-bold text-slate-800">
+                          Project Completed!
+                        </h3>
+                        <p className="text-xs text-slate-500">
+                          You've finished all tasks in this project.
+                        </p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setShowScorecardModal(true)}
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors"
+                    >
+                      View Scorecard
+                    </button>
+                  </div>
+                )}
+
                 <WorkspaceEditor
                   taskDetails={taskDetails}
                   activeFileId={activeFileId}
@@ -266,6 +327,21 @@ export default function WorkspacePage() {
           onClose={handleCloseExplainToPass}
         />
       </div>
+
+      {showCompletionModal && projectSlug && (
+        <ProjectCompletionModal projectSlug={projectSlug} />
+      )}
+
+      {showScorecardModal && projectId && projectSlug && (
+        <ProjectScorecardModal
+          projectTitle={currentProjectName}
+          projectSlug={projectSlug}
+          projectId={projectId}
+          roadmapData={roadmapData}
+          isOpen={showScorecardModal}
+          onClose={() => setShowScorecardModal(false)}
+        />
+      )}
     </div>
   );
 }
