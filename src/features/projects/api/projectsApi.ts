@@ -30,6 +30,8 @@ interface ProjectDetailsResponse {
     systemFlowUrl?: string;
     techStack: { name: string; iconUrl: string; category: string }[];
     features: { title: string; description: string }[];
+    moduleCount?: number;
+    estimatedHours?: number;
   };
 }
 
@@ -92,8 +94,8 @@ export const getProjectBySlug = async (
     description: data.description || '',
     category: (data.category?.toUpperCase() || 'FULLSTACK') as ProjectCategory,
     difficulty: data.level.toUpperCase() as DifficultyLevel,
-    estimatedHours: 14,
-    moduleCount: 5,
+    estimatedHours: data.estimatedHours || 0,
+    moduleCount: data.moduleCount || 0,
     status: 'NOT_STARTED',
     previewUrl: data.previewUrl || '',
     features: data.features || [],
