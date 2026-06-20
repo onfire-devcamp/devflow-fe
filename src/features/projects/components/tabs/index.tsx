@@ -101,7 +101,11 @@ export function ProjectDetailTabs({ project }: { project: ProjectDetail }) {
       <TabBar activeTab={activeTab} onChange={setActiveTab} />
       <div className="rounded-b-2xl border border-t-0 border-slate-200 bg-slate-50 overflow-hidden">
         <div className={activeTab === 'ui-preview' ? 'block' : 'hidden'}>
-          <UIPreviewTab previewUrl={project.previewUrl} title={project.title} />
+          <UIPreviewTab
+            slug={project.slug}
+            previewUrl={project.previewUrl}
+            title={project.title}
+          />
         </div>
         <div className={activeTab === 'features' ? 'block' : 'hidden'}>
           <FeaturesTab features={project.features} />
@@ -111,6 +115,7 @@ export function ProjectDetailTabs({ project }: { project: ProjectDetail }) {
         </div>
         <div className={activeTab === 'system-flow' ? 'block' : 'hidden'}>
           <SystemFlowTab
+            slug={project.slug}
             systemFlowUrl={project.systemFlowUrl}
             title={project.title}
           />
