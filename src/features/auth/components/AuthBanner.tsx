@@ -5,7 +5,7 @@ const FEATURE_CONTENT = [
   {
     icon: 'AI',
     title: 'AI mentor Devi',
-    description: 'Guided hints — never the full answer.',
+    description: 'Guided hints — whenever you need.',
   },
   {
     icon: 'SHIELD',

@@ -5,10 +5,11 @@ import { Button } from './Button';
 
 interface UserMenuProps {
   username: string;
+  avatarUrl?: string;
   onLogout: () => void;
 }
 
-export const UserMenu = ({ username, onLogout }: UserMenuProps) => {
+export const UserMenu = ({ username, avatarUrl, onLogout }: UserMenuProps) => {
   const [isOpen, setIsOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
 
@@ -30,7 +31,10 @@ export const UserMenu = ({ username, onLogout }: UserMenuProps) => {
         className="space-x-2 bg-white px-2 py-1.5 rounded-full border border-primary hover:bg-primary-soft transition-colors duration-200"
       >
         <img
-          src={`https://ui-avatars.com/api/?name=${username}&background=fbcfe8&color=f472b6&bold=true`}
+          src={
+            avatarUrl ||
+            `https://ui-avatars.com/api/?name=${username}&background=fbcfe8&color=f472b6&bold=true`
+          }
           alt="Avatar"
           className="w-6 h-6 rounded-full object-cover"
         />

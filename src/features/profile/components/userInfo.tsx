@@ -1,36 +1,307 @@
 import { useAuthStore } from '../../auth/stores/authStore';
+import { Mail, Building2, Link as LinkIcon, Camera } from 'lucide-react';
+import { useState, useRef } from 'react';
+import { GithubIcon } from '../../../components/icons/GithubIcon';
+import { LinkedinIcon } from '../../../components/icons/LinkedinIcon';
+import { axiosClient } from '../../../lib/axiosClient';
+import { Input } from '../../../components/ui/Input';
+import { Button } from '../../../components/ui/Button';
 
 const ProfileCard = () => {
   const user = useAuthStore((state) => state.user);
-  const displayName = user?.username ?? 'Guest';
+  const login = useAuthStore((state) => state.login);
+  const token = useAuthStore((state) => state.accessToken);
+
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Form states
+  const [displayName, setDisplayName] = useState(user?.username ?? 'Guest');
+  const [bio, setBio] = useState(user?.bio ?? '');
+  const [workplace, setWorkplace] = useState(user?.workplace ?? '');
+  const [avatarUrl, setAvatarUrl] = useState(user?.avatarUrl ?? '');
+
+  const getSocialLink = (platform: string) =>
+    user?.socialLinks?.find(
+      (l) => l.platform.toLowerCase() === platform.toLowerCase(),
+    )?.url || '';
+
+  const [linkedinUrl, setLinkedinUrl] = useState(getSocialLink('linkedin'));
+  const [githubUrl, setGithubUrl] = useState(getSocialLink('github'));
+  const [websiteUrl, setWebsiteUrl] = useState(getSocialLink('website'));
+
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
   const initials =
-    displayName
+    (user?.username ?? 'Guest')
       .split(' ')
       .filter(Boolean)
       .slice(0, 2)
       .map((part) => part[0]?.toUpperCase())
       .join('') || 'G';
 
-  return (
-    <div className="border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full flex items-center">
-      <div className="w-[62px] h-[62px] rounded-2xl bg-gradient-to-br from-fuchsia-400 to-violet-400 flex items-center justify-center text-white text-[28px] font-semibold">
-        {initials}
-      </div>
+  const [imageError, setImageError] = useState<string>('');
 
-      <div className="ml-5">
-        <h2 className="text-[36px] font-semibold text-[#2F2F3A]">
-          {displayName}
-        </h2>
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    setImageError('');
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        setImageError('Image is too large. Please select an image under 5MB.');
+        return;
+      }
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setAvatarUrl(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
 
-        <div className="flex items-center mt-3 text-sm text-gray-400">
-          <div className="flex items-center gap-1 px-3 py-1 rounded-full border border-orange-200 bg-orange-50 text-orange-700 font-medium">
-            <span>0-day streak</span>
+  const handleSave = async () => {
+    if (!user || !token) return;
+    setIsSubmitting(true);
+    try {
+      const socialLinks = [];
+      if (githubUrl) socialLinks.push({ platform: 'github', url: githubUrl });
+      if (linkedinUrl)
+        socialLinks.push({ platform: 'linkedin', url: linkedinUrl });
+      if (websiteUrl)
+        socialLinks.push({ platform: 'website', url: websiteUrl });
+
+      const payload = {
+        username: displayName,
+        avatarUrl,
+        bio,
+        workplace,
+        socialLinks,
+      };
+
+      const response = await axiosClient.put('/user/profile', payload);
+      login(token, { ...user, ...response });
+      setIsEditMode(false);
+    } catch (error) {
+      console.error('Failed to update profile', error);
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  const handleCancel = () => {
+    setDisplayName(user?.username ?? 'Guest');
+    setBio(user?.bio ?? '');
+    setWorkplace(user?.workplace ?? '');
+    setAvatarUrl(user?.avatarUrl ?? '');
+    setLinkedinUrl(getSocialLink('linkedin'));
+    setGithubUrl(getSocialLink('github'));
+    setWebsiteUrl(getSocialLink('website'));
+    setImageError('');
+    setIsEditMode(false);
+  };
+
+  const handleRemoveImage = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setAvatarUrl('');
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
+    setImageError('');
+  };
+
+  if (isEditMode) {
+    return (
+      <div className="w-full flex flex-col gap-5">
+        <div className="flex flex-col items-start gap-4">
+          <div className="flex items-center gap-4">
+            <div
+              className="relative group cursor-pointer w-24 h-24 rounded-full overflow-hidden shrink-0 border border-gray-200"
+              onClick={() => fileInputRef.current?.click()}
+            >
+              {avatarUrl ? (
+                <img
+                  src={avatarUrl}
+                  alt={displayName}
+                  className="w-full h-full object-cover"
+                />
+              ) : (
+                <div className="w-full h-full bg-gradient-to-br from-fuchsia-400 to-violet-400 flex items-center justify-center text-white text-4xl font-semibold">
+                  {initials}
+                </div>
+              )}
+              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                <Camera className="text-white" size={24} />
+              </div>
+              <input
+                type="file"
+                ref={fileInputRef}
+                className="hidden"
+                accept="image/*"
+                onChange={handleImageUpload}
+              />
+            </div>
+            {avatarUrl && (
+              <button
+                type="button"
+                onClick={handleRemoveImage}
+                className="text-xs font-medium text-red-500 hover:text-red-700 transition-colors bg-red-50 hover:bg-red-100 px-3 py-1.5 rounded-full"
+              >
+                Remove
+              </button>
+            )}
+          </div>
+          {imageError && (
+            <p className="text-xs text-red-500 font-medium">{imageError}</p>
+          )}
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-bold text-gray-800">Name</label>
+          <Input
+            value={displayName}
+            onChange={(e) => setDisplayName(e.target.value)}
+            className="pl-3 py-2"
+          />
+        </div>
+
+        <div className="flex flex-col gap-1">
+          <label className="text-sm font-bold text-gray-800">Bio</label>
+          <textarea
+            value={bio}
+            onChange={(e) => setBio(e.target.value)}
+            placeholder="Tell us a little about yourself..."
+            className="w-full border border-primary-mid focus:border-primary focus:ring-primary rounded-xl p-3 text-sm focus:outline-none focus:ring-1 transition bg-card text-fg placeholder-fg-muted min-h-[80px]"
+            maxLength={160}
+          />
+        </div>
+
+        <div className="flex flex-col gap-3 mt-2">
+          <div className="flex items-center gap-3">
+            <Building2 size={20} className="text-gray-400 min-w-[20px]" />
+            <Input
+              value={workplace}
+              onChange={(e) => setWorkplace(e.target.value)}
+              placeholder="Company or University"
+              className="pl-3 py-2"
+            />
           </div>
 
-          <span className="mx-3 text-gray-300">·</span>
-
-          <span>0 tasks completed</span>
+          <div className="flex items-center gap-3">
+            <LinkIcon size={20} className="text-gray-400 min-w-[20px]" />
+            <Input
+              value={websiteUrl}
+              onChange={(e) => setWebsiteUrl(e.target.value)}
+              placeholder="Website URL"
+              className="pl-3 py-2"
+            />
+          </div>
         </div>
+
+        <div className="flex flex-col gap-3 mt-4">
+          <label className="text-sm font-bold text-gray-800">
+            Social accounts
+          </label>
+          <div className="flex items-center gap-3">
+            <GithubIcon size={20} className="text-gray-400 min-w-[20px]" />
+            <Input
+              value={githubUrl}
+              onChange={(e) => setGithubUrl(e.target.value)}
+              placeholder="GitHub Profile URL"
+              className="pl-3 py-2"
+            />
+          </div>
+          <div className="flex items-center gap-3">
+            <LinkedinIcon size={20} className="text-gray-400 min-w-[20px]" />
+            <Input
+              value={linkedinUrl}
+              onChange={(e) => setLinkedinUrl(e.target.value)}
+              placeholder="LinkedIn Profile URL"
+              className="pl-3 py-2"
+            />
+          </div>
+        </div>
+
+        <div className="flex gap-2 mt-4">
+          <Button
+            variant="primary"
+            onClick={handleSave}
+            disabled={isSubmitting}
+            className="py-2 px-4 w-auto text-sm"
+          >
+            {isSubmitting ? 'Saving...' : 'Save'}
+          </Button>
+          <Button
+            variant="ghost"
+            onClick={handleCancel}
+            className="py-2 px-4 w-auto text-sm border border-gray-200"
+          >
+            Cancel
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full flex flex-col gap-4">
+      <div className="flex items-center gap-4 md:flex-col md:items-start md:gap-4">
+        {user?.avatarUrl ? (
+          <img
+            src={user.avatarUrl}
+            alt={user?.username}
+            className="w-20 h-20 md:w-full md:max-w-[280px] md:h-auto md:aspect-square rounded-full object-cover border border-gray-200"
+          />
+        ) : (
+          <div className="w-20 h-20 md:w-full md:max-w-[280px] md:h-auto md:aspect-square rounded-full bg-gradient-to-br from-fuchsia-400 to-violet-400 flex items-center justify-center text-white text-3xl md:text-6xl font-semibold border border-gray-200">
+            {initials}
+          </div>
+        )}
+
+        <div className="flex flex-col">
+          <h2 className="text-2xl font-semibold text-[#2F2F3A]">
+            {user?.username ?? 'Guest'}
+          </h2>
+        </div>
+      </div>
+
+      <button
+        onClick={() => setIsEditMode(true)}
+        className="w-full py-1.5 px-3 bg-gray-50 hover:bg-gray-100 border border-gray-300 rounded-md text-sm font-medium text-gray-700 transition-colors"
+      >
+        Edit profile
+      </button>
+
+      {user?.bio && <p className="text-sm text-gray-700 mt-2">{user.bio}</p>}
+
+      <div className="flex flex-col gap-2 mt-4 text-sm text-gray-600">
+        {user?.workplace && (
+          <div className="flex items-center gap-2">
+            <Building2 size={16} />
+            <span>{user.workplace}</span>
+          </div>
+        )}
+        <div className="flex items-center gap-2">
+          <Mail size={16} />
+          <span>{user?.email || 'No email provided'}</span>
+        </div>
+        {user?.socialLinks?.map((link, i) => (
+          <div key={i} className="flex items-center gap-2">
+            {link.platform.toLowerCase() === 'github' ? (
+              <GithubIcon size={16} />
+            ) : link.platform.toLowerCase() === 'linkedin' ? (
+              <LinkedinIcon size={16} />
+            ) : (
+              <LinkIcon size={16} />
+            )}
+            <a
+              href={link.url}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="hover:text-blue-600 hover:underline truncate max-w-[240px]"
+            >
+              {link.url.replace(/^https?:\/\//, '')}
+            </a>
+          </div>
+        ))}
       </div>
     </div>
   );
