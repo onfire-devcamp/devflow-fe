@@ -15,6 +15,7 @@ import {
   validateUsername,
   validateConfirmPassword,
 } from '../utils/validation';
+import { TermsModal } from '../../../components/ui/TermsModal';
 
 const ERROR_DISMISS_MS = 5000;
 
@@ -47,6 +48,7 @@ export function RegisterForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.login);
 
@@ -368,13 +370,27 @@ export function RegisterForm() {
               className="text-[13px] text-fg-muted leading-relaxed cursor-pointer"
             >
               I agree to the{' '}
-              <a href="#" className="text-primary hover:underline">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsTermsOpen(true);
+                }}
+                className="text-primary hover:underline cursor-pointer"
+              >
                 Terms of Service
-              </a>{' '}
+              </button>{' '}
               and{' '}
-              <a href="#" className="text-primary hover:underline">
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsTermsOpen(true);
+                }}
+                className="text-primary hover:underline cursor-pointer"
+              >
                 Privacy Policy
-              </a>
+              </button>
               .
             </label>
           </div>
@@ -409,6 +425,8 @@ export function RegisterForm() {
           Sign in
         </Link>
       </p>
+
+      <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
     </div>
   );
 }

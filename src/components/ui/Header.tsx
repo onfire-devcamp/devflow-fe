@@ -4,15 +4,22 @@ import { Compass, User } from 'lucide-react';
 import { GuestBadge } from './GuestBadge';
 import { UserMenu } from './UserMenu';
 import { useAuthStore } from '../../features/auth/stores/authStore';
+import { logoutUser } from '../../features/auth/api/authApi';
 
 export function Header() {
   const navigate = useNavigate();
   const currentUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error('Failed to logout from server:', error);
+    } finally {
+      logout();
+      navigate('/login');
+    }
   };
 
   return (

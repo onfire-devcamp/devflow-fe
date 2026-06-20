@@ -10,6 +10,7 @@ import { useGoogleAuth } from '../hooks/useGoogleAuth';
 import { login } from '../api/authApi';
 import { useAuthStore } from '../stores/authStore';
 import { validateEmail, validatePassword } from '../utils/validation';
+import { TermsModal } from '../../../components/ui/TermsModal';
 
 const ERROR_DISMISS_MS = 3000;
 
@@ -21,6 +22,7 @@ type LoginFormData = {
 export function LoginForm() {
   const [showPassword, setShowPassword] = useState(false);
   const [formError, setFormError] = useState<string | null>(null);
+  const [isTermsOpen, setIsTermsOpen] = useState(false);
   const navigate = useNavigate();
   const setAuth = useAuthStore((state) => state.login);
 
@@ -197,9 +199,16 @@ export function LoginForm() {
 
       <p className="text-center text-[12px] text-slate-500 mt-5 leading-relaxed">
         By continuing you agree to our{' '}
-        <a href="#" className="underline hover:text-fg">
+        <button
+          type="button"
+          onClick={(e) => {
+            e.preventDefault();
+            setIsTermsOpen(true);
+          }}
+          className="underline hover:text-fg cursor-pointer"
+        >
           Terms and Privacy Policy
-        </a>
+        </button>
         .
       </p>
 
@@ -212,6 +221,8 @@ export function LoginForm() {
           Create an account
         </Link>
       </p>
+
+      <TermsModal isOpen={isTermsOpen} onClose={() => setIsTermsOpen(false)} />
     </div>
   );
 }

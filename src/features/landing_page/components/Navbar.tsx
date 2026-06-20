@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { PATHS } from '../../../config/paths';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../auth/stores/authStore';
+import { logoutUser } from '../../auth/api/authApi';
 import { UserMenu } from '../../../components/ui/UserMenu';
 
 const NAV_LINKS = [
@@ -18,9 +19,15 @@ export default function Navbar() {
   const currentUser = useAuthStore((state) => state.user);
   const logout = useAuthStore((state) => state.logout);
 
-  const handleLogout = () => {
-    logout();
-    navigate(PATHS.LOGIN);
+  const handleLogout = async () => {
+    try {
+      await logoutUser();
+    } catch (error) {
+      console.error('Failed to logout from server:', error);
+    } finally {
+      logout();
+      navigate(PATHS.LOGIN);
+    }
   };
 
   const scrollTo = (id: string) => {

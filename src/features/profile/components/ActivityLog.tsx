@@ -116,7 +116,7 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
         <div className="relative pl-2">
           {/* Timeline connecting line */}
           <div
-            className="absolute left-[11.5px] top-3 bottom-3 w-[2px] bg-slate-200"
+            className="absolute left-[15px] top-3 bottom-3 w-[2px] bg-slate-200"
             aria-hidden="true"
           />
 
@@ -125,7 +125,7 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
               <li key={item.id} className="relative pl-8">
                 {/* Timeline dot */}
                 <span
-                  className="absolute left-1 top-1.5 h-4 w-4 rounded-full border-[3px] border-white bg-[var(--color-success)] flex items-center justify-center shadow-sm"
+                  className="absolute left-0 top-1.5 h-4 w-4 rounded-full border-[3px] border-white bg-[var(--color-success)] flex items-center justify-center shadow-sm"
                   aria-hidden="true"
                 />
                 <p className="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">
