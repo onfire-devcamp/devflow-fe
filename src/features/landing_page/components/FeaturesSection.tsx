@@ -1,4 +1,5 @@
 import { Code2, Braces, Hourglass } from 'lucide-react';
+import { useInView } from 'react-intersection-observer';
 
 const features = [
   {
@@ -28,9 +29,24 @@ const features = [
 ];
 
 export default function Features() {
+  const { ref: headerRef, inView: headerInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
+  const { ref: cardsRef, inView: cardsInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
   return (
     <section id="features" className="max-w-7xl mx-auto px-6 py-24">
-      <div className="text-center">
+      <div
+        ref={headerRef}
+        className={`text-center transition-all duration-1000 transform ${
+          headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+      >
         <span className="inline-block px-4 py-1.5 rounded-full bg-pink-50 text-primary text-xs font-semibold tracking-wider uppercase">
           How it works
         </span>
@@ -46,13 +62,23 @@ export default function Features() {
         </p>
       </div>
 
-      <div className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {features.map((feature) => {
+      <div
+        ref={cardsRef}
+        className="mt-16 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {features.map((feature, index) => {
           const Icon = feature.icon;
           return (
             <div
               key={feature.id}
-              className="border border-slate-200 rounded-3xl p-8 hover:shadow-lg hover:border-slate-300 transition-all duration-300"
+              style={{
+                transitionDelay: `${index * 150}ms`,
+              }}
+              className={`border border-slate-200 rounded-3xl p-8 hover:shadow-lg hover:border-slate-300 transition-all duration-700 transform ${
+                cardsInView
+                  ? 'opacity-100 translate-y-0'
+                  : 'opacity-0 translate-y-8'
+              }`}
             >
               <div className="flex justify-between items-start">
                 <div

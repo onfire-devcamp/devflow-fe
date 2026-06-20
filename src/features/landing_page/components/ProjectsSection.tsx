@@ -1,4 +1,5 @@
 import { Users } from 'lucide-react';
+import { useInView } from 'react-intersection-observer';
 
 const projects = [
   {
@@ -34,9 +35,24 @@ const projects = [
 ];
 
 export default function ProjectsSection() {
+  const { ref: headerRef, inView: headerInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.2,
+  });
+
+  const { ref: cardsRef, inView: cardsInView } = useInView({
+    triggerOnce: true,
+    threshold: 0.1,
+  });
+
   return (
     <section id="projects" className="max-w-7xl mx-auto px-6 py-24">
-      <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12">
+      <div
+        ref={headerRef}
+        className={`flex flex-col sm:flex-row sm:items-end justify-between gap-4 mb-12 transition-all duration-1000 transform ${
+          headerInView ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+        }`}
+      >
         <div>
           <span className="inline-block px-4 py-1.5 rounded-full bg-pink-50 text-primary text-xs font-semibold tracking-wider uppercase">
             Project Library
@@ -53,11 +69,21 @@ export default function ProjectsSection() {
         </a>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {projects.map((project) => (
+      <div
+        ref={cardsRef}
+        className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+      >
+        {projects.map((project, index) => (
           <div
             key={project.title}
-            className="border border-slate-200 rounded-2xl p-7 hover:shadow-lg hover:border-slate-300 transition-all duration-300 flex flex-col"
+            style={{
+              transitionDelay: `${index * 150}ms`,
+            }}
+            className={`border border-slate-200 rounded-2xl p-7 hover:shadow-lg hover:border-slate-300 transition-all duration-700 transform flex flex-col ${
+              cardsInView
+                ? 'opacity-100 translate-y-0'
+                : 'opacity-0 translate-y-8'
+            }`}
           >
             <div className="flex items-center justify-between">
               <span
