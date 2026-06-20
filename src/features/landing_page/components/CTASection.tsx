@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 export default function CTA() {
   const navigate = useNavigate();
   return (
-    <section className="max-w-6xl mx-auto px-6 py-24">
+    <section id="cta" className="max-w-6xl mx-auto px-6 py-24">
       <div className="rounded-[32px] bg-gradient-to-r from-primary via-pink-400 to-purple-500 p-12 lg:p-20 text-center text-white">
         <Zap className="mx-auto mb-8" size={32} />
 
