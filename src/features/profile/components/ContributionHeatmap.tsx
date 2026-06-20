@@ -1,23 +1,22 @@
-import React, { useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Flame, CheckCircle } from 'lucide-react';
 import { useAuthStore } from '../../auth/stores/authStore';
 import { fetchUserActivities } from '../api/activityApi';
 import { axiosClient } from '../../../lib/axiosClient';
 
-// Helper to get a matrix of dates for the last 52 weeks
 const generateDatesMatrix = () => {
   const data = [];
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const currentYear = today.getFullYear();
 
-  // Find the most recent Saturday (end of the week)
-  const endOfWeek = new Date(today);
-  endOfWeek.setDate(today.getDate() + (6 - today.getDay()));
+  const firstDayOfYear = new Date(currentYear, 0, 1);
+  const startDate = new Date(firstDayOfYear);
+  startDate.setDate(firstDayOfYear.getDate() - firstDayOfYear.getDay());
 
-  const currentDate = new Date(endOfWeek);
-  currentDate.setDate(endOfWeek.getDate() - (52 * 7 - 1)); // 52 weeks ago
+  const currentDate = new Date(startDate);
 
-  for (let col = 0; col < 52; col++) {
+  while (currentDate.getFullYear() <= currentYear) {
     const colData = [];
     for (let row = 0; row < 7; row++) {
       colData.push(new Date(currentDate));
@@ -28,18 +27,17 @@ const generateDatesMatrix = () => {
   return data;
 };
 
-// Generate mock data for dates before today
 const generateMockHeatmapData = (datesMatrix: Date[][]) => {
   const today = new Date();
   today.setHours(0, 0, 0, 0);
+  const currentYear = today.getFullYear();
 
   return datesMatrix.map((col) =>
     col.map((date) => {
-      if (date < today) {
-        // Randomly assign contribution intensity (0 to 4) for past dates
+      if (date < today && date.getFullYear() === currentYear) {
         return Math.random() > 0.6 ? Math.floor(Math.random() * 4) + 1 : 0;
       }
-      return 0; // Today onwards is 0 by default
+      return 0;
     }),
   );
 };
@@ -61,22 +59,19 @@ export default function ContributionHeatmap() {
       const mockData = generateMockHeatmapData(datesMatrix);
 
       try {
-        // Fetch streak
-        const streakRes = await axiosClient.get('/user/streak');
+        const streakRes = await axiosClient.get<
+          unknown,
+          { data: { currentStreak: number } }
+        >('/user/streak');
         if (isActive) {
-          // completedDays represents the current streak length logic for now or we could just use what backend provides
-          // Assuming backend returns a completedDays or total streak in message.
-          // Wait, backend getUserStreakService returns { completedDays, ... }. We will use completedDays for now.
-          setStreak(streakRes.completedDays || 0);
+          setStreak(streakRes.data?.currentStreak || 0);
         }
 
-        // Fetch activities
         const activities = await fetchUserActivities(user.id);
 
         if (isActive) {
           setTotalTasks(activities.length);
 
-          // Map real activities
           const activityCounts: Record<string, number> = {};
           activities.forEach((activity) => {
             const date = new Date(activity.createdAt);
@@ -85,15 +80,12 @@ export default function ContributionHeatmap() {
             activityCounts[dateStr] = (activityCounts[dateStr] || 0) + 1;
           });
 
-          // Merge real activities into heatmap
           const mergedData = datesMatrix.map((col, colIndex) =>
             col.map((date, rowIndex) => {
               const dateStr = date.toISOString().split('T')[0];
               if (activityCounts[dateStr]) {
-                // Determine intensity based on counts (max 4)
                 return Math.min(activityCounts[dateStr], 4);
               }
-              // Fallback to mock data if no real activity
               return mockData[colIndex][rowIndex];
             }),
           );
@@ -176,7 +168,7 @@ export default function ContributionHeatmap() {
             )}
           </div>
           {heatmapData.length > 0 && (
-            <div className="flex justify-between text-xs text-gray-400 mt-2 px-1">
+            <div className="flex justify-between text-xs text-gray-400 mt-2 px-2">
               <span>Jan</span>
               <span>Feb</span>
               <span>Mar</span>
