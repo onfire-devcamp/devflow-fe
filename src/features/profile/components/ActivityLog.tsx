@@ -1,11 +1,13 @@
 import { useEffect, useState } from 'react';
 import { fetchUserActivities } from '../api/activityApi';
 import type { ActivityResponse } from '../types/activityTypes';
+import { useNavigate } from 'react-router-dom';
 
 type ActivityItem = {
   id: string;
   category: string;
   title: string;
+  slug?: string;
 };
 
 type ActivityLogProps = {
@@ -14,16 +16,24 @@ type ActivityLogProps = {
 };
 
 const mapActivitiesToItems = (activities: ActivityResponse[]): ActivityItem[] =>
-  activities.map((activity, index) => ({
-    id: activity._id ?? `${activity.projectId}-${activity.createdAt}-${index}`,
-    category: activity.moduleName,
-    title: activity.activityTitle,
-  }));
+  activities.map((activity, index) => {
+    const project =
+      typeof activity.projectId === 'object' ? activity.projectId : null;
+    return {
+      id:
+        activity._id ??
+        `${typeof activity.projectId === 'string' ? activity.projectId : project?._id}-${activity.createdAt}-${index}`,
+      category: project?.title || activity.moduleName,
+      title: activity.activityTitle,
+      slug: project?.slug,
+    };
+  });
 
 export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
   const [activities, setActivities] = useState<ActivityItem[]>([]);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     let isActive = true;
@@ -79,9 +89,16 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
         </div>
         <button
           type="button"
-          className="text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 border border-[var(--color-primary-mid)] text-[var(--color-primary)] rounded-full hover:bg-[var(--color-primary-soft)] transition-colors whitespace-nowrap"
+          onClick={() => {
+            const lastActive = activities.find((a) => a.slug);
+            if (lastActive?.slug) {
+              navigate(`/workspace/${lastActive.slug}`);
+            }
+          }}
+          disabled={!activities.some((a) => a.slug)}
+          className="text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 border border-[var(--color-primary-mid)] text-[var(--color-primary)] rounded-full hover:bg-[var(--color-primary-soft)] transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
         >
-          Open project
+          Open current project
         </button>
       </div>
 
@@ -96,32 +113,31 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
           No recent activity yet.
         </div>
       ) : (
-        <ul className="space-y-6">
-          {activities.map((item, index) => (
-            <li key={item.id} className="relative pl-7">
-              <span
-                className="absolute left-[6px] top-1.5 h-full w-px bg-[var(--color-primary-mid)]"
-                aria-hidden="true"
-              />
-              {index === activities.length - 1 ? (
+        <div className="relative pl-2">
+          {/* Timeline connecting line */}
+          <div
+            className="absolute left-[11.5px] top-3 bottom-3 w-[2px] bg-slate-200"
+            aria-hidden="true"
+          />
+
+          <ul className="space-y-6">
+            {activities.map((item) => (
+              <li key={item.id} className="relative pl-8">
+                {/* Timeline dot */}
                 <span
-                  className="absolute left-[6px] top-4 h-[calc(100%-16px)] w-px bg-white"
+                  className="absolute left-1 top-1.5 h-4 w-4 rounded-full border-[3px] border-white bg-[var(--color-success)] flex items-center justify-center shadow-sm"
                   aria-hidden="true"
                 />
-              ) : null}
-              <span
-                className="absolute left-0 top-1.5 h-4 w-4 rounded-full bg-[var(--color-success)] flex items-center justify-center"
-                aria-hidden="true"
-              >
-                <span className="h-2 w-2 rounded-full bg-white" />
-              </span>
-              <p className="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">
-                {item.category}
-              </p>
-              <p className="text-sm font-medium text-gray-700">{item.title}</p>
-            </li>
-          ))}
-        </ul>
+                <p className="text-[11px] uppercase tracking-widest text-gray-400 font-semibold">
+                  {item.category}
+                </p>
+                <p className="text-sm font-medium text-gray-700">
+                  {item.title}
+                </p>
+              </li>
+            ))}
+          </ul>
+        </div>
       )}
     </section>
   );
