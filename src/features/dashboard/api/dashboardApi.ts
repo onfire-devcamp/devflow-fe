@@ -30,13 +30,25 @@ export const fetchUserProgress = async (): Promise<ContinueLearning> => {
 export const fetchAllProjects = async (): Promise<ApiProject[]> => {
   try {
     const response = await axiosClient.get<
-      ApiResponse<ApiProject[]>,
-      ApiResponse<ApiProject[]>
+      ApiResponse<ApiProject[]> | ApiProject[],
+      ApiResponse<ApiProject[]> | ApiProject[]
     >('/project/');
-    if (response.success) {
-      return response.data;
+
+    if (
+      response &&
+      !Array.isArray(response) &&
+      'success' in response &&
+      response.success &&
+      'data' in response
+    ) {
+      return (response as ApiResponse<ApiProject[]>).data;
+    } else if (Array.isArray(response)) {
+      return response as ApiProject[];
     }
-    throw new Error(response.message || 'Failed to fetch projects');
+
+    throw new Error(
+      (response as { message?: string })?.message || 'Failed to fetch projects',
+    );
   } catch (error) {
     console.error('Error fetching projects:', error);
     throw error;

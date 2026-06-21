@@ -40,13 +40,22 @@ export const getProjectTechStackGrouped = async (
 ): Promise<Record<string, ProjectTechStackItem[]>> => {
   try {
     const response = await axiosClient.get<
-      ApiResponse<Record<string, ProjectTechStackItem[]>>,
-      ApiResponse<Record<string, ProjectTechStackItem[]>>
+      | ApiResponse<Record<string, ProjectTechStackItem[]>>
+      | Record<string, ProjectTechStackItem[]>,
+      | ApiResponse<Record<string, ProjectTechStackItem[]>>
+      | Record<string, ProjectTechStackItem[]>
     >(`/project/${projectId}/tech-stack`);
-    if (response.success) {
-      return response.data;
+
+    if ('success' in response && response.success && 'data' in response) {
+      return (response as ApiResponse<Record<string, ProjectTechStackItem[]>>)
+        .data;
+    } else if (response && Object.keys(response).length > 0) {
+      return response as Record<string, ProjectTechStackItem[]>;
     }
-    throw new Error(response.message || 'Failed to fetch tech stack');
+    throw new Error(
+      (response as { message?: string })?.message ||
+        'Failed to fetch tech stack',
+    );
   } catch (error) {
     console.error('Error fetching tech stack:', error);
     throw error;
@@ -65,13 +74,18 @@ export const getProjectCodebase = async (
 ): Promise<FileTemplateResponse[]> => {
   try {
     const response = await axiosClient.get<
-      ApiResponse<FileTemplateResponse[]>,
-      ApiResponse<FileTemplateResponse[]>
+      ApiResponse<FileTemplateResponse[]> | FileTemplateResponse[],
+      ApiResponse<FileTemplateResponse[]> | FileTemplateResponse[]
     >(`/project/${slug}/codebase`);
-    if (response.success) {
-      return response.data;
+
+    if ('success' in response && response.success && 'data' in response) {
+      return (response as ApiResponse<FileTemplateResponse[]>).data;
+    } else if (Array.isArray(response)) {
+      return response as FileTemplateResponse[];
     }
-    throw new Error(response.message || 'Failed to fetch codebase');
+    throw new Error(
+      (response as { message?: string })?.message || 'Failed to fetch codebase',
+    );
   } catch (error) {
     console.error('Error fetching codebase:', error);
     throw error;
@@ -82,10 +96,14 @@ export const getProjectBySlug = async (
   slug: string,
 ): Promise<ProjectDetail> => {
   const res = await axiosClient.get<
-    ProjectDetailsResponse,
-    ProjectDetailsResponse
+    ProjectDetailsResponse | ProjectDetailsResponse['data'],
+    ProjectDetailsResponse | ProjectDetailsResponse['data']
   >(`/project/${slug}`);
-  const data = res.data;
+
+  const data =
+    'success' in res && res.success && 'data' in res
+      ? (res as ProjectDetailsResponse).data
+      : (res as ProjectDetailsResponse['data']);
 
   return {
     id: data._id,
