@@ -85,6 +85,9 @@ export function ExplainToPassModal({
           >
             <p className="text-sm font-bold text-slate-700 mb-3">
               {explainToPassMcq?.question}
+              <span className="text-red-500 ml-1" title="Required">
+                *
+              </span>
             </p>
             <div className="space-y-2">
               {explainToPassMcqOptions.map((option, index) => {
@@ -128,6 +131,9 @@ export function ExplainToPassModal({
         <div className="mb-4">
           <label className="block text-sm font-bold text-slate-700 mb-2">
             Explain your answer in one sentence:
+            <span className="text-red-500 ml-1" title="Required">
+              *
+            </span>
           </label>
           <textarea
             value={explanation}

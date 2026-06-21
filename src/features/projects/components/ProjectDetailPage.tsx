@@ -1,4 +1,4 @@
-import { Link, useParams } from 'react-router-dom';
+import { Link, useParams, Navigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { Header } from '../../../components/ui/Header';
 import { PageContainer } from '../../../components/ui/PageContainer';
@@ -78,6 +78,13 @@ export default function ProjectDetailPage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const { project, isLoading, error } = useProjectDetail(projectSlug);
 
+  if (error) {
+    const errorMsg = error.toLowerCase();
+    if (errorMsg.includes('404') || errorMsg.includes('not found')) {
+      return <Navigate to="/404" replace />;
+    }
+  }
+
   return (
     <PageContainer>
       <Header />
@@ -85,7 +92,7 @@ export default function ProjectDetailPage() {
       <main className="flex-1">
         <div className="max-w-screen-xl mx-auto px-4 sm:px-6 lg:px-10 py-8 pb-28">
           <Link
-            to="/"
+            to="/dashboard"
             className="inline-flex items-center gap-1.5 text-sm font-medium text-fg-muted hover:text-primary transition-colors mb-8"
           >
             <ArrowLeft
@@ -123,6 +130,7 @@ export default function ProjectDetailPage() {
       {!isLoading && project && (
         <Link
           to={`/workspace/${project.slug}`}
+          state={{ initializing: true }}
           aria-label={`Start building ${project.title}`}
           className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40 inline-flex items-center gap-2 px-6 py-3 bg-primary hover:bg-primary/90 text-white rounded-xl font-medium text-sm shadow-lg hover:shadow-xl hover:-translate-y-0.5 transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2"
         >

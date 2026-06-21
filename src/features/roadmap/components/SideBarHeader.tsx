@@ -3,9 +3,13 @@ import { SidebarToggleIcon } from './RoadmapIcons';
 
 interface SidebarHeaderProps {
   projectName: string;
+  onToggleSidebar: () => void;
 }
 
-export function SidebarHeader({ projectName }: SidebarHeaderProps) {
+export function SidebarHeader({
+  projectName,
+  onToggleSidebar,
+}: SidebarHeaderProps) {
   return (
     <div className="p-4 pt-5 pb-3 flex items-center justify-between border-b border-slate-50">
       <div>
@@ -17,7 +21,7 @@ export function SidebarHeader({ projectName }: SidebarHeaderProps) {
         </h2>
       </div>
 
-      <RoadmapIconButton aria-label="Toggle Sidebar">
+      <RoadmapIconButton aria-label="Toggle Sidebar" onClick={onToggleSidebar}>
         <SidebarToggleIcon className="w-4 h-4" />
       </RoadmapIconButton>
     </div>

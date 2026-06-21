@@ -8,8 +8,13 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
   const navigate = useNavigate();
 
   const handleResume = () => {
-    navigate(`/workspace/${data.slug}`);
+    if (data?.slug) {
+      navigate(`/workspace/${data.slug}`);
+    }
   };
+
+  const isNoProject = !data || !data.slug || data.title === 'No project';
+
   return (
     <div className="h-full bg-primary-soft border border-primary-mid/40 rounded-2xl p-6 flex flex-col justify-between">
       <div className="flex items-center gap-4">
@@ -19,35 +24,57 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
         </div>
 
         <div className="flex-1 min-w-0">
-          <p className="text-xs font-bold text-primary uppercase tracking-widest mb-0.5">
-            Continue learning
-          </p>
-          <h3 className="text-base font-bold text-fg leading-snug mb-0.5">
-            {data.title}
+          {!isNoProject && (
+            <p className="text-xs font-bold text-primary uppercase tracking-widest mb-0.5">
+              Continue learning
+            </p>
+          )}
+          <h3
+            className={`font-bold text-fg leading-snug mb-0.5 ${
+              isNoProject ? 'text-2xl mt-1' : 'text-base'
+            }`}
+          >
+            {isNoProject ? 'Welcome to DevFlow!' : data?.title}
           </h3>
-          <p className="text-sm text-fg-muted leading-snug">
-            You're on{' '}
-            <span className="font-semibold text-fg">{data.moduleName}</span>.{' '}
-            {data.moduleHint}
+          <p
+            className={`text-fg-muted leading-snug ${
+              isNoProject ? 'text-base mt-1' : 'text-sm'
+            }`}
+          >
+            {isNoProject ? (
+              'Browse the ever-growing list of projects to choose the best one to start with.'
+            ) : (
+              <>
+                You're on{' '}
+                <span className="font-semibold text-fg">
+                  {data?.moduleName}
+                </span>
+                . {data?.moduleHint}
+              </>
+            )}
           </p>
         </div>
 
-        <div className="flex-shrink-0">
-          <Button
-            onClick={handleResume}
-            variant="primary"
-            className="!w-auto !rounded-full !px-5 !py-2.5 gap-1.5 text-sm font-semibold active:scale-95"
-          >
-            Resume <ChevronRight className="w-4 h-4" />
-          </Button>
+        {!isNoProject && (
+          <div className="flex-shrink-0">
+            <Button
+              onClick={handleResume}
+              variant="primary"
+              className="!w-auto !rounded-full !px-5 !py-2.5 gap-1.5 text-sm font-semibold active:scale-95"
+            >
+              Resume <ChevronRight className="w-4 h-4" />
+            </Button>
+          </div>
+        )}
+      </div>
+      {!isNoProject && (
+        <div className="mt-5 h-2 bg-white/60 rounded-full overflow-hidden">
+          <div
+            className="h-full bg-primary rounded-full transition-all duration-300"
+            style={{ width: `${data?.progressPercent}%` }}
+          />
         </div>
-      </div>
-      <div className="mt-5 h-2 bg-white/60 rounded-full overflow-hidden">
-        <div
-          className="h-full bg-primary rounded-full transition-all duration-300"
-          style={{ width: `${data.progressPercent}%` }}
-        />
-      </div>
+      )}
     </div>
   );
 }

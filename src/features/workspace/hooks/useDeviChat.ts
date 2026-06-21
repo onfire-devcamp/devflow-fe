@@ -40,7 +40,7 @@ export function useDeviChat({
   const queryClient = useQueryClient();
   const trimmedProjectId = projectId?.trim() ?? '';
   const isChatEnabled = Boolean(trimmedProjectId && activeTaskId);
-
+  const queryKey = chatHistoryQueryKey(trimmedProjectId, activeTaskId);
   const {
     data,
     fetchNextPage,
@@ -48,7 +48,7 @@ export function useDeviChat({
     isFetchingNextPage,
     isLoading: isLoadingHistory,
   } = useInfiniteQuery({
-    queryKey: chatHistoryQueryKey(trimmedProjectId, activeTaskId),
+    queryKey,
     queryFn: ({ pageParam }) =>
       workspaceApi.fetchChatHistory(
         trimmedProjectId,
@@ -71,9 +71,59 @@ export function useDeviChat({
   const invalidateChatHistory = useCallback(async () => {
     if (!isChatEnabled) return;
     await queryClient.invalidateQueries({
-      queryKey: chatHistoryQueryKey(trimmedProjectId, activeTaskId),
+      queryKey,
     });
-  }, [queryClient, trimmedProjectId, activeTaskId, isChatEnabled]);
+  }, [queryClient, queryKey, isChatEnabled]);
+
+  const addOptimisticMessage = useCallback(
+    (message: ChatMessage) => {
+      const previousData =
+        queryClient.getQueryData<InfiniteData<AIChatHistoryResponse>>(queryKey);
+
+      queryClient.setQueryData<InfiniteData<AIChatHistoryResponse>>(
+        queryKey,
+        (old) => {
+          if (!old?.pages.length) {
+            return {
+              pages: [
+                {
+                  success: true,
+                  data: { messages: [message], nextCursor: null },
+                },
+              ],
+              pageParams: [undefined],
+            };
+          }
+          return {
+            ...old,
+            pages: old.pages.map((page, index) =>
+              index === 0
+                ? {
+                    ...page,
+                    data: {
+                      ...page.data,
+                      messages: [...page.data.messages, message],
+                    },
+                  }
+                : page,
+            ),
+          };
+        },
+      );
+
+      return previousData;
+    },
+    [queryClient, queryKey],
+  );
+
+  const rollbackMessages = useCallback(
+    (previousData: InfiniteData<AIChatHistoryResponse> | undefined) => {
+      if (previousData) {
+        queryClient.setQueryData(queryKey, previousData);
+      }
+    },
+    [queryClient, queryKey],
+  );
 
   const persistChatMessage = useCallback(
     (message: ChatMessage) => {
@@ -102,59 +152,16 @@ export function useDeviChat({
         message,
       }),
     onMutate: async (message: string) => {
-      const queryKey = chatHistoryQueryKey(trimmedProjectId, activeTaskId);
       await queryClient.cancelQueries({ queryKey });
-
-      const previousData =
-        queryClient.getQueryData<InfiniteData<AIChatHistoryResponse>>(queryKey);
-
-      const optimisticMessage: ChatMessage = {
+      const previousData = addOptimisticMessage({
         id: `optimistic-user-${Date.now()}`,
         sender: 'user',
         text: message,
-      };
-
-      queryClient.setQueryData<InfiniteData<AIChatHistoryResponse>>(
-        queryKey,
-        (old) => {
-          if (!old?.pages.length) {
-            return {
-              pages: [
-                {
-                  success: true,
-                  data: { messages: [optimisticMessage], nextCursor: null },
-                },
-              ],
-              pageParams: [undefined],
-            };
-          }
-          return {
-            ...old,
-            pages: old.pages.map((page, index) =>
-              index === 0
-                ? {
-                    ...page,
-                    data: {
-                      ...page.data,
-                      messages: [...page.data.messages, optimisticMessage],
-                    },
-                  }
-                : page,
-            ),
-          };
-        },
-      );
-
+      });
       return { previousData };
     },
-    onError: (_error, _message, context) => {
-      if (context?.previousData) {
-        queryClient.setQueryData(
-          chatHistoryQueryKey(trimmedProjectId, activeTaskId),
-          context.previousData,
-        );
-      }
-    },
+    onError: (_error, _message, context) =>
+      rollbackMessages(context?.previousData),
     onSettled: () => {
       void invalidateChatHistory();
     },
@@ -166,6 +173,15 @@ export function useDeviChat({
         projectId: trimmedProjectId,
         taskId: activeTaskId,
       }),
+    onMutate: async () => {
+      await queryClient.cancelQueries({ queryKey });
+      const previousData = addOptimisticMessage({
+        id: `optimistic-submit-${Date.now()}`,
+        sender: 'user',
+        text: 'Submit my code for review',
+      });
+      return { previousData };
+    },
     onSuccess: (response) => {
       if (!response?.success) {
         persistChatMessage({
@@ -177,8 +193,9 @@ export function useDeviChat({
         void invalidateChatHistory();
       }
     },
-    onError: (err) => {
+    onError: (err, _vars, context) => {
       console.error('Code evaluation error:', err);
+      rollbackMessages(context?.previousData);
       persistChatMessage({
         id: `ai-catch-${Date.now()}`,
         sender: 'ai',
@@ -263,6 +280,15 @@ export function useDeviChat({
           fileId: activeFileId!,
           ...params,
         }),
+      onMutate: async (params) => {
+        await queryClient.cancelQueries({ queryKey });
+        const previousData = addOptimisticMessage({
+          id: `optimistic-quickaction-${Date.now()}`,
+          sender: 'user',
+          text: params.userQuestion,
+        });
+        return { previousData };
+      },
       onSuccess: (response) => {
         if (response?.success && response.data) {
           void invalidateChatHistory();
@@ -270,8 +296,9 @@ export function useDeviChat({
           throw new Error('Invalid response');
         }
       },
-      onError: (err) => {
+      onError: (err, _params, context) => {
         console.error('AI quick action error:', err);
+        rollbackMessages(context?.previousData);
         persistChatMessage({
           id: `ai-hint-err-${Date.now()}`,
           sender: 'ai',

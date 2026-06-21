@@ -41,7 +41,6 @@ export function useDashboardData(): UseDashboardDataReturn {
         setError(null);
       } catch (err) {
         console.error('Failed to load progress:', err);
-        setError('Failed to load your progress. Please try again.');
         setContinueData(null);
       } finally {
         setIsLoadingProgress(false);

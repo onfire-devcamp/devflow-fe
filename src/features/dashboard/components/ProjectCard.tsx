@@ -15,7 +15,8 @@ export function ProjectCard({ project }: ProjectCardProps) {
       {/* Header: category · difficulty + duration */}
       <div className="flex items-start justify-between gap-2 mb-3">
         <span className="text-xs font-semibold uppercase tracking-wide text-primary">
-          {project.category ?? 'FULLSTACK'} · {project.level ?? 'INTERMEDIATE'}
+          {(project.category || 'Fullstack').toUpperCase()} ·{' '}
+          {(project.level || 'Intermediate').toUpperCase()}
         </span>
       </div>
 

@@ -1,5 +1,5 @@
 import { lazy, Suspense } from 'react';
-import { Routes, Route, Navigate } from 'react-router-dom';
+import { Routes, Route } from 'react-router-dom';
 import { PATHS } from '../config/paths';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
@@ -7,7 +7,7 @@ import { LoginPage } from '../features/auth/components/LoginPage';
 import { PageLoader } from '../components/ui/PageLoader';
 import { NotFoundPage } from '../components/ui/NotFoundPage';
 import RoadMapLayout from '../features/roadmap/index';
-
+import LandingPage from '../features/landing_page/index';
 const RegisterPage = lazy(
   () => import('../features/auth/components/RegisterPage'),
 );
@@ -30,7 +30,7 @@ export function AppRoutes() {
           <Route path={PATHS.LOGIN} element={<LoginPage />} />
           <Route path={PATHS.REGISTER} element={<RegisterPage />} />
         </Route>
-        <Route path="/" element={<Navigate to="/login" replace />} />
+        <Route path="/" element={<LandingPage />} />
         <Route path="/404" element={<NotFoundPage />} />
 
         {/* PRIVATE ROUTES */}
