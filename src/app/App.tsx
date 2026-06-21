@@ -36,7 +36,7 @@ function AppContent() {
       window.removeEventListener('offline', handleOffline);
       window.removeEventListener('online', handleOnline);
     };
-  }, [clearGlobalError, pushToast]);
+  }, [clearGlobalError, pushToast, clearPersistentToasts]);
 
   if (globalError) return <ErrorPage />;
 

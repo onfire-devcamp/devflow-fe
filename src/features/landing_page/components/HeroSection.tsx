@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { ArrowRight, Play } from 'lucide-react';
 import { PATHS } from '../../../config/paths';
@@ -102,25 +102,31 @@ const TOKEN_COLORS: Record<string, string> = {
 function AnimatedCodeEditor() {
   const [visibleLines, setVisibleLines] = useState(0);
 
-  const animate = useCallback(() => {
-    setVisibleLines(0);
-    let line = 0;
-    const interval = setInterval(() => {
-      line++;
-      if (line > CODE_LINES.length) {
-        clearInterval(interval);
-        setTimeout(() => animate(), 2500);
-        return;
-      }
-      setVisibleLines(line);
-    }, 180);
-    return () => clearInterval(interval);
-  }, []);
-
   useEffect(() => {
-    const cleanup = animate();
-    return cleanup;
-  }, [animate]);
+    let interval: ReturnType<typeof setInterval>;
+    let timeout: ReturnType<typeof setTimeout>;
+
+    const runAnimation = () => {
+      setVisibleLines(0);
+      let line = 0;
+      interval = setInterval(() => {
+        line++;
+        if (line > CODE_LINES.length) {
+          clearInterval(interval);
+          timeout = setTimeout(() => runAnimation(), 2500);
+          return;
+        }
+        setVisibleLines(line);
+      }, 180);
+    };
+
+    runAnimation();
+
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, []);
 
   return (
     <div className="w-full rounded-2xl bg-[#1e1e2e] shadow-2xl overflow-hidden border border-white/5">
