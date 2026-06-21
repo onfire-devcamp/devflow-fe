@@ -6,6 +6,7 @@ export interface AuthUser {
   bio?: string;
   workplace?: string;
   socialLinks?: Array<{ platform: string; url: string }>;
+  totalXp?: number;
 }
 
 export type AuthStatus = 'loading' | 'authenticated' | 'unauthenticated';

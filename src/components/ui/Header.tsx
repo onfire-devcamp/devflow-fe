@@ -23,7 +23,7 @@ export function Header() {
   };
 
   return (
-    <header className="w-full h-16 border-b border-primary-mid/40 flex justify-between items-center bg-card px-4 md:px-6">
+    <header className="w-full h-16 border-b border-primary-mid/40 flex justify-between items-center bg-card px-4 md:px-6 relative z-[100]">
       <div className="flex items-center gap-8">
         <Link
           to="/"
