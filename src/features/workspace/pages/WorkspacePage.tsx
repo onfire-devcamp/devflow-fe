@@ -25,7 +25,7 @@ import { ExplorerTab } from '../components/ExplorerTab';
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
   const [showCompletionModal, setShowCompletionModal] = useState(false);

@@ -75,30 +75,47 @@ export function WorkspaceEditor({
         </p>
       </div>
 
-      {/* Tab bars for CURRENT TASK FILES */}
-      {currentTaskFiles.length > 0 && (
-        <div className="flex items-center gap-2 pt-2 overflow-x-auto no-scrollbar">
-          {currentTaskFiles.map((file) => (
-            <Button
-              variant="ghost"
-              key={file._id}
-              onClick={() => onFileSelect(file._id)}
-              className={`!w-auto !rounded-none flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-t-xl border transition-colors ${
-                activeFileId === file._id
-                  ? 'bg-white border-slate-200 border-b-transparent text-slate-800 shadow-sm z-10 relative top-[1px]'
-                  : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
-              }`}
-            >
-              <Pen
-                className={`w-3 h-3 ${
-                  activeFileId === file._id ? 'text-pink-500' : 'text-slate-400'
+      {/* Tab bars and Hint Banner */}
+      <div className="flex items-end justify-between pt-2">
+        {currentTaskFiles.length > 0 ? (
+          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+            {currentTaskFiles.map((file) => (
+              <Button
+                variant="ghost"
+                key={file._id}
+                onClick={() => onFileSelect(file._id)}
+                className={`!w-auto !rounded-none flex items-center gap-2 px-3 py-1.5 text-xs font-semibold rounded-t-xl border transition-colors ${
+                  activeFileId === file._id
+                    ? 'bg-white border-slate-200 border-b-transparent text-slate-800 shadow-sm z-10 relative top-[1px]'
+                    : 'bg-slate-50 border-transparent text-slate-500 hover:bg-slate-100'
                 }`}
-              />
-              {file.path}
-            </Button>
-          ))}
+              >
+                <Pen
+                  className={`w-3 h-3 ${
+                    activeFileId === file._id
+                      ? 'text-pink-500'
+                      : 'text-slate-400'
+                  }`}
+                />
+                {file.path}
+              </Button>
+            ))}
+          </div>
+        ) : (
+          <div />
+        )}
+
+        <div className="hidden md:flex items-center gap-1.5 text-[11px] text-slate-500 bg-white border border-slate-200 px-3 py-1.5 rounded-lg whitespace-nowrap mb-1 shadow-sm">
+          <span>Highlight code to</span>
+          <span className="text-purple-600 font-semibold bg-purple-50 px-1.5 py-0.5 rounded-md border border-purple-100">
+            Explain
+          </span>
+          <span className="text-slate-300">/</span>
+          <span className="text-amber-500 font-semibold bg-amber-50 px-1.5 py-0.5 rounded-md border border-amber-100">
+            Hint
+          </span>
         </div>
-      )}
+      </div>
 
       <div className="flex flex-col w-full">
         {/* Read-Only Banner */}
