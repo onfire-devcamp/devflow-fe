@@ -25,7 +25,8 @@ import { ExplorerTab } from '../components/ExplorerTab';
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
   const [showScorecardModal, setShowScorecardModal] = useState(false);
@@ -191,12 +192,37 @@ export default function WorkspacePage() {
   }
 
   return (
-    <div className="flex flex-col h-screen bg-bg select-none overflow-hidden text-fg">
+    <div className="flex flex-col h-screen bg-bg select-none overflow-hidden text-fg relative">
+      <div className="fixed inset-0 z-[100] bg-bg flex-col items-center justify-center p-6 text-center flex landscape:hidden sm:hidden portrait:flex">
+        <div className="w-16 h-16 mb-4 animate-bounce flex items-center justify-center rounded-full bg-primary-soft text-primary">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="32"
+            height="32"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+            <line x1="12" y1="18" x2="12.01" y2="18"></line>
+          </svg>
+        </div>
+        <h2 className="text-xl font-bold mb-2">Rotate your device</h2>
+        <p className="text-fg-muted">
+          For the best coding experience, please use your device in landscape
+          mode.
+        </p>
+      </div>
       <Header />
-      <div className="flex flex-1 overflow-hidden w-full">
+      <div className="flex flex-1 overflow-hidden w-full relative">
         <aside
-          className={`hidden lg:flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 ${
-            isSidebarOpen ? 'w-76' : 'w-0 border-r-0'
+          className={`flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 absolute inset-y-0 left-0 z-50 lg:relative lg:z-0 lg:flex ${
+            isSidebarOpen
+              ? 'w-76 translate-x-0'
+              : 'w-76 -translate-x-full lg:w-0 lg:translate-x-0 lg:border-r-0 lg:hidden'
           }`}
         >
           <div className="w-76 overflow-y-auto h-full">
@@ -230,13 +256,38 @@ export default function WorkspacePage() {
           </div>
         </aside>
 
+        {/* Sidebar Toggle for Mobile/Desktop */}
         {!isSidebarOpen && (
           <button
             onClick={handleToggleSidebar}
             aria-label="Open Sidebar"
-            className="hidden lg:flex items-center justify-center w-7 h-12 mt-4 flex-shrink-0 self-start bg-primary-soft border border-primary-mid border-l-0 rounded-r-lg hover:bg-primary-mid/30 transition-colors"
+            className="flex items-center justify-center w-7 h-12 mt-4 flex-shrink-0 absolute left-0 z-40 lg:relative lg:z-0 bg-primary-soft border border-primary-mid border-l-0 rounded-r-lg hover:bg-primary-mid/30 transition-colors"
           >
             <SidebarToggleIcon className="w-4 h-4 rotate-180" />
+          </button>
+        )}
+
+        {/* Chat Toggle for Mobile */}
+        {!isChatOpen && (
+          <button
+            onClick={() => setIsChatOpen(true)}
+            aria-label="Open Chat"
+            className="xl:hidden flex items-center justify-center w-7 h-12 mt-4 flex-shrink-0 absolute right-0 z-40 bg-primary-soft border border-primary-mid border-r-0 rounded-l-lg hover:bg-primary-mid/30 transition-colors"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="16"
+              height="16"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              className="text-slate-600"
+            >
+              <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
+            </svg>
           </button>
         )}
 
@@ -317,6 +368,8 @@ export default function WorkspacePage() {
           onLoadOlderMessages={() => void fetchNextPage()}
           onSendMessage={handleSendTextMessage}
           onOpenExplainToPass={handleOpenExplainToPass}
+          isOpen={isChatOpen}
+          onClose={() => setIsChatOpen(false)}
         />
 
         <ExplainToPassModal

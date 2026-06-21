@@ -17,6 +17,8 @@ interface DeviChatPanelProps {
   onLoadOlderMessages: () => void;
   onSendMessage: (message: string) => void;
   onOpenExplainToPass: () => void;
+  isOpen?: boolean;
+  onClose?: () => void;
 }
 
 export function DeviChatPanel({
@@ -29,6 +31,8 @@ export function DeviChatPanel({
   onLoadOlderMessages,
   onSendMessage,
   onOpenExplainToPass,
+  isOpen = false,
+  onClose,
 }: DeviChatPanelProps) {
   const [inputMessage, setInputMessage] = useState('');
 
@@ -102,7 +106,9 @@ export function DeviChatPanel({
       handleClasses={{
         left: 'hover:bg-primary/40 transition-colors',
       }}
-      className="hidden xl:flex flex-shrink-0 !h-full bg-primary-soft border-l border-primary-mid flex-col overflow-hidden"
+      className={`absolute inset-y-0 right-0 z-[60] bg-primary-soft border-l border-primary-mid flex-col overflow-hidden transition-transform duration-300 xl:relative xl:translate-x-0 ${
+        isOpen ? 'translate-x-0 flex' : 'translate-x-full hidden xl:flex'
+      }`}
     >
       <div className="p-4 border-b border-primary-mid flex items-center justify-between bg-transparent">
         <div>
@@ -111,6 +117,28 @@ export function DeviChatPanel({
             AI mentor • Here to save the day!
           </p>
         </div>
+        {onClose && (
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="xl:hidden !p-2 !text-slate-400 hover:!bg-slate-200/50 !rounded-lg"
+          >
+            <svg
+              xmlns="http://www.w3.org/2000/svg"
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="2"
+              strokeLinecap="round"
+              strokeLinejoin="round"
+            >
+              <line x1="18" y1="6" x2="6" y2="18"></line>
+              <line x1="6" y1="6" x2="18" y2="18"></line>
+            </svg>
+          </Button>
+        )}
       </div>
 
       <div className="flex-1 overflow-y-auto p-4 space-y-4 flex flex-col-reverse bg-transparent">
