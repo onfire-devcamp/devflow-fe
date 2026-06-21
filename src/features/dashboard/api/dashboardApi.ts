@@ -32,7 +32,7 @@ export const fetchAllProjects = async (): Promise<ApiProject[]> => {
     const response = await axiosClient.get<
       ApiResponse<ApiProject[]> | ApiProject[],
       ApiResponse<ApiProject[]> | ApiProject[]
-    >('/project/');
+    >('/project');
 
     if (
       response &&
