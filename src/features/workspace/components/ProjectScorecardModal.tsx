@@ -86,8 +86,8 @@ export const ProjectScorecardModal: React.FC<ProjectScorecardModalProps> = ({
     if (!showScore) return;
     const targetScore = parseFloat(avgScore);
     if (isNaN(targetScore) || targetScore === 0) {
-      setDisplayedScore(0);
-      return;
+      const t = setTimeout(() => setDisplayedScore(0), 0);
+      return () => clearTimeout(t);
     }
     const duration = 1000;
     const steps = 30;

@@ -93,8 +93,8 @@ export default function ContributionHeatmap() {
         }
       } catch (error) {
         console.error('Failed to load heatmap data:', error);
-        if (isActive && heatmapData.length === 0) {
-          setHeatmapData(mockData);
+        if (isActive) {
+          setHeatmapData((prev) => (prev.length === 0 ? mockData : prev));
         }
       }
     };
