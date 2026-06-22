@@ -30,8 +30,8 @@ export function AppRoutes() {
           <Route path={PATHS.LOGIN} element={<LoginPage />} />
           <Route path={PATHS.REGISTER} element={<RegisterPage />} />
         </Route>
-        <Route path="/404" element={<NotFoundPage />} />
         <Route path="/" element={<LandingPage />} />
+        <Route path="/404" element={<NotFoundPage />} />
 
         {/* PRIVATE ROUTES */}
         <Route element={<PrivateRoute />}>

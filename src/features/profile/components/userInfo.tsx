@@ -7,6 +7,13 @@ import { axiosClient } from '../../../lib/axiosClient';
 import { Input } from '../../../components/ui/Input';
 import { Button } from '../../../components/ui/Button';
 
+const WEBSITE_REGEX = /^(https?:\/\/)?([\w-]+\.)+[\w-]+(\/[\w- ./?%&=]*)?$/;
+
+const GITHUB_REGEX = /^(https?:\/\/)?(www\.)?github\.com\/[a-zA-Z0-9-]+(\/?)$/;
+
+const LINKEDIN_REGEX =
+  /^(https?:\/\/)?([\w]+\.)?linkedin\.com\/in\/[a-zA-Z0-9_%à-ỹÀ-Ỹ-]+\/?$/;
+
 const ProfileCard = () => {
   const user = useAuthStore((state) => state.user);
   const login = useAuthStore((state) => state.login);
@@ -15,7 +22,6 @@ const ProfileCard = () => {
   const [isEditMode, setIsEditMode] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  // Form states
   const [displayName, setDisplayName] = useState(user?.username ?? 'Guest');
   const [bio, setBio] = useState(user?.bio ?? '');
   const [workplace, setWorkplace] = useState(user?.workplace ?? '');
@@ -41,11 +47,18 @@ const ProfileCard = () => {
       .join('') || 'G';
 
   const [imageError, setImageError] = useState<string>('');
+  const [formErrors, setFormErrors] = useState<{
+    displayName?: string;
+    websiteUrl?: string;
+    githubUrl?: string;
+    linkedinUrl?: string;
+  }>({});
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     setImageError('');
     if (file) {
+      // Prevent uploading assets larger than 5MB
       if (file.size > 5 * 1024 * 1024) {
         setImageError('Image is too large. Please select an image under 5MB.');
         return;
@@ -60,17 +73,50 @@ const ProfileCard = () => {
 
   const handleSave = async () => {
     if (!user || !token) return;
+
+    const errors: typeof formErrors = {};
+
+    // 1. Name Check: Ensure it is not left empty or completely blanked out with whitespace
+    if (!displayName || displayName.trim() === '') {
+      errors.displayName = 'Name cannot be empty or contain only spaces.';
+    }
+
+    // 2. Personal Website Check: Ensure formatting conforms to a typical web URL structure
+    if (websiteUrl && !WEBSITE_REGEX.test(websiteUrl)) {
+      errors.websiteUrl = 'Please enter a valid URL.';
+    }
+
+    // 3. GitHub Profile URL Check: Enforce a true profile address pattern
+    if (githubUrl && !GITHUB_REGEX.test(githubUrl)) {
+      errors.githubUrl =
+        'Please enter a valid GitHub profile URL (e.g., github.com/username).';
+    }
+
+    // 4. LinkedIn Profile URL Check: Enforce an exact member account path matching scheme
+    if (linkedinUrl && !LINKEDIN_REGEX.test(linkedinUrl)) {
+      errors.linkedinUrl =
+        'Please enter a valid LinkedIn profile URL (e.g., linkedin.com/in/username).';
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    setFormErrors({});
     setIsSubmitting(true);
+
     try {
       const socialLinks = [];
-      if (githubUrl) socialLinks.push({ platform: 'github', url: githubUrl });
+      if (githubUrl)
+        socialLinks.push({ platform: 'github', url: githubUrl.trim() });
       if (linkedinUrl)
-        socialLinks.push({ platform: 'linkedin', url: linkedinUrl });
+        socialLinks.push({ platform: 'linkedin', url: linkedinUrl.trim() });
       if (websiteUrl)
-        socialLinks.push({ platform: 'website', url: websiteUrl });
+        socialLinks.push({ platform: 'website', url: websiteUrl.trim() });
 
       const payload = {
-        username: displayName,
+        username: displayName.trim(),
         avatarUrl,
         bio,
         workplace,
@@ -96,6 +142,7 @@ const ProfileCard = () => {
     setGithubUrl(getSocialLink('github'));
     setWebsiteUrl(getSocialLink('website'));
     setImageError('');
+    setFormErrors({});
     setIsEditMode(false);
   };
 
@@ -159,8 +206,13 @@ const ProfileCard = () => {
           <Input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className="pl-3 py-2"
+            className={`pl-3 py-2 ${formErrors.displayName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
           />
+          {formErrors.displayName && (
+            <p className="text-xs text-red-500 font-medium mt-0.5">
+              {formErrors.displayName}
+            </p>
+          )}
         </div>
 
         <div className="flex flex-col gap-1">
@@ -185,14 +237,21 @@ const ProfileCard = () => {
             />
           </div>
 
-          <div className="flex items-center gap-3">
-            <LinkIcon size={20} className="text-gray-400 min-w-[20px]" />
-            <Input
-              value={websiteUrl}
-              onChange={(e) => setWebsiteUrl(e.target.value)}
-              placeholder="Website URL"
-              className="pl-3 py-2"
-            />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3">
+              <LinkIcon size={20} className="text-gray-400 min-w-[20px]" />
+              <Input
+                value={websiteUrl}
+                onChange={(e) => setWebsiteUrl(e.target.value)}
+                placeholder="Website URL"
+                className={`pl-3 py-2 w-full ${formErrors.websiteUrl ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {formErrors.websiteUrl && (
+              <p className="text-xs text-red-500 font-medium ml-8">
+                {formErrors.websiteUrl}
+              </p>
+            )}
           </div>
         </div>
 
@@ -200,23 +259,39 @@ const ProfileCard = () => {
           <label className="text-sm font-bold text-gray-800">
             Social accounts
           </label>
-          <div className="flex items-center gap-3">
-            <GithubIcon size={20} className="text-gray-400 min-w-[20px]" />
-            <Input
-              value={githubUrl}
-              onChange={(e) => setGithubUrl(e.target.value)}
-              placeholder="GitHub Profile URL"
-              className="pl-3 py-2"
-            />
+
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3">
+              <GithubIcon size={20} className="text-gray-400 min-w-[20px]" />
+              <Input
+                value={githubUrl}
+                onChange={(e) => setGithubUrl(e.target.value)}
+                placeholder="GitHub Profile URL"
+                className={`pl-3 py-2 w-full ${formErrors.githubUrl ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {formErrors.githubUrl && (
+              <p className="text-xs text-red-500 font-medium ml-8">
+                {formErrors.githubUrl}
+              </p>
+            )}
           </div>
-          <div className="flex items-center gap-3">
-            <LinkedinIcon size={20} className="text-gray-400 min-w-[20px]" />
-            <Input
-              value={linkedinUrl}
-              onChange={(e) => setLinkedinUrl(e.target.value)}
-              placeholder="LinkedIn Profile URL"
-              className="pl-3 py-2"
-            />
+
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center gap-3">
+              <LinkedinIcon size={20} className="text-gray-400 min-w-[20px]" />
+              <Input
+                value={linkedinUrl}
+                onChange={(e) => setLinkedinUrl(e.target.value)}
+                placeholder="LinkedIn Profile URL"
+                className={`pl-3 py-2 w-full ${formErrors.linkedinUrl ? 'border-red-500' : ''}`}
+              />
+            </div>
+            {formErrors.linkedinUrl && (
+              <p className="text-xs text-red-500 font-medium ml-8">
+                {formErrors.linkedinUrl}
+              </p>
+            )}
           </div>
         </div>
 

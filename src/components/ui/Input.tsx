@@ -1,4 +1,10 @@
 import React from 'react';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
+}
 
 interface InputProps extends React.InputHTMLAttributes<HTMLInputElement> {
   error?: boolean;
@@ -22,7 +28,11 @@ export function Input({
 
   return (
     <input
-      className={`w-full border rounded-xl pl-11 pr-4 py-3 text-sm focus:outline-none focus:ring-1 transition bg-card text-fg placeholder-fg-muted disabled:opacity-50 disabled:cursor-not-allowed ${borderStyles} ${className}`}
+      className={cn(
+        'w-full border rounded-xl pl-4 pr-4 py-3 text-sm focus:outline-none focus:ring-1 transition bg-card text-fg placeholder-fg-muted disabled:opacity-50 disabled:cursor-not-allowed',
+        borderStyles,
+        className,
+      )}
       {...props}
     />
   );

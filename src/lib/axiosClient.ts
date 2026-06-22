@@ -83,8 +83,6 @@ const handleTokenRefresh = async (
   }
 };
 
-// --- INTERCEPTORS ---
-
 // Request Interceptor: Attach the access token to every outgoing request
 axiosClient.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const token = useAuthStore.getState().accessToken;
@@ -106,9 +104,7 @@ axiosClient.interceptors.response.use(
     const originalRequest = error.config as InternalAxiosRequestConfig & {
       _retry?: boolean;
     };
-
     const isOfflineMode = typeof navigator !== 'undefined' && !navigator.onLine;
-
     // 1. Handle network failures, offline browser, or dead server scenarios
     if (isOfflineMode || isNetworkError(error) || isServerUnavailable(status)) {
       // Only show the toast if the browser thinks it's online to avoid overlapping with global offline listeners
@@ -122,13 +118,11 @@ axiosClient.interceptors.response.use(
       }
       return Promise.reject(error);
     }
-
     // 2. Handle specific HTTP status codes centrally
     switch (status) {
       case 401: {
         const isRefreshEndpoint =
           originalRequest?.url?.includes('/auth/refresh');
-
         // Prevent infinite loops by ensuring we don't retry the refresh endpoint itself or already retried requests
         if (!isRefreshEndpoint && !originalRequest._retry) {
           return handleTokenRefresh(originalRequest);
