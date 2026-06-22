@@ -26,7 +26,9 @@ import trophyImg from '../../../assets/trophy.png';
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(
+    () => window.innerWidth >= 1024,
+  );
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -246,11 +248,17 @@ export default function WorkspacePage() {
       </div>
       <Header />
       <div className="flex flex-1 overflow-hidden w-full relative">
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            onClick={handleToggleSidebar}
+          />
+        )}
         <aside
-          className={`flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 absolute inset-y-0 left-0 z-50 lg:relative lg:z-0 lg:flex ${
+          className={`flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 absolute inset-y-0 left-0 z-50 lg:relative lg:z-0 ${
             isSidebarOpen
               ? 'w-76 translate-x-0'
-              : 'w-76 -translate-x-full lg:w-0 lg:translate-x-0 lg:border-r-0 lg:hidden'
+              : 'w-76 -translate-x-full lg:w-0 lg:hidden'
           }`}
         >
           <div className="w-76 overflow-y-auto h-full">

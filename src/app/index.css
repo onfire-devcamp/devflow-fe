@@ -103,3 +103,9 @@
     color: white;
   }
 }
+
+/* Custom scrollbar - pink */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--color-primary) transparent;
+}
