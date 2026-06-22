@@ -85,8 +85,40 @@ export function CodebaseTab({ project }: { project: ProjectDetail }) {
 
   if (isCodebaseLoading || isRoadmapLoading) {
     return (
-      <TabPanel tabId="codebase" className="flex justify-center py-16">
-        <p className="text-sm text-fg-muted">Loading codebase...</p>
+      <TabPanel tabId="codebase">
+        <div className="flex border-t border-slate-200 animate-pulse">
+          {/* File tree skeleton */}
+          <div className="w-1/3 min-w-[250px] border-r border-slate-200 bg-slate-50 p-4 space-y-3">
+            {[1, 2, 3, 4, 5].map((i) => (
+              <div
+                key={i}
+                className="flex items-center gap-2"
+                style={{ paddingLeft: `${(i % 3) * 12}px` }}
+              >
+                <div className="w-4 h-4 bg-slate-200 rounded" />
+                <div
+                  className="h-3 bg-slate-200 rounded"
+                  style={{ width: `${50 + ((i * 20) % 80)}px` }}
+                />
+              </div>
+            ))}
+          </div>
+          {/* Editor skeleton */}
+          <div className="flex-1 bg-slate-900 min-h-[500px] p-4 space-y-3">
+            <div className="flex items-center gap-1.5 mb-4">
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-700 block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-700 block" />
+              <span className="w-2.5 h-2.5 rounded-full bg-slate-700 block" />
+            </div>
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+              <div
+                key={i}
+                className="h-3 bg-slate-700/50 rounded"
+                style={{ width: `${30 + ((i * 25) % 70)}%` }}
+              />
+            ))}
+          </div>
+        </div>
       </TabPanel>
     );
   }

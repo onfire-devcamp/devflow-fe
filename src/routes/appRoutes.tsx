@@ -4,7 +4,7 @@ import { PATHS } from '../config/paths';
 import { PrivateRoute } from './PrivateRoute';
 import { PublicRoute } from './PublicRoute';
 import { LoginPage } from '../features/auth/components/LoginPage';
-import { PageLoader } from '../components/ui/PageLoader';
+import { Loading } from '../components/Loading';
 import { NotFoundPage } from '../components/ui/NotFoundPage';
 import RoadMapLayout from '../features/roadmap/index';
 import LandingPage from '../features/landing_page/index';
@@ -23,7 +23,7 @@ const ProjectDetailPage = lazy(
 
 export function AppRoutes() {
   return (
-    <Suspense fallback={<PageLoader />}>
+    <Suspense fallback={<Loading />}>
       <Routes>
         {/* PUBLIC ROUTES */}
         <Route element={<PublicRoute />}>

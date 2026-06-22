@@ -83,16 +83,28 @@ export default function DashboardPage() {
           {/* Row 1: Continue Learning + Streak */}
           <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-6 mb-6 items-start">
             {isLoadingProgress ? (
-              <CardPlaceholder className="h-full bg-primary-soft">
-                <p className="text-fg-muted">Is loading...</p>
-              </CardPlaceholder>
+              <div className="border border-primary-mid/40 rounded-2xl p-6 bg-primary-soft animate-pulse h-full">
+                <div className="h-4 w-1/3 bg-slate-200 rounded mb-4" />
+                <div className="h-6 w-2/3 bg-slate-200 rounded mb-3" />
+                <div className="h-3 w-full bg-slate-200 rounded mb-2" />
+                <div className="h-3 w-4/5 bg-slate-200 rounded" />
+              </div>
             ) : (
               <ContinueLearningCard data={continueData} />
             )}
             {isLoadingStreak ? (
-              <CardPlaceholder className="w-full h-[180px] bg-white">
-                <p className="text-fg-muted text-sm">Loading streak...</p>
-              </CardPlaceholder>
+              <div className="border border-primary-mid/40 rounded-2xl p-6 bg-white animate-pulse w-full h-[180px]">
+                <div className="h-4 w-1/2 bg-slate-200 rounded mb-4" />
+                <div className="flex gap-3 mt-4">
+                  {[1, 2, 3, 4, 5, 6, 7].map((i) => (
+                    <div
+                      key={i}
+                      className="w-8 h-8 bg-slate-200 rounded-full"
+                    />
+                  ))}
+                </div>
+                <div className="h-3 w-2/3 bg-slate-200 rounded mt-4" />
+              </div>
             ) : streakData ? (
               <WeeklyStreakCard
                 days={streakData.weekDays}
@@ -149,9 +161,20 @@ export default function DashboardPage() {
               Project library
             </h2>
             {isLoadingProjects ? (
-              <p className="py-12 text-center text-sm text-fg-muted">
-                is loading
-              </p>
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full animate-pulse">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="border border-slate-200 rounded-2xl p-5 bg-white"
+                  >
+                    <div className="h-4 w-1/3 bg-slate-200 rounded mb-3" />
+                    <div className="h-6 w-3/4 bg-slate-200 rounded mb-2" />
+                    <div className="h-3 w-full bg-slate-200 rounded mb-2" />
+                    <div className="h-3 w-2/3 bg-slate-200 rounded mb-4" />
+                    <div className="h-2 w-full bg-slate-200 rounded-full" />
+                  </div>
+                ))}
+              </div>
             ) : filteredProjects.length > 0 ? (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
                 {filteredProjects.map((project) => (

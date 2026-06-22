@@ -15,12 +15,18 @@ export default function ContributionHeatmap() {
   const [heatmapData, setHeatmapData] = useState<number[][]>([]);
   const [streak, setStreak] = useState(0);
   const [totalTasks, setTotalTasks] = useState(0);
+  const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
     let isActive = true;
 
     const loadData = async () => {
-      if (!user?.id) return;
+      if (!user?.id) {
+        if (isActive) setIsLoading(false);
+        return;
+      }
+
+      setIsLoading(true);
 
       const datesMatrix = generateDatesMatrix();
       const mockData = generateMockHeatmapData(datesMatrix, user.id);
@@ -63,6 +69,10 @@ export default function ContributionHeatmap() {
         if (isActive) {
           setHeatmapData((prev) => (prev.length === 0 ? mockData : prev));
         }
+      } finally {
+        if (isActive) {
+          setIsLoading(false);
+        }
       }
     };
 
@@ -89,6 +99,38 @@ export default function ContributionHeatmap() {
         return 'bg-slate-100';
     }
   };
+
+  if (isLoading) {
+    return (
+      <section className="border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full animate-pulse">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-6 gap-4">
+          <div>
+            <div className="h-6 w-32 bg-slate-200 rounded mb-2" />
+            <div className="h-4 w-64 bg-slate-200 rounded" />
+          </div>
+          <div className="flex items-center gap-4">
+            <div className="h-5 w-24 bg-slate-200 rounded" />
+            <div className="w-px h-4 bg-gray-200" />
+            <div className="h-5 w-24 bg-slate-200 rounded" />
+          </div>
+        </div>
+        <div className="overflow-hidden pb-4">
+          <div className="flex gap-[3px]">
+            {Array.from({ length: 52 }).map((_, colIndex) => (
+              <div key={colIndex} className="flex flex-col gap-[3px]">
+                {Array.from({ length: 7 }).map((_, rowIndex) => (
+                  <div
+                    key={rowIndex}
+                    className="w-[11px] h-[11px] rounded-[2px] bg-slate-200"
+                  />
+                ))}
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+    );
+  }
 
   return (
     <section className="border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full">
@@ -130,7 +172,7 @@ export default function ContributionHeatmap() {
               ))
             ) : (
               <div className="text-sm text-gray-400 py-4">
-                Loading contributions...
+                No contributions found.
               </div>
             )}
           </div>

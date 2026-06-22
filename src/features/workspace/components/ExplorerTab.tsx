@@ -87,7 +87,21 @@ export function ExplorerTab({
 
   if (isCodebaseLoading) {
     return (
-      <div className="p-4 text-sm text-slate-500">Loading codebase...</div>
+      <div className="p-4 space-y-3 animate-pulse">
+        {[1, 2, 3, 4, 5, 6].map((i) => (
+          <div
+            key={i}
+            className="flex items-center gap-2"
+            style={{ paddingLeft: `${(i % 3) * 12}px` }}
+          >
+            <div className="w-4 h-4 bg-slate-200 rounded" />
+            <div
+              className={`h-3 bg-slate-200 rounded`}
+              style={{ width: `${60 + ((i * 15) % 60)}px` }}
+            />
+          </div>
+        ))}
+      </div>
     );
   }
 

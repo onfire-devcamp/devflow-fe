@@ -103,7 +103,21 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
       </div>
 
       {isLoading ? (
-        <div className="py-8 text-sm text-gray-400">Loading activity...</div>
+        <div className="relative pl-2 animate-pulse">
+          <div
+            className="absolute left-[15px] top-3 bottom-3 w-[2px] bg-slate-200"
+            aria-hidden="true"
+          />
+          <div className="space-y-6">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="relative pl-8">
+                <span className="absolute left-0 top-1.5 h-4 w-4 rounded-full bg-slate-200" />
+                <div className="h-3 w-20 bg-slate-200 rounded mb-2" />
+                <div className="h-4 w-3/4 bg-slate-200 rounded" />
+              </div>
+            ))}
+          </div>
+        </div>
       ) : error ? (
         <div className="py-8 text-sm text-red-500" role="alert">
           {error}
