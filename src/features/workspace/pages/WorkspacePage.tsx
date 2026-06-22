@@ -17,7 +17,7 @@ import { DeviChatPanel } from '../components/DeviChatPanel';
 import { ExplainToPassModal } from '../components/ExplainToPassModal';
 import { ProjectCompletionModal } from '../components/ProjectCompletionModal';
 import { ProjectScorecardModal } from '../components/ProjectScorecardModal';
-import { GlobalLoader } from '../../../components/ui/GlobalLoader';
+
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
 import { ExplorerTab } from '../components/ExplorerTab';
@@ -156,8 +156,35 @@ export default function WorkspacePage() {
 
   if (isSlugLoading || loading) {
     return (
-      <div className="flex items-center justify-center h-screen bg-bg text-fg">
-        <GlobalLoader />
+      <div className="flex flex-col h-screen bg-bg animate-pulse">
+        {/* Header skeleton */}
+        <div className="h-14 border-b border-slate-200 bg-white" />
+        <div className="flex flex-1 overflow-hidden">
+          {/* Sidebar skeleton */}
+          <div className="w-76 border-r border-slate-200 bg-slate-50 p-4 space-y-4 hidden lg:block">
+            <div className="h-5 w-3/4 bg-slate-200 rounded" />
+            <div className="h-2 w-full bg-slate-200 rounded-full" />
+            <div className="space-y-3 pt-4">
+              {[1, 2, 3, 4, 5].map((i) => (
+                <div key={i} className="h-10 bg-slate-200 rounded-lg" />
+              ))}
+            </div>
+          </div>
+          {/* Main content skeleton */}
+          <div className="flex-1 p-8 space-y-4">
+            <div className="h-4 w-32 bg-slate-200 rounded" />
+            <div className="h-8 w-2/3 bg-slate-200 rounded" />
+            <div className="h-4 w-full max-w-md bg-slate-200 rounded" />
+            <div className="h-[420px] bg-slate-200 rounded-xl mt-6" />
+          </div>
+          {/* Chat panel skeleton */}
+          <div className="w-[336px] border-l border-slate-200 bg-slate-50 p-4 space-y-3 hidden xl:block">
+            <div className="h-5 w-1/2 bg-slate-200 rounded" />
+            <div className="h-3 w-3/4 bg-slate-200 rounded" />
+            <div className="flex-1" />
+            <div className="h-9 bg-slate-200 rounded-lg mt-auto" />
+          </div>
+        </div>
       </div>
     );
   }
@@ -294,8 +321,11 @@ export default function WorkspacePage() {
         <main className="flex-1 bg-bg p-4 sm:p-8 border-r border-slate-100 overflow-y-auto">
           <div className="relative max-w-3xl mx-auto w-full min-h-[500px]">
             {loadingTask ? (
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="w-8 h-8 border-2 border-primary/20 border-t-primary rounded-full animate-spin" />
+              <div className="absolute inset-0 flex flex-col gap-4 p-4 animate-pulse">
+                <div className="h-4 w-32 bg-slate-200 rounded" />
+                <div className="h-7 w-2/3 bg-slate-200 rounded" />
+                <div className="h-4 w-full max-w-sm bg-slate-200 rounded" />
+                <div className="h-[420px] bg-slate-200 rounded-xl mt-4" />
               </div>
             ) : taskDetails ? (
               <div className="space-y-4">

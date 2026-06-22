@@ -64,8 +64,16 @@ export default function UserSkillMap() {
 
   if (isLoading) {
     return (
-      <div className="py-12 flex items-center justify-center text-gray-500">
-        Loading Skill Map...
+      <div className="border border-[var(--color-primary-mid)] rounded-[24px] p-5 md:p-8 shadow-sm bg-white w-full animate-pulse">
+        <div className="h-5 w-1/3 bg-slate-200 rounded mb-6" />
+        <div className="space-y-4">
+          {[1, 2, 3, 4].map((i) => (
+            <div key={i} className="space-y-2">
+              <div className="h-3 w-1/4 bg-slate-200 rounded" />
+              <div className="h-3 w-full bg-slate-200 rounded-full" />
+            </div>
+          ))}
+        </div>
       </div>
     );
   }
