@@ -331,10 +331,27 @@ const ProfileCard = () => {
           </div>
         )}
 
-        <div className="flex flex-col">
+        <div className="flex flex-col w-full">
           <h2 className="text-2xl font-semibold text-[#2F2F3A]">
             {user?.username ?? 'Guest'}
           </h2>
+
+          <div className="mt-2 flex flex-col gap-1 w-full md:max-w-[280px]">
+            <div className="flex justify-between items-center text-xs font-medium text-slate-500">
+              <span className="text-purple-600 font-bold">
+                Level {Math.floor((user?.totalXp || 0) / 50) + 1}
+              </span>
+              <span>{user?.totalXp || 0} XP</span>
+            </div>
+            <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
+              <div
+                className="h-full bg-purple-500 rounded-full transition-all duration-500"
+                style={{
+                  width: `${(((user?.totalXp || 0) % 50) / 50) * 100}%`,
+                }}
+              />
+            </div>
+          </div>
         </div>
       </div>
 

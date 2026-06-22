@@ -4,43 +4,10 @@ import { useAuthStore } from '../../auth/stores/authStore';
 import { fetchUserActivities } from '../api/activityApi';
 import { axiosClient } from '../../../lib/axiosClient';
 
-const generateDatesMatrix = () => {
-  const data = [];
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const currentYear = today.getFullYear();
-
-  const firstDayOfYear = new Date(currentYear, 0, 1);
-  const startDate = new Date(firstDayOfYear);
-  startDate.setDate(firstDayOfYear.getDate() - firstDayOfYear.getDay());
-
-  const currentDate = new Date(startDate);
-
-  while (currentDate.getFullYear() <= currentYear) {
-    const colData = [];
-    for (let row = 0; row < 7; row++) {
-      colData.push(new Date(currentDate));
-      currentDate.setDate(currentDate.getDate() + 1);
-    }
-    data.push(colData);
-  }
-  return data;
-};
-
-const generateMockHeatmapData = (datesMatrix: Date[][]) => {
-  const today = new Date();
-  today.setHours(0, 0, 0, 0);
-  const currentYear = today.getFullYear();
-
-  return datesMatrix.map((col) =>
-    col.map((date) => {
-      if (date < today && date.getFullYear() === currentYear) {
-        return Math.random() > 0.6 ? Math.floor(Math.random() * 4) + 1 : 0;
-      }
-      return 0;
-    }),
-  );
-};
+import {
+  generateDatesMatrix,
+  generateMockHeatmapData,
+} from '../utils/heatmapMockData';
 
 export default function ContributionHeatmap() {
   const user = useAuthStore((state) => state.user);
@@ -56,7 +23,7 @@ export default function ContributionHeatmap() {
       if (!user?.id) return;
 
       const datesMatrix = generateDatesMatrix();
-      const mockData = generateMockHeatmapData(datesMatrix);
+      const mockData = generateMockHeatmapData(datesMatrix, user.id);
 
       try {
         const streakRes = await axiosClient.get<
@@ -93,8 +60,8 @@ export default function ContributionHeatmap() {
         }
       } catch (error) {
         console.error('Failed to load heatmap data:', error);
-        if (isActive && heatmapData.length === 0) {
-          setHeatmapData(mockData);
+        if (isActive) {
+          setHeatmapData((prev) => (prev.length === 0 ? mockData : prev));
         }
       }
     };

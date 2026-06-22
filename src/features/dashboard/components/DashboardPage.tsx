@@ -65,7 +65,7 @@ export default function DashboardPage() {
       <Header />
 
       <main className="flex-1 w-full">
-        <div className="px-8 py-8">
+        <div className="px-4 md:px-8 py-6 md:py-8 overflow-hidden md:overflow-visible">
           <div className="flex items-start justify-between mb-6">
             <div>
               <p className="text-sm text-fg-muted mb-1">Welcome back</p>
@@ -153,7 +153,7 @@ export default function DashboardPage() {
                 is loading
               </p>
             ) : filteredProjects.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5 w-full">
                 {filteredProjects.map((project) => (
                   <ProjectCard key={project._id} project={project} />
                 ))}
