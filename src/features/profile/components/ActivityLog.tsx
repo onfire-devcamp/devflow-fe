@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { fetchUserActivities } from '../api/activityApi';
 import type { ActivityResponse } from '../types/activityTypes';
 import { useNavigate } from 'react-router-dom';
+import { Button } from '../../../components/ui/Button';
 
 type ActivityItem = {
   id: string;
@@ -87,7 +88,8 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
             Latest progress across your projects.
           </p>
         </div>
-        <button
+        <Button
+          variant="ghost"
           type="button"
           onClick={() => {
             const lastActive = activities.find((a) => a.slug);
@@ -96,10 +98,10 @@ export default function ActivityLog({ userId, limit = 10 }: ActivityLogProps) {
             }
           }}
           disabled={!activities.some((a) => a.slug)}
-          className="text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 border border-[var(--color-primary-mid)] text-[var(--color-primary)] rounded-full hover:bg-[var(--color-primary-soft)] transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed"
+          className="text-xs font-semibold px-3 py-1.5 md:px-4 md:py-2 border border-[var(--color-primary-mid)] text-[var(--color-primary)] rounded-full hover:bg-[var(--color-primary-soft)] transition-colors whitespace-nowrap disabled:opacity-50 disabled:cursor-not-allowed cursor-pointer"
         >
           Open current project
-        </button>
+        </Button>
       </div>
 
       {isLoading ? (

@@ -21,6 +21,7 @@ import { ProjectScorecardModal } from '../components/ProjectScorecardModal';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
 import { ExplorerTab } from '../components/ExplorerTab';
+import trophyImg from '../../../assets/trophy.png';
 
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
@@ -333,7 +334,11 @@ export default function WorkspacePage() {
                   <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between mb-4 animate-fadeIn">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-                        <span className="text-xl">🏆</span>
+                        <img
+                          src={trophyImg}
+                          alt="Trophy"
+                          className="w-6 h-6 object-contain"
+                        />
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-slate-800">
@@ -346,7 +351,7 @@ export default function WorkspacePage() {
                     </div>
                     <button
                       onClick={() => setShowScorecardModal(true)}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors"
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors cursor-pointer"
                     >
                       View Scorecard
                     </button>

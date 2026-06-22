@@ -5,9 +5,71 @@
     <link rel="icon" type="image/png" href="/src/assets/logo.png" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>DevFlow | Personalized Code Learning Platform</title>
+    <link rel="preload" as="image" href="/loading.gif" />
+    <style>
+      :root {
+        --bg-color: #fdfafc;
+        --text-color: #f472b6;
+      }
+      body {
+        margin: 0;
+        background-color: var(--bg-color);
+      }
+      .preloader-wrapper {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        font-family: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      }
+      .preloader-img {
+        width: 10rem;
+        height: 10rem;
+        object-fit: contain;
+      }
+      .preloader-text-wrapper {
+        margin-top: 1.5rem;
+        font-size: 2.25rem;
+        line-height: 2.5rem;
+        font-weight: 500;
+        color: var(--text-color);
+        display: flex;
+        align-items: baseline;
+        gap: 0.125rem;
+      }
+      .preloader-dots {
+        display: flex;
+        gap: 0.125rem;
+        margin-left: 0.25rem;
+      }
+      .loading-dot {
+        opacity: 0;
+        animation: dot-blink 1.4s infinite;
+      }
+      .loading-dot:nth-child(1) { animation-delay: 0s; }
+      .loading-dot:nth-child(2) { animation-delay: 0.2s; }
+      .loading-dot:nth-child(3) { animation-delay: 0.4s; }
+      @keyframes dot-blink {
+        0%, 20% { opacity: 0; }
+        40%, 100% { opacity: 1; }
+      }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <div class="preloader-wrapper">
+        <img src="/loading.gif" alt="Loading" class="preloader-img" />
+        <p class="preloader-text-wrapper">
+          <span>Loading</span>
+          <span class="preloader-dots">
+            <span class="loading-dot">.</span>
+            <span class="loading-dot">.</span>
+            <span class="loading-dot">.</span>
+          </span>
+        </p>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
