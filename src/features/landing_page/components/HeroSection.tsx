@@ -137,7 +137,7 @@ function AnimatedCodeEditor() {
         <span className="ml-3 text-xs text-slate-500 font-mono">App.tsx</span>
       </div>
 
-      <div className="p-5 font-mono text-[13px] leading-6 min-h-[340px]">
+      <div className="p-5 font-mono text-[13px] leading-6 h-[440px]">
         {CODE_LINES.slice(0, visibleLines).map((line, i) => (
           <div key={i} className="flex animate-fade-in">
             <span className="w-7 shrink-0 text-right mr-4 text-slate-600 select-none text-xs">
