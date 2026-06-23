@@ -78,7 +78,7 @@ export function WorkspaceEditor({
       {/* Tab bars and Hint Banner */}
       <div className="flex items-end justify-between pt-2">
         {currentTaskFiles.length > 0 ? (
-          <div className="flex items-center gap-2 overflow-x-auto no-scrollbar">
+          <div className="flex items-center gap-2">
             {currentTaskFiles.map((file) => (
               <Button
                 variant="ghost"

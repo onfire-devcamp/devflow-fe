@@ -21,11 +21,14 @@ import { ProjectScorecardModal } from '../components/ProjectScorecardModal';
 import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
 import { ExplorerTab } from '../components/ExplorerTab';
+import trophyImg from '../../../assets/trophy.png';
 
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
   const location = useLocation();
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(
+    () => window.innerWidth >= 1024,
+  );
   const [isChatOpen, setIsChatOpen] = useState(false);
   const [activeTab, setActiveTab] = useState<'roadmap' | 'explorer'>('roadmap');
   const [showCompletionModal, setShowCompletionModal] = useState(false);
@@ -245,11 +248,17 @@ export default function WorkspacePage() {
       </div>
       <Header />
       <div className="flex flex-1 overflow-hidden w-full relative">
+        {isSidebarOpen && (
+          <div
+            className="fixed inset-0 z-40 bg-black/40 lg:hidden"
+            onClick={handleToggleSidebar}
+          />
+        )}
         <aside
-          className={`flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 absolute inset-y-0 left-0 z-50 lg:relative lg:z-0 lg:flex ${
+          className={`flex flex-shrink-0 border-r border-primary-mid bg-primary-soft flex-col justify-between overflow-hidden transition-all duration-300 absolute inset-y-0 left-0 z-50 lg:relative lg:z-0 ${
             isSidebarOpen
               ? 'w-76 translate-x-0'
-              : 'w-76 -translate-x-full lg:w-0 lg:translate-x-0 lg:border-r-0 lg:hidden'
+              : 'w-76 -translate-x-full lg:w-0 lg:hidden'
           }`}
         >
           <div className="w-76 overflow-y-auto h-full">
@@ -333,7 +342,11 @@ export default function WorkspacePage() {
                   <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4 flex items-center justify-between mb-4 animate-fadeIn">
                     <div className="flex items-center gap-3">
                       <div className="w-10 h-10 bg-amber-500/20 rounded-full flex items-center justify-center">
-                        <span className="text-xl">🏆</span>
+                        <img
+                          src={trophyImg}
+                          alt="Trophy"
+                          className="w-6 h-6 object-contain"
+                        />
                       </div>
                       <div>
                         <h3 className="text-sm font-bold text-slate-800">
@@ -346,7 +359,7 @@ export default function WorkspacePage() {
                     </div>
                     <button
                       onClick={() => setShowScorecardModal(true)}
-                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors"
+                      className="px-4 py-2 bg-amber-500 hover:bg-amber-600 text-white text-sm font-bold rounded-lg shadow-md transition-colors cursor-pointer"
                     >
                       View Scorecard
                     </button>

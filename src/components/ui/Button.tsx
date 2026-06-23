@@ -1,8 +1,14 @@
 import React from 'react';
 import type { ButtonVariant } from './Button.types';
+import { clsx, type ClassValue } from 'clsx';
+import { twMerge } from 'tailwind-merge';
 
 export interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement> {
   variant?: ButtonVariant;
+}
+
+function cn(...inputs: ClassValue[]) {
+  return twMerge(clsx(inputs));
 }
 
 export function Button({
@@ -25,10 +31,7 @@ export function Button({
   };
 
   return (
-    <button
-      className={`${baseStyles} ${variants[variant]} ${className}`}
-      {...props}
-    >
+    <button className={cn(baseStyles, variants[variant], className)} {...props}>
       {children}
     </button>
   );

@@ -1,10 +1,8 @@
-import loadingGif from '../assets/loading.gif';
-
 export function Loading() {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-card">
       <img
-        src={loadingGif}
+        src="/loading.gif"
         alt="Loading"
         className="w-40 h-40 object-contain"
       />
