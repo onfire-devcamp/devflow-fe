@@ -206,7 +206,7 @@ const ProfileCard = () => {
           <Input
             value={displayName}
             onChange={(e) => setDisplayName(e.target.value)}
-            className={`!pl-3 py-2 ${formErrors.displayName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
+            className={`pl-3 py-2 ${formErrors.displayName ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : ''}`}
           />
           {formErrors.displayName && (
             <p className="text-xs text-red-500 font-medium mt-0.5">
@@ -233,7 +233,7 @@ const ProfileCard = () => {
               value={workplace}
               onChange={(e) => setWorkplace(e.target.value)}
               placeholder="Company or University"
-              className="!pl-3 py-2"
+              className="pl-3 py-2"
             />
           </div>
 
@@ -244,7 +244,7 @@ const ProfileCard = () => {
                 value={websiteUrl}
                 onChange={(e) => setWebsiteUrl(e.target.value)}
                 placeholder="Website URL"
-                className={`!pl-3 py-2 w-full ${formErrors.websiteUrl ? 'border-red-500' : ''}`}
+                className={`pl-3 py-2 w-full ${formErrors.websiteUrl ? 'border-red-500' : ''}`}
               />
             </div>
             {formErrors.websiteUrl && (
@@ -267,7 +267,7 @@ const ProfileCard = () => {
                 value={githubUrl}
                 onChange={(e) => setGithubUrl(e.target.value)}
                 placeholder="GitHub Profile URL"
-                className={`!pl-3 py-2 w-full ${formErrors.githubUrl ? 'border-red-500' : ''}`}
+                className={`pl-3 py-2 w-full ${formErrors.githubUrl ? 'border-red-500' : ''}`}
               />
             </div>
             {formErrors.githubUrl && (
@@ -284,7 +284,7 @@ const ProfileCard = () => {
                 value={linkedinUrl}
                 onChange={(e) => setLinkedinUrl(e.target.value)}
                 placeholder="LinkedIn Profile URL"
-                className={`!pl-3 py-2 w-full ${formErrors.linkedinUrl ? 'border-red-500' : ''}`}
+                className={`pl-3 py-2 w-full ${formErrors.linkedinUrl ? 'border-red-500' : ''}`}
               />
             </div>
             {formErrors.linkedinUrl && (
