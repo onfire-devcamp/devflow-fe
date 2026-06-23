@@ -121,10 +121,12 @@ axiosClient.interceptors.response.use(
     // 2. Handle specific HTTP status codes centrally
     switch (status) {
       case 401: {
-        const isRefreshEndpoint =
-          originalRequest?.url?.includes('/auth/refresh');
-        // Prevent infinite loops by ensuring we don't retry the refresh endpoint itself or already retried requests
-        if (!isRefreshEndpoint && !originalRequest._retry) {
+        const isAuthEndpoint =
+          originalRequest?.url?.includes('/auth/refresh') ||
+          originalRequest?.url?.includes('/user/login') ||
+          originalRequest?.url?.includes('/user/google-auth');
+        // Prevent infinite loops by ensuring we don't retry the refresh endpoint itself, login endpoints, or already retried requests
+        if (!isAuthEndpoint && !originalRequest._retry) {
           return handleTokenRefresh(originalRequest);
         }
         break;
