@@ -134,6 +134,13 @@ axiosClient.interceptors.response.use(
         window.location.href = '/404';
         break;
       }
+      case 429: {
+        const data = error.response?.data as { message?: string } | undefined;
+        const message =
+          data?.message || 'Too many requests. Please try again later.';
+        toast(message, 'error', true, 5_000);
+        break;
+      }
       default: {
         // Unhandled 4xx (e.g., 400, 403, 422) or 5xx (e.g., 500) errors will fall through here.
         break;
