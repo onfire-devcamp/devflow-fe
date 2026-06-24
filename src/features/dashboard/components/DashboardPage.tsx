@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { SEO } from '../../../components/seo/SEO';
 import { Header } from '../../../components/ui/Header';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import { useAuthStore } from '../../auth/stores/authStore';
@@ -62,6 +63,7 @@ export default function DashboardPage() {
 
   return (
     <PageContainer>
+      <SEO title="Dashboard" description="Your DevFlow dashboard." />
       <Header />
 
       <main className="flex-1 w-full">

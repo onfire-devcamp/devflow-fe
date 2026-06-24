@@ -1,4 +1,5 @@
 import { Header } from '../../../components/ui/Header';
+import { SEO } from '../../../components/seo/SEO';
 import { PageContainer } from '../../../components/ui/PageContainer';
 import ActivityLog from './ActivityLog';
 import ProfileCard from './userInfo';
@@ -11,6 +12,7 @@ export default function ProfilePage() {
 
   return (
     <PageContainer>
+      <SEO title="My Profile" description="Your DevFlow profile." />
       <Header />
       <main className="w-full px-6 md:px-12 lg:px-20 py-6 md:py-10 max-w-7xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
