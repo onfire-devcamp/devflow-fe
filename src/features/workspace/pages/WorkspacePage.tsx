@@ -22,6 +22,7 @@ import { ErrorMessage } from '../../../components/ui/ErrorMessage';
 import { SidebarToggleIcon } from '../../roadmap/components/RoadmapIcons';
 import { ExplorerTab } from '../components/ExplorerTab';
 import trophyImg from '../../../assets/trophy.png';
+import { SEO } from '../../../components/seo/SEO';
 
 export default function WorkspacePage() {
   const { projectSlug } = useParams<{ projectSlug: string }>();
@@ -246,6 +247,7 @@ export default function WorkspacePage() {
           mode.
         </p>
       </div>
+      <SEO title="Workspace" description="Your DevFlow workspace." />
       <Header />
       <div className="flex flex-1 overflow-hidden w-full relative">
         {isSidebarOpen && (
