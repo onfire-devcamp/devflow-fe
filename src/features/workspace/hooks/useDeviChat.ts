@@ -147,11 +147,14 @@ export function useDeviChat({
   const { mutate: sendMessage, isPending: isSendingMessage } = useMutation({
     mutationFn: (message: string) => {
       const codeContext = editorInstance?.getValue() ?? '';
+      const currentFileName =
+        editorInstance?.getModel()?.uri.path.split('/').pop() ?? 'Unknown File';
       return workspaceApi.sendAiChatMessage({
         projectId: trimmedProjectId,
         taskId: activeTaskId,
         message,
         codeContext,
+        currentFileName,
       });
     },
     onMutate: async (message: string) => {

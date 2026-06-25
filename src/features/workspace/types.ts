@@ -128,6 +128,7 @@ export interface SendAiChatMessageParams {
   taskId: string;
   message: string;
   codeContext: string;
+  currentFileName: string;
 }
 
 export interface AppendChatMessageParams {
