@@ -145,6 +145,8 @@ export const workspaceApi = {
       projectId: params.projectId.trim(),
       taskId: params.taskId,
       message: params.message,
+      codeContext: params.codeContext,
+      currentFileName: params.currentFileName,
     });
   },
 
