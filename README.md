@@ -1,6 +1,5 @@
 <div align="center">
-  <img src="./public/og-image.jpg" alt="DevFlow Hero Banner" width="100%" style="border-radius: 8px; margin-bottom: 20px;" />
-
+  <img src=".github/assets/landing.gif" alt="DevFlow Hero Banner" width="100%" style="border-radius: 8px; margin-bottom: 20px;" />
   <h1><img src="./src/assets/logo.png" width="40" height="40" style="vertical-align: middle; border-radius: 50%;" /> DevFlow Frontend Client</h1>
   <p>The interactive, real-time workspace for the DevFlow learning platform.</p>
   
