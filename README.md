@@ -1,7 +1,7 @@
 <div align="center">
   <img src="./public/og-image.jpg" alt="DevFlow Hero Banner" width="100%" style="border-radius: 8px; margin-bottom: 20px;" />
 
-  <h1>🎨 DevFlow Frontend Client</h1>
+  <h1><img src="./src/assets/logo.png" width="40" height="40" style="vertical-align: middle; border-radius: 50%;" /> DevFlow Frontend Client</h1>
   <p>The interactive, real-time workspace for the DevFlow learning platform.</p>
   
   <a href="https://github.com/onfire-devcamp/devflow-be"><b>🔗 View the Backend Repository</b></a>
@@ -43,37 +43,43 @@ At the core of the application lies the interactive coding workspace, seamlessly
 
 The DevFlow Frontend ensures a secure and intuitive login and registration flow. By seamlessly integrating standard credentials alongside Google OAuth, it offers frictionless onboarding that allows users to quickly drop into their learning sessions without being bogged down by complex authentication steps.
 
-> _[Image Placeholder: Insert `/.github/assets/login-demo.png` here]_
+![Seamless Authentication](./.github/assets/login-demo.png)
 
 ### 2. 📊 Real-time Dashboard
 
 Serving as the central hub of the application, the Interactive Dashboard allows users to easily track their mastery-based progression and daily streaks. From here, learners can review their overall achievements and select their specific learning roadmaps with just a click.
 
-> _[Image Placeholder: Insert `/.github/assets/dashboard-demo.png` here]_
+![Real-time Dashboard](./.github/assets/dashboard-demo.png)
 
 ### 3. 🎯 Project Preview
 
 Before diving into code, users are presented with a comprehensive Project Preview screen. This overview carefully details the task requirements, architectural expectations, and necessary prerequisites, ensuring the learner is fully prepared before transitioning to the workspace.
 
-> _[Image Placeholder: Insert `/.github/assets/preview-demo.png` here]_
+![Project Preview](./.github/assets/preview-demo.png)
 
 ### 4. 💻 Interactive Workspace
 
 The workspace deeply integrates `@monaco-editor/react` to provide a VS Code-like coding experience directly in the browser. It intelligently manages multi-file tasks by dynamically swapping the active model within a single Monaco instance based on the user's selected file tab. The editor runs entirely local-first, allowing users to rapidly iterate on their solutions.
 
-> _[Image Placeholder: Insert `/.github/assets/editor-demo.gif` here]_
+![Interactive Workspace](./.github/assets/editor-demo.gif)
 
 ### 5. 🤖 Context-Aware AI Mentor
 
 Our AI mentor panel offers real-time, Socratic guidance without spoon-feeding answers. When a user asks a question, a custom React Query hook (`useDeviChat`) imperatively queries the Monaco Editor instance (e.g., `editorInstance.getValue()` and `editorInstance.getModel().uri`) to extract the precise `codeContext` and `currentFileName`. This zero-render data extraction ensures the AI receives perfect context of the user's work without triggering expensive UI updates.
 
-> _[Image Placeholder: Insert `/.github/assets/ai-mentor-demo.gif` here]_
+![Context-Aware AI Mentor](./.github/assets/ai-mentor-demo.gif)
 
-### 6. 👤 User Profile
+### 6. 🧠 Explain-to-Pass System
+
+Going beyond simple code correctness, our Explain-to-Pass system ensures true comprehension. Even if the submitted code passes unit tests, users must explain their underlying logic. The AI evaluates this explanation to confirm understanding before unlocking the next module, effectively preventing simple copy-paste progression.
+
+![Explain-to-Pass System](./.github/assets/preview-demo.png)
+
+### 7. 👤 User Profile
 
 The dedicated User Profile page gives learners full visibility into their learning journey. It aggregates vital statistics, badges, and learning history, empowering users to view their achievements and manage their account details from a single, polished interface.
 
-> _[Image Placeholder: Insert `/.github/assets/profile-demo.png` here]_
+![User Profile](./.github/assets/profile-demo.png)
 
 ## Tech Stack
 
