@@ -61,13 +61,13 @@ Before diving into code, users are presented with a comprehensive Project Previe
 
 The workspace deeply integrates `@monaco-editor/react` to provide a VS Code-like coding experience directly in the browser. It intelligently manages multi-file tasks by dynamically swapping the active model within a single Monaco instance based on the user's selected file tab. The editor runs entirely local-first, allowing users to rapidly iterate on their solutions.
 
-![Interactive Workspace](./.github/assets/editor-demo.gif)
+![Interactive Workspace](./.github/assets/editor-demo.png)
 
 ### 5. 🤖 Context-Aware AI Mentor
 
 Our AI mentor panel offers real-time, Socratic guidance without spoon-feeding answers. When a user asks a question, a custom React Query hook (`useDeviChat`) imperatively queries the Monaco Editor instance (e.g., `editorInstance.getValue()` and `editorInstance.getModel().uri`) to extract the precise `codeContext` and `currentFileName`. This zero-render data extraction ensures the AI receives perfect context of the user's work without triggering expensive UI updates.
 
-![Context-Aware AI Mentor](./.github/assets/ai-mentor-demo.gif)
+![Context-Aware AI Mentor](./.github/assets/ai-mentor-demo.png)
 
 ### 6. 🧠 Explain-to-Pass System
 
