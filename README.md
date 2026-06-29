@@ -39,23 +39,41 @@ At the core of the application lies the interactive coding workspace, seamlessly
 
 ## Features & Showcase
 
-### 💻 Interactive Workspace
+### 1. 🔐 Seamless Authentication
+
+The DevFlow Frontend ensures a secure and intuitive login and registration flow. By seamlessly integrating standard credentials alongside Google OAuth, it offers frictionless onboarding that allows users to quickly drop into their learning sessions without being bogged down by complex authentication steps.
+
+> _[Image Placeholder: Insert `/.github/assets/login-demo.png` here]_
+
+### 2. 📊 Real-time Dashboard
+
+Serving as the central hub of the application, the Interactive Dashboard allows users to easily track their mastery-based progression and daily streaks. From here, learners can review their overall achievements and select their specific learning roadmaps with just a click.
+
+> _[Image Placeholder: Insert `/.github/assets/dashboard-demo.png` here]_
+
+### 3. 🎯 Project Preview
+
+Before diving into code, users are presented with a comprehensive Project Preview screen. This overview carefully details the task requirements, architectural expectations, and necessary prerequisites, ensuring the learner is fully prepared before transitioning to the workspace.
+
+> _[Image Placeholder: Insert `/.github/assets/preview-demo.png` here]_
+
+### 4. 💻 Interactive Workspace
 
 The workspace deeply integrates `@monaco-editor/react` to provide a VS Code-like coding experience directly in the browser. It intelligently manages multi-file tasks by dynamically swapping the active model within a single Monaco instance based on the user's selected file tab. The editor runs entirely local-first, allowing users to rapidly iterate on their solutions.
 
-> _[Image Placeholder: Insert `editor-demo.gif` here]_
+> _[Image Placeholder: Insert `/.github/assets/editor-demo.gif` here]_
 
-### 🤖 Context-Aware AI Mentor
+### 5. 🤖 Context-Aware AI Mentor
 
 Our AI mentor panel offers real-time, Socratic guidance without spoon-feeding answers. When a user asks a question, a custom React Query hook (`useDeviChat`) imperatively queries the Monaco Editor instance (e.g., `editorInstance.getValue()` and `editorInstance.getModel().uri`) to extract the precise `codeContext` and `currentFileName`. This zero-render data extraction ensures the AI receives perfect context of the user's work without triggering expensive UI updates.
 
-> _[Image Placeholder: Insert `ai-mentor-demo.gif` here]_
+> _[Image Placeholder: Insert `/.github/assets/ai-mentor-demo.gif` here]_
 
-### 🛡️ Graceful Rate-Limit Handling
+### 6. 👤 User Profile
 
-To protect backend resources, the frontend employs a global Axios interceptor (`axiosClient.ts`) to handle HTTP 429 Too Many Requests errors. Rather than crashing or failing silently, the interceptor catches rate-limit blocks and elegantly displays the specific backend-provided message (e.g., "AI hourly quota exceeded") to the user via our global Zustand-powered toast notification system.
+The dedicated User Profile page gives learners full visibility into their learning journey. It aggregates vital statistics, badges, and learning history, empowering users to view their achievements and manage their account details from a single, polished interface.
 
-> _[Image Placeholder: Insert `toast-demo.png` here]_
+> _[Image Placeholder: Insert `/.github/assets/profile-demo.png` here]_
 
 ## Tech Stack
 
