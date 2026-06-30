@@ -7,15 +7,15 @@
 - **AI Mentor Persona Separation**
   - _Before:_ The AI Mentor used a single generic prompt for all interactions, causing inconsistent tone between hinting and code explanation.
   - _After:_ We separated the system prompts into distinct personas (`HINT_SYSTEM_PROMPT` vs `EXPLAIN_SYSTEM_PROMPT`), ensuring the AI provides targeted guidance versus strict explanations.
-  - _Commit:_ `[Link placeholder to be replaced]`
+  - _Commit:_ `e5f92ca5c68587ca33c7de7b16b0e621ed474010`
 - **Context-Aware AI Generation**
   - _Before:_ The AI was unaware of the user's active file name or specific task instructions, often resulting in generic or slightly off-topic feedback.
   - _After:_ The prompt is now dynamically formatted with XML tags (`<task_context>` and `<current_file>`) injecting the exact `codeContext` and `currentFileName` for hyper-relevant guidance.
-  - _Commit:_ `[Link placeholder to be replaced]`
+  - _Commit:_ `e5f92ca5c68587ca33c7de7b16b0e621ed474010`
 - **Explain-to-Pass Anti-Cheat**
   - _Before:_ Users could bypass the conceptual check by thoughtlessly copy-pasting the exact MCQ answer into the "Explain your answer" text area.
   - _After:_ A strict anti-cheat evaluation protocol penalizes copy-pasting with an automatic 0 score, and the frontend UI explicitly prompts users to "explain what you did in this task" in their own words.
-  - _Commit:_ `[Link placeholder to be replaced]`
+  - _Commit:_ `e5f92ca5c68587ca33c7de7b16b0e621ed474010`
 
 ## v1.1.1
 
