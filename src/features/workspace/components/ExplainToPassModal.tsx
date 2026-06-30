@@ -130,7 +130,7 @@ export function ExplainToPassModal({
 
         <div className="mb-4">
           <label className="block text-sm font-bold text-slate-700 mb-2">
-            Explain your answer in one sentence:
+            In one sentence, explain what you did in this task:
             <span className="text-red-500 ml-1" title="Required">
               *
             </span>
@@ -138,7 +138,7 @@ export function ExplainToPassModal({
           <textarea
             value={explanation}
             onChange={(e) => setExplanation(e.target.value)}
-            placeholder="Briefly explain why you chose this answer..."
+            placeholder="Briefly explain what you did in this task."
             rows={3}
             className="w-full px-3 py-2 text-sm rounded-xl border border-slate-200 text-slate-700 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 resize-none"
           />
