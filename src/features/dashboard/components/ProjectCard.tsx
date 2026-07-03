@@ -7,6 +7,17 @@ interface ProjectCardProps {
 }
 
 export function ProjectCard({ project }: ProjectCardProps) {
+  const displayLevel =
+    project.slug === 'twitter-clone'
+      ? 'Advanced'
+      : project.level || 'Intermediate';
+  const levelColorClass =
+    displayLevel.toLowerCase() === 'beginner'
+      ? 'text-green-600'
+      : displayLevel.toLowerCase() === 'advanced'
+        ? 'text-red-600'
+        : 'text-yellow-600';
+
   return (
     <div className="flex w-full h-full">
       <Link
@@ -17,7 +28,9 @@ export function ProjectCard({ project }: ProjectCardProps) {
         <div className="flex items-start justify-between gap-2 mb-3">
           <span className="text-xs font-semibold uppercase tracking-wide text-primary">
             {(project.category || 'Fullstack').toUpperCase()} ·{' '}
-            {(project.level || 'Intermediate').toUpperCase()}
+            <span className={levelColorClass}>
+              {displayLevel.toUpperCase()}
+            </span>
           </span>
         </div>
 

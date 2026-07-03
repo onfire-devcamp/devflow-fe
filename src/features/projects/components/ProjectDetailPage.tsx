@@ -115,7 +115,11 @@ export default function ProjectDetailPage() {
             <>
               <ProjectHero
                 category={project.category}
-                difficulty={project.difficulty}
+                difficulty={
+                  project.slug === 'twitter-clone'
+                    ? 'ADVANCED'
+                    : project.difficulty
+                }
                 estimatedHours={project.estimatedHours}
                 moduleCount={project.moduleCount}
                 title={project.title}
