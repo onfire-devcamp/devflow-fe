@@ -16,7 +16,7 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
   const isNoProject = !data || !data.slug || data.title === 'No project';
 
   return (
-    <div className="h-full bg-primary-soft border border-primary-mid/40 rounded-2xl p-6 flex flex-col justify-between">
+    <div className="h-full bg-primary-soft/30 border-2 border-primary-mid shadow-sm rounded-2xl p-6 flex flex-col justify-between">
       <div className="flex items-center gap-4">
         {/* Avatar */}
         <div className="flex-shrink-0 w-12 h-12 rounded-full bg-white border border-primary-mid/30 overflow-hidden flex items-center justify-center">
@@ -68,7 +68,7 @@ export function ContinueLearningCard({ data }: ContinueLearningCardProps) {
         )}
       </div>
       {!isNoProject && (
-        <div className="mt-5 h-2 bg-white/60 rounded-full overflow-hidden">
+        <div className="mt-5 h-2 bg-slate-100 rounded-full overflow-hidden">
           <div
             className="h-full bg-primary rounded-full transition-all duration-300"
             style={{ width: `${data?.progressPercent}%` }}

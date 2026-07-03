@@ -66,7 +66,7 @@ export default function DashboardPage() {
       <SEO title="Dashboard" description="Your DevFlow dashboard." />
       <Header />
 
-      <main className="flex-1 w-full">
+      <main className="flex-1 w-full bg-slate-50">
         <div className="px-4 md:px-8 py-6 md:py-8 overflow-hidden md:overflow-visible">
           <div className="flex items-start justify-between mb-6">
             <div>

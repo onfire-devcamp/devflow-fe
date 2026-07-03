@@ -14,7 +14,7 @@ export function WeeklyStreakCard({
   message,
 }: WeeklyStreakCardProps) {
   return (
-    <div className="h-full bg-white border border-primary-mid/80 rounded-2xl p-6 flex flex-col">
+    <div className="h-full bg-white border border-primary-mid/80 shadow-sm rounded-2xl p-6 flex flex-col">
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <h3 className="text-base font-semibold text-fg">This week</h3>
@@ -29,12 +29,12 @@ export function WeeklyStreakCard({
           <div key={idx} className="flex flex-col items-center gap-1">
             <div
               className={`w-full h-8 rounded-lg ${
-                day.completed
-                  ? 'bg-primary'
-                  : 'bg-gray-100 border border-gray-200'
+                day.completed ? 'bg-primary shadow-sm' : 'bg-gray-100'
               }`}
             />
-            <span className="text-[11px] font-medium text-fg-muted">
+            <span
+              className={`text-[11px] font-medium ${day.completed ? 'text-fg-muted' : 'text-gray-400'}`}
+            >
               {day.label}
             </span>
           </div>

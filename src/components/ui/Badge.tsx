@@ -23,15 +23,15 @@ const difficultyConfig: Record<
 > = {
   BEGINNER: {
     label: 'Beginner',
-    className: 'bg-teal-50 text-teal-600 border border-teal-200',
+    className: 'bg-green-50 text-green-600 border border-green-200',
   },
   INTERMEDIATE: {
     label: 'Intermediate',
-    className: 'bg-amber-50 text-amber-600 border border-amber-200',
+    className: 'bg-yellow-50 text-yellow-600 border border-yellow-200',
   },
   ADVANCED: {
     label: 'Advanced',
-    className: 'bg-primary-soft text-primary border border-primary-mid',
+    className: 'bg-red-50 text-red-600 border border-red-200',
   },
 };
 
