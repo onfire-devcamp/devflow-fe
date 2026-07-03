@@ -11,7 +11,7 @@ export function ProjectCard({ project }: ProjectCardProps) {
     <div className="flex w-full h-full">
       <Link
         to={PATHS.PROJECT_DETAIL(project.slug)}
-        className="bg-white border border-primary-mid/80 rounded-2xl p-5 flex flex-col hover:border-primary hover:shadow-sm transition-all duration-200 cursor-pointer group w-full"
+        className="bg-white border border-primary-mid/80 shadow-sm rounded-2xl p-5 flex flex-col hover:border-primary hover:shadow-md transition-all duration-200 cursor-pointer group w-full"
       >
         {/* Header: category · difficulty + duration */}
         <div className="flex items-start justify-between gap-2 mb-3">
