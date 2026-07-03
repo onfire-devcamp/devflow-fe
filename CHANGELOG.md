@@ -16,6 +16,10 @@
   - _Before:_ Users could bypass the conceptual check by thoughtlessly copy-pasting the exact MCQ answer into the "Explain your answer" text area.
   - _After:_ A strict anti-cheat evaluation protocol penalizes copy-pasting with an automatic 0 score, and the frontend UI explicitly prompts users to "explain what you did in this task" in their own words.
   - PR: [#51](https://github.com/onfire-devcamp/devflow-fe/pull/51)
+- **Dashboard UI Polish**
+  - _Before:_ The dashboard page featured a flat MVP aesthetic with a white background and hard borders on empty streak days, causing cards to blend into the main layout.
+  - _After:_ We upgraded to a premium SaaS aesthetic by adding a subtle `bg-slate-50` page background to contrast pure white cards, applied `shadow-sm` and hover shadow effects to the main components, and refined the empty states for a cleaner look.
+  - PR: [#52](https://github.com/onfire-devcamp/devflow-fe/pull/52)
 
 ## v1.1.1
 
