@@ -12,6 +12,7 @@ import {
 import { useProjectDetail } from '../hooks/useProjectDetail';
 import type { DifficultyLevel, ProjectCategory } from '../types/projectTypes';
 import { ProjectDetailTabs } from './tabs';
+import { SEO } from '../../../components/seo/SEO';
 
 function ProjectSkeleton() {
   return (
@@ -85,8 +86,32 @@ export default function ProjectDetailPage() {
     }
   }
 
+  const getProjectTitle = (slug: string) => {
+    switch (slug) {
+      case 'kahoot-clone':
+        return 'Kahoot Clone';
+      case 'single-page-cv':
+        return 'Single Page CV';
+      case 'url-shortener-api':
+        return 'URL Shortener API';
+      case 'twitter-clone':
+        return 'Twitter Clone';
+      default:
+        return project?.title || 'Project';
+    }
+  };
+
   return (
     <PageContainer>
+      {project ? (
+        <SEO
+          title={`DevFlow | ${getProjectTitle(project.slug)}`}
+          description={project.description}
+          exact
+        />
+      ) : (
+        <SEO title="Project Details" />
+      )}
       <Header />
 
       <main className="flex-1">

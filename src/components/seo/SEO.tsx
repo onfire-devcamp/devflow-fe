@@ -5,13 +5,16 @@ interface SEOProps {
   description?: string;
   image?: string;
   url?: string;
+  exact?: boolean;
 }
 
-export function SEO({ title, description, image, url }: SEOProps) {
+export function SEO({ title, description, image, url, exact }: SEOProps) {
   const isHome = title.trim().toLowerCase() === 'home';
-  const pageTitle = isHome
-    ? 'DevFlow | Personalized Code Learning Platform'
-    : `${title} | DevFlow`;
+  const pageTitle = exact
+    ? title
+    : isHome
+      ? 'DevFlow | Personalized Code Learning Platform'
+      : `${title} | DevFlow`;
 
   return (
     <Helmet>
