@@ -135,7 +135,7 @@ export function RegisterForm() {
             htmlFor="username"
             className="block text-[13px] text-fg mb-1.5 uppercase tracking-wide"
           >
-            Full name
+            Username
           </label>
           <div className="relative">
             <span

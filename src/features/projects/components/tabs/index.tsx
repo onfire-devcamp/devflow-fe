@@ -99,7 +99,7 @@ export function ProjectDetailTabs({ project }: { project: ProjectDetail }) {
   return (
     <>
       <TabBar activeTab={activeTab} onChange={setActiveTab} />
-      <div className="rounded-b-2xl border border-t-0 border-slate-200 bg-slate-50 overflow-hidden">
+      <div className="rounded-b-2xl border border-t-0 border-slate-200 bg-slate-50 overflow-hidden min-h-[600px]">
         <div className={activeTab === 'ui-preview' ? 'block' : 'hidden'}>
           <UIPreviewTab
             slug={project.slug}

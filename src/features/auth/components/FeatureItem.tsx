@@ -18,7 +18,7 @@ const ICON_MAP: Record<FeatureIconType, React.ReactNode> = {
 export function FeatureItem({ icon, title, description }: FeatureItemProps) {
   return (
     <div className="flex items-start space-x-4">
-      <div className="bg-primary-soft w-10 h-10 rounded-full border border-primary-mid flex items-center justify-center shrink-0 shadow-xs">
+      <div className="bg-primary-soft w-12 h-12 rounded-full border border-primary-mid flex items-center justify-center shrink-0 shadow-md shadow-primary/20 ring-4 ring-primary/5">
         {ICON_MAP[icon]}
       </div>
 
